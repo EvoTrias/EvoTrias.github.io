@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EvoTrias — Where Autonomy Belongs</title>
+<meta name="description" content="EvoTrias: a separation-of-powers architecture for agentic program evolution. Govern, propose, judge — three decisions, three owners. Runs as a plugin that turns your coding agent into an evolution system." />
+<meta property="og:title" content="EvoTrias — Where Autonomy Belongs" />
+<meta property="og:description" content="A Separation of Powers for Agentic Program Evolution." />
+<meta property="og:image" content="assets/video/poster.jpg" />
+<meta name="theme-color" content="#03060a" />
+<link rel="icon" type="image/svg+xml" href="assets/img/dino/dino_plain.svg" />
+<link rel="stylesheet" href="css/fonts.css" />
+<link rel="stylesheet" href="css/main.css" />
+</head>
+<body class="is-loading">
+
+<!-- ================= preloader ================= -->
+<div id="loader" aria-hidden="true">
+  <div class="ld-core">
+    <div class="ld-ring"><i></i><i></i><i></i></div>
+    <img class="ld-dino" src="assets/img/dino/dino_astronaut.svg" alt="" />
+  </div>
+  <div class="ld-word" data-scramble="EvoTrias">EvoTrias</div>
+  <div class="ld-bar"><i></i></div>
+  <div class="ld-pct mono">000</div>
+</div>
+
+<canvas id="galaxy" aria-hidden="true"></canvas>
+<canvas id="triad" aria-hidden="true"></canvas>
+<div id="grain" aria-hidden="true"></div>
+
+<!-- ================= nav ================= -->
+<header id="nav">
+  <a class="brand" href="#top" data-magnetic>
+    <img src="assets/img/dino/dino_plain.svg" alt="" />
+    <span>Evo<b>Trias</b></span>
+  </a>
+  <nav class="nav-links">
+    <a href="#architecture">Architecture</a>
+    <a href="#governance">Governance</a>
+    <a href="#plugin">Plugin</a>
+    <a href="#results">Results</a>
+    <a href="#film">Film</a>
+    <a href="#cite">Cite</a>
+  </nav>
+  <a class="btn btn-sm btn-glow" href="#paper" data-soon="Paper coming soon" data-magnetic>
+    <svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6z M14 2v5h5" /></svg>Paper
+  </a>
+  <div class="nav-progress"><i></i></div>
+</header>
+
+<main>
+<!-- ================= hero ================= -->
+<section id="top" class="hero">
+  <div class="hero-copy">
+    <div class="eyebrow reveal"><span class="live-dot"></span>Agentic program evolution · paper &amp; plugin</div>
+    <h1 class="wordmark" aria-label="EvoTrias">
+      <span class="wm-evo">Evo</span><span class="wm-trias">Trias</span>
+    </h1>
+    <p class="hero-claim reveal" data-d="1">Where autonomy <span class="grad">belongs</span>.</p>
+    <p class="hero-title reveal" data-d="2">A Separation of Powers for Agentic Program Evolution</p>
+    <p class="hero-lede reveal" data-d="3">
+      <b class="c-gov">Govern</b>, <b class="c-prop">propose</b>, <b class="c-judge">judge</b> — three decisions, one owner each.
+      EvoTrias turns the coding agent you already use into an evolution system.
+    </p>
+    <div class="cta reveal" data-d="4">
+      <a class="btn btn-primary" href="#paper" data-soon="Paper coming soon" data-magnetic>
+        <svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6z M14 2v5h5 M9 13h6 M9 17h6" /></svg>Read the paper</a>
+      <a class="btn btn-ghost" href="#film" data-magnetic>
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>Watch the film</a>
+      <a class="btn btn-ghost" href="#code" data-soon="Code release coming soon" data-magnetic>
+        <svg viewBox="0 0 24 24"><path d="M9 18l-6-6 6-6 M15 6l6 6-6 6" /></svg>Code</a>
+      <a class="btn btn-ghost" href="#cite" data-magnetic>
+        <svg viewBox="0 0 24 24"><path d="M7 7h4v4H8c0 3 1 4 3 5 M14 7h4v4h-3c0 3 1 4 3 5" /></svg>BibTeX</a>
+    </div>
+  </div>
+
+  <div class="hero-dino" data-parallax="0.04">
+    <div class="orbit o1"><i></i></div>
+    <div class="orbit o2"><i></i></div>
+    <img class="dino-float" src="assets/img/dino/dino_astronaut.svg" alt="EvoTrias mascot: a small dinosaur in a space helmet" />
+    <div class="dino-shadow"></div>
+  </div>
+
+  <div class="triad-labels" aria-hidden="true">
+    <span class="tl tl-gov" data-k="0">GOVERN<small>Structured Governance</small></span>
+    <span class="tl tl-prop" data-k="1">PROPOSE<small>Open Proposal</small></span>
+    <span class="tl tl-judge" data-k="2">JUDGE<small>Protected Judgment</small></span>
+  </div>
+
+  <a class="scroll-cue" href="#film" aria-label="Scroll"><span>scroll</span><i></i></a>
+
+</section>
+
+<!-- ================= film ================= -->
+<section id="film" class="section">
+  <div class="sec-head">
+    <div class="sec-idx mono reveal">00 / THE FILM</div>
+    <h2 class="reveal" data-scramble>Make your agent an evolution system.</h2>
+    <p class="sec-sub reveal" data-d="1">One <code>/evolve</code> turns a single run into a galaxy of evolutions — then the whole system plugs into any agent.</p>
+  </div>
+  <div class="film-wrap reveal" data-d="2">
+    <div class="film-frame">
+      <div class="film-border"></div>
+      <video id="film-video" preload="metadata" poster="assets/video/poster.jpg" playsinline controls controlslist="nodownload">
+        <source src="assets/video/evotrias_film.mp4" type="video/mp4" />
+      </video>
+      <button class="film-play" aria-label="Play film">
+        <span class="fp-ring"></span><span class="fp-ring r2"></span>
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+      </button>
+      <div class="film-meta mono"><span>EvoTrias · promo film</span><span>1080p</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================= architecture ================= -->
+<section id="architecture" class="section">
+  <div class="sec-head">
+    <div class="sec-idx mono reveal">01 / ARCHITECTURE</div>
+    <h2 class="reveal" data-scramble>A separation of powers.</h2>
+    <p class="sec-sub reveal" data-d="1">Program evolution rests on three decisions — <b class="c-gov">govern</b>, <b class="c-prop">propose</b>, <b class="c-judge">judge</b>. Existing systems let one owner absorb another, and none keeps the judge private. EvoTrias gives each decision its own <em>plane</em>. Planes exchange typed contracts only — and a hook layer makes sure no plane can erode another.</p>
+  </div>
+
+  <div class="planes">
+    <article class="plane reveal" data-d="1" data-tilt="5" style="--c: var(--gov); --c2: 46,211,160">
+      <div class="pl-top"><span class="pl-num mono">01</span><span class="pl-chip mono">Skill + MCP control plane</span></div>
+      <div class="pl-dino"><img src="assets/img/dino/dino_commander.svg" alt="Dino in a commander's cap" /></div>
+      <h3>Structured Governance</h3>
+      <p class="pl-own mono">owns <b>govern</b> · what spans rounds</p>
+      <p>Distills settled outcomes into posterior evidence, adapts the selection policy, persists validated experience, and binds each new task's context capsule.</p>
+      <ul class="pl-list"><li>Posterior evidence at artifact · lineage · global scope</li><li>Adaptive lineage / parent / inspiration policy</li><li>Notes &amp; Meta-guidance, validated before commit</li></ul>
+    </article>
+    <article class="plane reveal" data-d="2" data-tilt="5" style="--c: var(--prop); --c2: 255,138,76">
+      <div class="pl-top"><span class="pl-num mono">02</span><span class="pl-chip mono">your coding agent</span></div>
+      <div class="pl-dino"><img src="assets/img/dino/dino_builder.svg" alt="Dino in a hard hat holding a wrench" /></div>
+      <h3>Open Proposal</h3>
+      <p class="pl-own mono">owns <b>propose</b> · what happens inside a task</p>
+      <p>A general-purpose coding agent — Claude Code, OpenCode, Codex — pulls its capsule over MCP, then reasons and calls tools on its own until an artifact exists.</p>
+      <ul class="pl-list"><li>Parallel task executors in a rolling queue</li><li>No mutation template: implement, build, test, repair</li><li>Distills typed notes and proposes new directions</li></ul>
+    </article>
+    <article class="plane reveal" data-d="3" data-tilt="5" style="--c: var(--judge); --c2: 111,140,255">
+      <div class="pl-top"><span class="pl-num mono">03</span><span class="pl-chip mono">isolated evaluator</span></div>
+      <div class="pl-dino"><img src="assets/img/dino/dino_judge.svg" alt="Dino in a judge's wig holding a gavel" /></div>
+      <h3>Protected Judgment</h3>
+      <p class="pl-own mono">owns <b>judge</b> · what counts</p>
+      <p>Contract-visible, evidence-private. The artifact enters through a narrow interface; only a normalized outcome — validity, fitness, metrics — comes back.</p>
+      <ul class="pl-list"><li>Instruction: every prompt states the prohibition</li><li>Isolation: evaluator behind a request interface</li><li>Enforcement: hooks deny evaluator reads</li></ul>
+    </article>
+  </div>
+
+  <!-- contract loop -->
+  <div class="loop reveal" data-d="1">
+    <div class="loop-vis">
+      <svg id="loop-svg" viewBox="0 0 560 590" aria-label="Contract loop between the three planes"></svg>
+    </div>
+    <div class="loop-copy">
+      <div class="sec-idx mono">THE CONTRACT LOOP</div>
+      <h3>Three planes. Three typed contracts.</h3>
+      <div class="eq">
+        <div class="eq-row" data-k="0"><span class="eq-l">Γ<sub>t</sub></span><span class="eq-op">=</span><span class="eq-r">G(ℋ<sub>t</sub>)</span><span class="eq-note mono">Governance binds a context capsule</span></div>
+        <div class="eq-row" data-k="1"><span class="eq-l">x<sub>t</sub></span><span class="eq-op">=</span><span class="eq-r">P(R<sub>𝒬</sub>, C<sub>𝒬</sub>, Γ<sub>t</sub>)</span><span class="eq-note mono">Proposal submits a candidate artifact</span></div>
+        <div class="eq-row" data-k="2"><span class="eq-l">y<sub>t</sub></span><span class="eq-op">=</span><span class="eq-r">J<sub>𝒬</sub>(x<sub>t</sub>)</span><span class="eq-note mono">Judgment returns a normalized outcome</span></div>
+      </div>
+      <p>Each settled outcome merges into the history ℋ and shapes only <em>later</em> bindings. The contracts fix the semantics of G and J independently of how P is implemented — so any host that meets them can supply candidate construction.</p>
+      <div class="hooks">
+        <div class="hook"><span class="hk-ico">⟲</span><div><b>Scheduler hooks</b><span>Sole writer of the task pool. Scheduling follows what happened, not what an agent reports.</span></div></div>
+        <div class="hook"><span class="hk-ico">⛨</span><div><b>Permission hooks</b><span>Before every tool call: no evaluator reads, no peeking at other tasks' results.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ================= governance replay ================= -->
+<section id="governance" class="section">
+  <div class="sec-head">
+    <div class="sec-idx mono reveal">02 / GOVERNANCE, LIVE</div>
+    <h2 class="reveal" data-scramble>Watch a run evolve.</h2>
+    <p class="sec-sub reveal" data-d="1">A real Cloudcast run, replayed task by task: 4 initial directions, 50 settled candidates, 3 meta-guidance directions. Every task receives a capsule Γ<sub>t</sub> = (parent, inspirations, notes, guidance).</p>
+  </div>
+
+  <div class="replay reveal" data-d="1">
+    <div class="rp-main">
+      <div class="rp-head">
+        <div class="rp-title mono"><span class="live-dot"></span>cloudcast_20260724155152 · GLM-5.2 on Claude Code</div>
+        <div class="rp-stats mono">
+          <span>task <b id="rp-count">0</b>/50</span>
+          <span>best cost <b id="rp-best">—</b></span>
+        </div>
+      </div>
+      <svg id="lineage-svg" viewBox="0 0 980 600" aria-label="Lineage tree replay"></svg>
+      <div class="rp-ctrl">
+        <button class="rp-play" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+        <div class="rp-track"><i class="rp-fill"></i><i class="rp-knob"></i></div>
+        <div class="rp-legend mono">
+          <span><i class="lg-root"></i>root direction</span>
+          <span><i class="lg-best"></i>new best</span>
+          <span><i class="lg-note"></i>note</span>
+          <span><i class="lg-mg"></i>meta-guidance</span>
+        </div>
+      </div>
+    </div>
+    <aside class="rp-side">
+      <div class="capsule">
+        <div class="cap-h mono">CONTEXT CAPSULE <span>Γ<sub>t</sub></span></div>
+        <div class="cap-task" id="cap-task">task_—</div>
+        <div class="cap-row"><span class="mono">p<sub>t</sub> parent</span><b id="cap-parent">—</b></div>
+        <div class="cap-row"><span class="mono">I<sub>t</sub> inspirations</span><b id="cap-insp">—</b></div>
+        <div class="cap-row"><span class="mono">note → 𝒩</span><b id="cap-notes">—</b></div>
+        <div class="cap-row"><span class="mono">m<sub>t</sub> guidance</span><b id="cap-mg">—</b></div>
+        <div class="cap-row"><span class="mono">y<sub>t</sub> cost ↓</span><b id="cap-cost">—</b></div>
+        <div class="cap-phase mono" id="cap-phase">root phase</div>
+      </div>
+      <div class="note-feed" id="note-feed"></div>
+    </aside>
+  </div>
+
+  <div class="gov-stages">
+    <div class="gs reveal" data-d="1"><span class="gs-n mono">E<sub>t</sub></span><h4>Posterior evidence</h4><p>Artifact, lineage and global fields distilled from every settled outcome.</p></div>
+    <div class="gs reveal" data-d="2"><span class="gs-n mono">Π<sub>t</sub></span><h4>Policy construction</h4><p>Phase switching, progress annealing, share rebalancing, guidance anchoring.</p></div>
+    <div class="gs reveal" data-d="3"><span class="gs-n mono">𝒩 · ℳ</span><h4>Experience construction</h4><p>Condition-scoped Notes for single attempts; Meta-guidance when the best fitness stalls.</p></div>
+    <div class="gs reveal" data-d="4"><span class="gs-n mono">Γ<sub>t</sub></span><h4>Context construction</h4><p>Parent by quality + UCB + potential; inspirations from a local / cross-lineage mixture.</p></div>
+  </div>
+</section>
+
+<!-- ================= plugin ================= -->
+<section id="plugin" class="section">
+  <div class="sec-head">
+    <div class="sec-idx mono reveal">03 / THE PLUGIN</div>
+    <h2 class="reveal" data-scramble>Plug it into any agent.</h2>
+    <p class="sec-sub reveal" data-d="1">Contracts and hooks live outside the coding agent, so EvoTrias leaves the agent unchanged. Type one command in the session you already use.</p>
+  </div>
+
+  <div class="plug-grid">
+    <div class="term reveal" data-d="1" data-tilt="3">
+      <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-name mono" id="term-host">Claude Code — ~/evolve/benchmarks</span><span class="term-badge"><img src="assets/img/dino/dino_plain.svg" alt="" />EvoTrias</span></div>
+      <div class="term-body mono" id="term-body"></div>
+    </div>
+    <div class="hosts reveal" data-d="2">
+      <div class="host-orbit">
+        <div class="ho-ring"></div><div class="ho-ring r2"></div>
+        <img class="ho-dino" src="assets/img/dino/dino_cool.svg" alt="Dino wearing sunglasses" />
+        <button class="host" data-host="Claude Code" style="--a:0deg"><img src="assets/agents/claude.svg" alt="" /><span>Claude Code</span></button>
+        <button class="host" data-host="Codex" style="--a:90deg"><img src="assets/agents/codex.svg" alt="" /><span>Codex</span></button>
+        <button class="host" data-host="OpenCode" style="--a:180deg"><img src="assets/agents/opencode.svg" alt="" /><span>OpenCode</span></button>
+        <button class="host" data-host="JiuwenSwarm" style="--a:270deg"><img src="assets/agents/jiuwenswarm.svg" alt="" /><span>JiuwenSwarm</span></button>
+      </div>
+      <div class="kit">
+        <span class="kit-chip">Skills</span><span class="kit-chip">MCP</span><span class="kit-chip">Hooks</span><span class="kit-chip">Native subagents</span>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="porta reveal" data-d="1">
+    <div class="po-k mono">HOST PORTABILITY · Signal Processing, GLM-5.2</div>
+    <div class="po-row"><span class="po-n">Claude Code</span><div class="po-bar"><i style="--w:0.7329"></i></div><b>0.7329</b></div>
+    <div class="po-row"><span class="po-n">OpenCode</span><div class="po-bar"><i style="--w:0.7383"></i></div><b>0.7383</b></div>
+    <p class="po-note">Swap the host, keep the result: Claude Code and OpenCode land within <b>0.8%</b> of each other on both ablation tasks. Construction quality still follows the model — Opus-5 under OpenCode lifts Signal Processing by 10%.</p>
+  </div>
+</section>
+
+<!-- ================= results ================= -->
+<section id="results" class="section">
+  <div class="sec-head">
+    <div class="sec-idx mono reveal">04 / RESULTS</div>
+    <h2 class="reveal" data-scramble>A new state of the art.</h2>
+    <p class="sec-sub reveal" data-d="1">Math, ADRS and Frontier-CS — against OpenEvolve, EvoX, AdaEvolve, and one- and four-agent CORAL.</p>
+  </div>
+
+  <div class="counters">
+    <div class="ctr reveal" data-d="1"><div class="ctr-v"><span data-count="9">0</span><small>/12</small></div><div class="ctr-l">tasks ranked first, under <em>each</em> backbone</div></div>
+    <div class="ctr reveal" data-d="2"><div class="ctr-v"><span data-count="80.67" data-dec="2">0</span></div><div class="ctr-l">Frontier-CS median <span class="dim">vs 67.14 for CORAL-4</span></div></div>
+    <div class="ctr reveal" data-d="3"><div class="ctr-v"><span data-count="64" data-prefix="−">0</span><small>%</small></div><div class="ctr-l">token cost vs CORAL-4 <span class="dim">$41.37 vs $115.10</span></div></div>
+    <div class="ctr reveal" data-d="4"><div class="ctr-v"><span data-count="16.9" data-dec="1" data-prefix="+">0</span><small>%</small></div><div class="ctr-l">solver quality on a 680K-line repo</div></div>
+  </div>
+
+  <!-- main table -->
+  <div class="panel reveal" id="main-table-panel">
+    <div class="panel-head">
+      <div><div class="sec-idx mono">MATH &amp; ADRS · MEAN OF 3 RUNS</div><h3>First on 9 of 12 tasks — under both backbones.</h3></div>
+      <div class="seg" id="bb-seg"><button class="on" data-bb="GLM-5.2">GLM-5.2</button><button data-bb="Opus-5">Opus-5</button><i></i></div>
+    </div>
+    <div class="table-wrap"><table id="main-table"></table></div>
+    <p class="panel-foot">Paired task-level analysis: EvoTrias improves on OpenEvolve, EvoX, AdaEvolve and CORAL-1 on all 12 tasks (every CI positive, Holm-corrected <i>p</i> = 0.0024). ↓ lower is better. <span class="k-first">first</span> <span class="k-second">second</span></p>
+  </div>
+
+  <div class="duo">
+    <div class="panel reveal" data-d="1">
+      <div class="panel-head"><div><div class="sec-idx mono">FRONTIER-CS · 30 PROBLEMS</div><h3>Above every baseline, mid-range to the mid-90s.</h3></div></div>
+      <div class="chart" id="ch-frontier"></div>
+      <div class="legend" id="lg-frontier"></div>
+    </div>
+    <div class="panel reveal" data-d="2">
+      <div class="panel-head"><div><div class="sec-idx mono">FRONTIER-CS · MEDIAN SCORE</div><h3>80.67 vs 67.14.</h3></div></div>
+      <div class="chart" id="ch-median"></div>
+    </div>
+  </div>
+
+  <div class="panel reveal">
+    <div class="panel-head">
+      <div><div class="sec-idx mono">BEST-SO-FAR vs ITERATION · GLM-5.2</div><h3>Evolution curves.</h3></div>
+      <div class="seg" id="it-seg">
+        <button class="on" data-task="signal_processing">Signal Proc.</button><button data-task="circle_packing">Circle Pack.</button><button data-task="llm_sql">LLM-SQL</button><button data-task="cloudcast">Cloudcast ↓</button><i></i>
+      </div>
+    </div>
+    <div class="chart tall" id="ch-iter"></div>
+    <div class="legend" id="lg-iter"></div>
+  </div>
+
+  <!-- efficiency -->
+  <div class="sub-head reveal"><span class="sec-idx mono">WHAT GOVERNANCE BUYS</span><h3>Stronger solutions, a third of the bill.</h3><p>Structured Governance keeps history interpretation and search routing out of the expensive agent trajectory — agent compute concentrates on building candidates.</p></div>
+  <div class="duo">
+    <div class="panel reveal" data-d="1">
+      <div class="panel-head"><div><div class="sec-idx mono">SIGNAL PROCESSING · WALL CLOCK</div><h3>Best from ~15 minutes onward.</h3></div></div>
+      <div class="chart" id="ch-wall"></div>
+      <div class="legend" id="lg-wall"></div>
+    </div>
+    <div class="panel reveal" data-d="2">
+      <div class="panel-head"><div><div class="sec-idx mono">MEAN TOKEN COST · FULL RUN · 7 MATH TASKS</div><h3>$41.37 vs $115.10.</h3></div></div>
+      <div class="chart" id="ch-token"></div>
+    </div>
+  </div>
+
+  <!-- repo scale -->
+  <div class="sub-head reveal"><span class="sec-idx mono">WHAT OPEN PROPOSAL BUYS</span><h3>From one file to 680K lines of C++.</h3><p>OR-Tools CP-SAT local search, no marked region to evolve. The agent reads the repository, picks its change sites, keeps cross-function invariants intact and exports a Git patch — scored end-to-end on MiniZinc Challenge instances.</p></div>
+  <div class="repo">
+    <div class="repo-code reveal" data-d="1" aria-hidden="true"><div class="rc-scroll mono" id="repo-code"></div><div class="rc-count"><b id="loc">0</b><span>lines of C++</span></div></div>
+    <div class="panel reveal" data-d="2">
+      <div class="panel-head"><div><div class="sec-idx mono">GAIN OVER UNPATCHED SOLVER · BORDA COUNT</div><h3>+13.2% on 300 · +16.9% on the subset.</h3></div></div>
+      <div class="chart" id="ch-ortools"></div>
+      <div class="legend" id="lg-ortools"></div>
+      <p class="panel-foot">Dotted: a single pass of the same agent (−0.1% / +1.3%). The gain comes from the evolution loop, not from the coding agent alone.</p>
+    </div>
+  </div>
+
+  <!-- judgment -->
+  <div class="sub-head reveal" id="judgment"><span class="sec-idx mono">WHAT PROTECTED JUDGMENT BUYS</span><h3>Scores you can trust to transfer.</h3><p>Exposing the evaluator inflates the benchmark score by <b>0.093</b> on average — but the advantage contracts to <b>0.009</b> on out-of-distribution instances. Protected programs score as well or better OOD.</p></div>
+  <div class="duo">
+    <div class="panel reveal" data-d="1">
+      <div class="panel-head"><div><div class="sec-idx mono">GENERALIZATION SHIFT · PROTECTED → EXPOSED</div><h3>Exposure pushes across the diagonal.</h3></div></div>
+      <div class="chart square" id="ch-shift"></div>
+    </div>
+    <div class="panel reveal" data-d="2">
+      <div class="panel-head"><div><div class="sec-idx mono">SIGNAL PROCESSING · GAP = OOD − ORIGINAL</div><h3>Original, IID and OOD.</h3></div>
+        <div class="seg" id="ex-seg"><button class="on" data-ex="protected">Protected</button><button data-ex="exposed">Exposed</button><i></i></div></div>
+      <div class="chart" id="ch-exposure"></div>
+    </div>
+  </div>
+
+  <!-- concurrency + ablation -->
+  <div class="duo">
+    <div class="panel reveal" data-d="1">
+      <div class="panel-head"><div><div class="sec-idx mono">CONCURRENCY TRADE-OFF · SIGNAL PROCESSING</div><h3>The knee sits at c = 4.</h3></div></div>
+      <div class="conc">
+        <div class="conc-pick" id="conc-pick"></div>
+        <div class="conc-read" id="conc-read"></div>
+      </div>
+      <div class="chart" id="ch-conc"></div>
+    </div>
+    <div class="panel reveal" data-d="2">
+      <div class="panel-head"><div><div class="sec-idx mono">ABLATION · MEAN OF 3 RUNS</div><h3>Every piece pulls its weight.</h3></div>
+        <div class="seg" id="ab-seg"><button class="on" data-ab="signal">Signal Proc.</button><button data-ab="circle_packing">Circle Pack.</button><i></i></div></div>
+      <div class="chart tall" id="ch-ablation"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================= cite ================= -->
+<section id="cite" class="section">
+  <div class="cite-grid">
+    <div class="cite-dino reveal"><img src="assets/img/dino/dino_trophy.svg" alt="Dino holding a trophy" /><div class="confetti" id="confetti"></div></div>
+    <div class="cite-copy">
+      <div class="sec-idx mono reveal">05 / CITE</div>
+      <h2 class="reveal" data-scramble>Where autonomy belongs.</h2>
+      <p class="sec-sub reveal" data-d="1">If EvoTrias is useful in your work, please cite the paper.</p>
+      <div class="bib reveal" data-d="2">
+        <button class="bib-copy mono" data-magnetic>copy</button>
+<pre class="mono" id="bibtex">@inproceedings{evotrias2027,
+  title     = {Where Autonomy Belongs: A Separation of Powers
+               for Agentic Program Evolution},
+  author    = {Anonymous Authors},
+  booktitle = {Under review},
+  year      = {2026}
+}</pre>
+      </div>
+      <div class="cta reveal" data-d="3">
+        <a class="btn btn-primary" href="#paper" data-soon="Paper coming soon" data-magnetic>Read the paper</a>
+        <a class="btn btn-ghost" href="#top" data-magnetic>Back to top ↑</a>
+      </div>
+    </div>
+  </div>
+  <footer class="foot mono"><span>EvoTrias · Structured Governance · Open Proposal · Protected Judgment</span><span>© 2026</span></footer>
+</section>
+</main>
+
+<div id="tip" aria-hidden="true"></div>
+<div id="toast" class="mono" aria-live="polite"></div>
+
+<script src="js/data.js"></script>
+<script src="js/lib.js"></script>
+<script src="js/galaxy.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/loop.js"></script>
+<script src="js/lineage.js"></script>
+<script src="js/terminal.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
