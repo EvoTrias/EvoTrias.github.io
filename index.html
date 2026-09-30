@@ -36,7 +36,7 @@
     <img src="assets/img/dino/dino_plain.svg" alt="" />
     <span>Evo<b>Trias</b></span>
   </a>
-  <nav class="nav-links">
+  <nav class="nav-links" id="nav-links">
     <a href="#architecture">Architecture</a>
     <a href="#governance">Governance</a>
     <a href="#plugin">Plugin</a>
@@ -44,6 +44,7 @@
     <a href="#film">Film</a>
     <a href="#cite">Cite</a>
   </nav>
+  <button class="nav-burger" aria-label="Menu" aria-controls="nav-links" aria-expanded="false"><i></i><i></i><i></i></button>
   <a class="btn btn-sm btn-glow" href="#paper" data-soon="Paper coming soon" data-magnetic>
     <svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6z M14 2v5h5" /></svg>Paper
   </a>
@@ -191,7 +192,7 @@
           <span>best cost <b id="rp-best">—</b></span>
         </div>
       </div>
-      <svg id="lineage-svg" viewBox="0 0 980 600" aria-label="Lineage tree replay"></svg>
+      <div class="rp-scroll"><svg id="lineage-svg" viewBox="0 0 980 600" aria-label="Lineage tree replay"></svg></div>
       <div class="rp-ctrl">
         <button class="rp-play" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
         <div class="rp-track"><i class="rp-fill"></i><i class="rp-knob"></i></div>
@@ -284,6 +285,7 @@
       <div><div class="sec-idx mono">MATH &amp; ADRS · MEAN OF 3 RUNS</div><h3>First on 9 of 12 tasks — under both backbones.</h3></div>
       <div class="seg" id="bb-seg"><button class="on" data-bb="GLM-5.2">GLM-5.2</button><button data-bb="Opus-5">Opus-5</button><i></i></div>
     </div>
+    <div class="table-hint mono">swipe for all methods →</div>
     <div class="table-wrap"><table id="main-table"></table></div>
     <p class="panel-foot">Paired task-level analysis: EvoTrias improves on OpenEvolve, EvoX, AdaEvolve and CORAL-1 on all 12 tasks (every CI positive, Holm-corrected <i>p</i> = 0.0024). ↓ lower is better. <span class="k-first">first</span> <span class="k-second">second</span></p>
   </div>

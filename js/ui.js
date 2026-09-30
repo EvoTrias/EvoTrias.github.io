@@ -120,6 +120,12 @@ const UI = (() => {
     };
     addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
     update();
+    // phone menu
+    const burger = $(".nav-burger");
+    const setOpen = (on) => { navEl.classList.toggle("open", on); burger.setAttribute("aria-expanded", String(on)); };
+    burger.addEventListener("click", (e) => { e.stopPropagation(); setOpen(!navEl.classList.contains("open")); });
+    links.forEach((a) => a.addEventListener("click", () => setOpen(false)));
+    document.addEventListener("click", (e) => { if (!navEl.contains(e.target)) setOpen(false); });
   }
 
   // ------------------------------------------------------------ number counters

@@ -14,8 +14,12 @@ const Charts = (() => {
     for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-6; v += step) out.push(+v.toFixed(10));
     return out;
   }
-  function frame(host, W0, H0, m) {
-    const W = Math.max(320, Math.round(host.clientWidth || W0)), H = Math.round((W * H0) / W0);
+  // On narrow containers (phones) charts get a taller aspect and their own margins (mN) so labels keep their size.
+  function frame(host, W0, H0, m, mN) {
+    const W = Math.max(280, Math.round(host.clientWidth || W0)), narrow = W < 480;
+    const H = Math.round(((W * H0) / W0) * (narrow ? 1.3 : 1));
+    if (narrow && mN) m = mN;
+    host.style.aspectRatio = `${W} / ${H}`;
     host.innerHTML = "";
     host.classList.remove("in");
     const svg = S("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "xMidYMid meet" }, host);
@@ -25,7 +29,7 @@ const Charts = (() => {
     defs.innerHTML = `<filter id="glow-${host.id}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
       <linearGradient id="evoh-${host.id}" x1="0" y1="0" x2="1" y2="0">${stops}</linearGradient>
       <linearGradient id="evov-${host.id}" x1="0" y1="1" x2="0" y2="0">${stops}</linearGradient>`;
-    return { svg, defs, W, H, m, x0: m[3], x1: W - m[1], y0: H - m[2], y1: m[0], glow: `url(#glow-${host.id})`, evoH: `url(#evoh-${host.id})`, evoV: `url(#evov-${host.id})` };
+    return { svg, defs, W, H, m, narrow, x0: m[3], x1: W - m[1], y0: H - m[2], y1: m[0], glow: `url(#glow-${host.id})`, evoH: `url(#evoh-${host.id})`, evoV: `url(#evov-${host.id})` };
   }
   function axes(f, xs, ys, xt, yt, { xfmt = (v) => v, yfmt = (v) => v, xlab, ylab, grid = true } = {}) {
     const g = S("g", { class: "ax" }, f.svg);
@@ -102,7 +106,11 @@ const Charts = (() => {
     const short = { OpenEvolve: "OpenE.", AdaEvolve: "AdaE." };
     function render(bb) {
       const D = T[bb];
-      let html = `<thead><tr><th>Task</th>${D.methods.map((m) => `<th class="${m === "EvoTrias" ? "ours" : ""}">${short[m] || m}</th>`).join("")}<th title="EvoTrias vs best baseline">Δ vs best baseline</th></tr></thead><tbody>`;
+      const phone = innerWidth < 700;
+      const order = phone ? [5, 0, 1, 2, 3, 4] : [0, 1, 2, 3, 4, 5];
+      const dHead = `<th title="EvoTrias vs best baseline">${phone ? "Δ best" : "Δ vs best baseline"}</th>`;
+      const heads = order.map((i) => { const m = D.methods[i]; return `<th class="${m === "EvoTrias" ? "ours" : ""}">${short[m] || m}</th>` + (phone && i === 5 ? dHead : ""); }).join("");
+      let html = `<thead><tr><th>Task</th>${heads}${phone ? "" : dHead}</tr></thead><tbody>`;
       let grp = null, ri = 0;
       D.rows.forEach((r) => {
         if (r.group !== grp) { grp = r.group; html += `<tr class="grp"><td colspan="${D.methods.length + 2}">${grp.toUpperCase()}</td></tr>`; }
@@ -112,8 +120,9 @@ const Charts = (() => {
         const cls = Math.abs(dl) < 0.005 ? "even" : dl > 0 ? "up" : "down";
         const dtxt = Math.abs(dl) < 0.005 ? "±0.00%" : `${dl > 0 ? "+" : "−"}${Math.abs(dl) < 0.1 ? Math.abs(dl).toFixed(3) : Math.abs(dl).toFixed(2)}%`;
         html += `<tr style="animation-delay:${ri++ * 40}ms"><td>${r.task}${r.lower_is_better ? ' <span class="dim">↓</span>' : ""}</td>`;
-        r.display.forEach((v, i) => { html += `<td class="${i === 5 ? "ours " : ""}${r.first.includes(i) ? "first" : r.second.includes(i) ? "second" : ""}"><span class="v">${v}</span></td>`; });
-        html += `<td class="delta ${cls}">${dtxt}</td></tr>`;
+        const dCell = `<td class="delta ${cls}">${dtxt}</td>`;
+        order.forEach((i) => { html += `<td class="${i === 5 ? "ours " : ""}${r.first.includes(i) ? "first" : r.second.includes(i) ? "second" : ""}"><span class="v">${r.display[i]}</span></td>` + (phone && i === 5 ? dCell : ""); });
+        html += `${phone ? "" : dCell}</tr>`;
       });
       table.innerHTML = html + "</tbody>";
     }
@@ -145,7 +154,7 @@ const Charts = (() => {
       // mid-range band where EvoTrias leads
       const band = S("rect", { x: xs(50), y: f.y1, width: xs(95) - xs(50), height: f.y0 - f.y1, fill: "rgba(79,209,232,0.05)", class: "pop", style: "--dl:1.4s" }, f.svg);
       f.svg.insertBefore(band, f.svg.children[1]);
-      const t = S("text", { x: xs(72.5), y: f.y1 + 14, "text-anchor": "middle", class: "ann pop", style: "--dl:1.6s" }, f.svg); t.textContent = "EvoTrias above every baseline";
+      const t = S("text", { x: xs(72.5), y: f.y1 + 14, "text-anchor": "middle", class: "ann pop", style: "--dl:1.6s" }, f.svg); t.textContent = f.narrow ? "EvoTrias leads" : "EvoTrias above every baseline";
       hover(f, xs, (x, e) => {
         x = clamp(Math.round(x), 0, 100);
         tipShow(`<div class="th">score ≥ ${x}</div>` + METHODS.filter((m) => !hidden.has(m)).map((m) => tr(m, `${Math.round(surv(m, x) * 100)}%`)).join(""), e);
@@ -161,7 +170,7 @@ const Charts = (() => {
     const host = $("#ch-median");
     const F = P.frontier;
     mount(host, () => {
-    const f = frame(host, 640, 380, [12, 70, 30, 110]);
+    const f = frame(host, 640, 380, [12, 70, 30, 110], [10, 54, 46, 84]);
     const ms = METHODS.slice().sort((a, b) => F.median[b] - F.median[a]);
     const xs = scale(0, 90, f.x0, f.x1);
     const bh = (f.y0 - f.y1) / ms.length;
@@ -179,7 +188,8 @@ const Charts = (() => {
         el.addEventListener("pointerleave", tipHide);
       });
     });
-    const k = S("text", { x: f.x1 + 64, y: f.y0 + 18, "text-anchor": "end", class: "lab" }, f.svg); k.textContent = "bar = median · tick = mean";
+    const k = f.narrow ? S("text", { x: f.x0, y: f.y0 + 38, "text-anchor": "start", class: "lab" }, f.svg) : S("text", { x: f.x1 + 64, y: f.y0 + 18, "text-anchor": "end", class: "lab" }, f.svg);
+    k.textContent = "bar = median · tick = mean";
     });
   }
 
@@ -243,7 +253,7 @@ const Charts = (() => {
         drawable(S("path", { d: stepPath(pts, xs, ys), ...lineStyle(m), filter: m === "EvoTrias" ? f.glow : null }, f.svg), k * 0.1);
         if (m === "OpenEvolve" && end < cut) {
           const c = S("circle", { cx: xs(end), cy: ys(last[1]), r: 3.5, fill: METHOD_COLORS[m], class: "pop", style: "--dl:1.8s" }, f.svg);
-          const t = S("text", { x: xs(end) + 8, y: ys(last[1]) + 4, class: "lab pop", style: "--dl:1.9s" }, f.svg); t.textContent = "50 iterations done";
+          const t = S("text", { x: xs(end) + 8, y: ys(last[1]) + 4, class: "lab pop", style: "--dl:1.9s" }, f.svg); t.textContent = f.narrow ? "" : "50 iterations done";
         }
       });
       S("line", { x1: xs(15), x2: xs(15), y1: f.y1, y2: f.y0, stroke: "rgba(79,209,232,0.35)", "stroke-dasharray": "3 4" }, f.svg);
@@ -268,11 +278,11 @@ const Charts = (() => {
     const host = $("#ch-token");
     const T = P.token_cost.cost_usd;
     mount(host, () => {
-    const f = frame(host, 640, 380, [14, 30, 58, 110]);
+    const f = frame(host, 640, 380, [14, 30, 58, 110], [10, 10, 60, 84]);
     const ms = METHODS.slice(); // paper order: … CORAL-1, CORAL-4, EvoTrias last
-    const xs = scale(0, 125, f.x0, f.x1);
+    const xs = scale(0, f.narrow ? 170 : 125, f.x0, f.x1);
     const bh = (f.y0 - f.y1) / ms.length;
-    [0, 25, 50, 75, 100, 125].forEach((v) => { S("line", { x1: xs(v), x2: xs(v), y1: f.y1, y2: f.y0, stroke: "rgba(255,255,255,0.05)" }, f.svg); const t = S("text", { x: xs(v), y: f.y0 + 18, "text-anchor": "middle", class: "lab" }, f.svg); t.textContent = `$${v}`; });
+    (f.narrow ? [0, 50, 100] : [0, 25, 50, 75, 100, 125]).forEach((v) => { S("line", { x1: xs(v), x2: xs(v), y1: f.y1, y2: f.y0, stroke: "rgba(255,255,255,0.05)" }, f.svg); const t = S("text", { x: xs(v), y: f.y0 + 18, "text-anchor": "middle", class: "lab" }, f.svg); t.textContent = `$${v}`; });
     const yOf = {};
     ms.forEach((m, i) => {
       const y = f.y1 + i * bh + bh * 0.2, h = bh * 0.6, ours = m === "EvoTrias";
@@ -284,7 +294,7 @@ const Charts = (() => {
       vt.textContent = `$${T[m].toFixed(2)}`;
       if (ours) {
         const bt = S("tspan", { dx: 12, fill: "#2ed3a0", "font-family": "Space Grotesk, sans-serif", "font-size": 16 }, vt);
-        bt.textContent = "−64% vs CORAL-4";
+        bt.textContent = f.narrow ? "−64%" : "−64% vs CORAL-4";
       }
     });
     const n1 = S("text", { x: f.x0, y: f.y0 + 36, class: "lab" }, f.svg); n1.textContent = "CORAL 1 → 4 agents: ×3.9 cost";
@@ -404,7 +414,7 @@ const Charts = (() => {
           const x = gx + j * (bw + 6), y = ys(r[k]);
           S("rect", { x, y, width: bw, height: f.y0 - y, rx: 4, fill: j === 2 ? (m === "EvoTrias" ? f.evoV : METHOD_COLORS[m]) : KC[j], opacity: j === 2 ? 1 : 0.55, class: "growy", style: `--dl:${i * 0.12 + j * 0.05}s` }, f.svg);
           const t = S("text", { x: x + bw / 2, y: y - 6, "text-anchor": "middle", fill: "#c3d2cf", "font-family": FONT, "font-size": 10.5, class: "pop", style: `--dl:${0.6 + i * 0.12}s` }, f.svg);
-          t.textContent = r[k].toFixed(3);
+          t.textContent = f.narrow && j !== 2 ? "" : r[k].toFixed(3);
         });
         const lt = S("text", { x: gx + (bw * 3 + 12) / 2, y: f.y0 + 20, "text-anchor": "middle", fill: m === "EvoTrias" ? "#fff" : "#a9bab7", "font-family": FONT, "font-size": 12.5, "font-weight": m === "EvoTrias" ? 700 : 400 }, f.svg);
         lt.textContent = m;
@@ -478,7 +488,7 @@ const Charts = (() => {
     let key = "signal";
     function draw() {
       const std = key === "signal" ? "sp_std" : "cp_std";
-      const f = frame(host, 640, 320, [8, 70, 26, 190]);
+      const f = frame(host, 640, 320, [8, 70, 26, 190], [6, 48, 24, 132]);
       const vals = rows.map((r) => r[key]);
       const lo = Math.min(...rows.map((r) => r[key] - r[std])), hi = Math.max(...rows.map((r) => r[key] + r[std]));
       const pad = (hi - lo) * 0.1;
@@ -491,14 +501,15 @@ const Charts = (() => {
         const y = f.y1 + i * bh + bh * 0.22, h = bh * 0.56, v = r[key], d = (v - full) / full;
         const ours = i === 0, host2 = r.group.startsWith("Level 2");
         const col = ours ? "#4fd1e8" : d > 0.002 ? "#2ed3a0" : d < -0.002 ? (host2 ? "#e0a24a" : "#ff7a59") : "#8ea3a0";
-        const lt = S("text", { x: f.x0 - 10, y: y + h / 2 + 4, "text-anchor": "end", fill: ours ? "#fff" : "#a9bab7", "font-family": FONT, "font-size": 11.5, "font-weight": ours ? 700 : 400 }, f.svg);
+        const lt = S("text", { x: f.x0 - 10, y: y + h / 2 + 4, "text-anchor": "end", fill: ours ? "#fff" : "#a9bab7", "font-family": FONT, "font-size": f.narrow ? 9.5 : 11.5, "font-weight": ours ? 700 : 400 }, f.svg);
         lt.textContent = r.config.replace("Initial directions ", "").replace("n_dir", "n_dir").replace("w/o adaptation (Pi_0)", "w/o adaptation (Π₀)");
+        if (f.narrow) lt.textContent = lt.textContent.replace("ClaudeCode", "CC").replace("OpenCode", "OC").replace("w/o adaptation", "w/o adapt.").replace("w/o Meta-guidance", "w/o Meta-guid.");
         // lollipop from the full-system reference: honest on a truncated axis
         const cyy = y + h / 2;
         S("line", { x1: xs(v - r[std]), x2: xs(v + r[std]), y1: cyy, y2: cyy, stroke: "rgba(255,255,255,0.35)", "stroke-width": 1.2, class: "pop", style: `--dl:${0.8 + i * 0.05}s` }, f.svg);
         if (!ours) S("line", { x1: xs(full), x2: xs(v), y1: cyy, y2: cyy, stroke: col, "stroke-width": 3, "stroke-linecap": "round", opacity: 0.85, class: "pop", style: `--dl:${0.3 + i * 0.06}s` }, f.svg);
         S("circle", { cx: xs(v), cy: cyy, r: ours ? 7 : 5.5, fill: ours ? "#4fd1e8" : "#071017", stroke: col, "stroke-width": 2.5, class: "pop", style: `--dl:${0.4 + i * 0.06}s`, filter: ours ? f.glow : null }, f.svg);
-        const vt = S("text", { x: f.x1 + 8, y: y + h / 2 + 4, fill: col, "font-family": FONT, "font-size": 11.5, "font-weight": 700, class: "pop", style: `--dl:${0.6 + i * 0.06}s` }, f.svg);
+        const vt = S("text", { x: f.x1 + 8, y: y + h / 2 + 4, fill: col, "font-family": FONT, "font-size": f.narrow ? 10 : 11.5, "font-weight": 700, class: "pop", style: `--dl:${0.6 + i * 0.06}s` }, f.svg);
         vt.textContent = ours ? v.toFixed(4) : `${d >= 0 ? "+" : "−"}${Math.abs(d * 100).toFixed(Math.abs(d) < 0.001 ? 2 : 1)}%`;
         if (i === 1 || i === 6) {
           const gy = f.y1 + i * bh;

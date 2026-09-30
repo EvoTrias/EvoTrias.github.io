@@ -1,7 +1,7 @@
 // Governance, live: replay of the real Cloudcast lineage (50 settled tasks) with the context capsule each task received.
 const Lineage = (() => {
   const D = window.PAPER.lineage_cloudcast;
-  const svg = $("#lineage-svg");
+  const svg = $("#lineage-svg"), scroller = svg.parentElement;
   const LC = ["#4fd1e8", "#2ed3a0", "#e0a24a", "#b39cff"]; // lineage colours
   const nodes = D.nodes.slice().sort((a, b) => a.order - b.order);
   const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
@@ -146,6 +146,10 @@ const Lineage = (() => {
       const rootsDone = nodes.slice(0, k).filter((x) => !x.parent).length === 4;
       cap.phase.textContent = !rootsDone ? "root phase · 4 directions" : n.guidance ? "guidance anchoring" : k > 36 ? "annealing · broad → deep" : "evolution phase";
     }
+    if (n && scroller.scrollWidth > scroller.clientWidth + 4) {
+      const target = (n.x / VW) * scroller.scrollWidth - scroller.clientWidth * 0.62;
+      if (animate && !back) scroller.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
+    } else if (k === 0) scroller.scrollLeft = 0;
     if (animate && !back && n) {
       n.g.animate([{ transform: `translate(${n.x}px, ${n.y}px) scale(0)` }, { transform: `translate(${n.x}px, ${n.y}px) scale(1.5)`, offset: 0.6 }, { transform: `translate(${n.x}px, ${n.y}px) scale(1)` }], { duration: 650, easing: "cubic-bezier(.22,1,.36,1)" });
       if (n.is_new_best) {
