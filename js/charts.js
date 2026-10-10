@@ -374,13 +374,16 @@ const Charts = (() => {
     dl.textContent = "zero gap (OOD = Original)";
     S("polygon", { points: `${xs(0.62)},${ys(0.62)} ${xs(0.76)},${ys(0.76)} ${xs(0.62)},${ys(0.76)}`, fill: "rgba(46,211,160,0.05)" }, f.svg);
     const up = S("text", { x: xs(0.63), y: ys(0.755), class: "lab", fill: "#2ed3a0" }, f.svg); up.textContent = "transfers ↑"; up.setAttribute("fill", "#2ed3a0");
-    const mk = S("marker", { id: "sm-ah", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto" }, f.defs);
-    S("path", { d: "M0 0L10 5L0 10z", fill: "#ff7a59" }, mk);
+    const arrows = [];
     Object.entries(SM).forEach(([m, v], i) => {
       const c = METHOD_COLORS[m];
       const [px, py] = [xs(v.protected[0]), ys(v.protected[1])], [ex, ey] = [xs(v.exposed[0]), ys(v.exposed[1])];
-      const ar = S("path", { d: `M ${px} ${py} L ${ex} ${ey}`, stroke: "#ff7a59", "stroke-width": 1.8, "stroke-dasharray": "0", fill: "none", "marker-end": "url(#sm-ah)", opacity: 0.8 }, f.svg);
-      drawable(ar, 0.5 + i * 0.25);
+      // the shaft stops just short of the exposed dot so the head is never hidden under it
+      const L = Math.hypot(ex - px, ey - py), ux = (ex - px) / L, uy = (ey - py) / L;
+      const tx = ex - ux * 10, ty = ey - uy * 10, sx = px + ux * 10, sy = py + uy * 10;
+      const ar = S("path", { d: `M ${sx} ${sy} L ${tx} ${ty}`, stroke: "#ff7a59", "stroke-width": 1.8, fill: "none", opacity: 0.85, "stroke-linecap": "round" }, f.svg);
+      const hd = S("path", { d: "M -9 -5.2 L 1.5 0 L -9 5.2 Z", fill: "#ff7a59", "stroke-linejoin": "round", opacity: 0 }, f.svg);
+      arrows.push({ ar, hd, sx, sy, tx, ty, len: Math.hypot(tx - sx, ty - sy), ang: (Math.atan2(uy, ux) * 180) / Math.PI, dl: 0.5 + i * 0.25 });
       S("circle", { cx: px, cy: py, r: 8, fill: "#071017", stroke: c, "stroke-width": 3, class: "pop", style: `--dl:${0.2 + i * 0.2}s`, filter: m === "EvoTrias" ? f.glow : null }, f.svg);
       S("circle", { cx: ex, cy: ey, r: 7, fill: c, opacity: 0.85, class: "pop", style: `--dl:${1.4 + i * 0.25}s` }, f.svg);
       const t = S("text", { x: px - 12, y: py + (m === "CORAL-1" ? 20 : -12), "text-anchor": "end", fill: c, "font-family": FONT, "font-size": 12, "font-weight": 700, class: "pop", style: `--dl:${0.4 + i * 0.2}s` }, f.svg);
@@ -394,7 +397,32 @@ const Charts = (() => {
     const l1 = S("text", { x: 18, y: 4, class: "lab" }, lg); l1.textContent = "protected";
     S("circle", { cx: 6, cy: 20, r: 6, fill: "#fff", opacity: 0.8 }, lg);
     const l2 = S("text", { x: 18, y: 24, class: "lab" }, lg); l2.textContent = "exposed";
+    // shaft and head are driven together: the head rides the growing tip of its line
+    const ease = bezier(0.22, 1, 0.36, 1), D = 2200, t0 = performance.now();
+    const set = (a, u) => {
+      const d = a.len * u;
+      a.ar.setAttribute("stroke-dasharray", `${a.len} ${a.len}`);
+      a.ar.setAttribute("stroke-dashoffset", a.len - d);
+      a.hd.setAttribute("transform", `translate(${(a.sx + (a.tx - a.sx) * u).toFixed(2)} ${(a.sy + (a.ty - a.sy) * u).toFixed(2)}) rotate(${a.ang.toFixed(2)}) scale(${(0.35 + 0.65 * Math.min(1, u * 4)).toFixed(3)})`);
+      a.hd.setAttribute("opacity", u > 0 ? Math.min(1, u * 6) : 0);
+    };
+    arrows.forEach((a) => set(a, REDUCED ? 1 : 0));
+    if (!REDUCED) (function tick(now) {
+      let live = false;
+      arrows.forEach((a) => { const r = (now - t0 - a.dl * 1000) / D; set(a, r <= 0 ? 0 : ease(Math.min(1, r))); if (r < 1) live = true; });
+      if (live && host.isConnected) requestAnimationFrame(tick);
+    })(t0);
     });
+  }
+  // CSS-equivalent cubic-bezier easing (so JS-driven pieces match the stylesheet's --ease)
+  function bezier(x1, y1, x2, y2) {
+    const B = (s, a, b) => 3 * a * s * (1 - s) * (1 - s) + 3 * b * s * s * (1 - s) + s * s * s;
+    const dB = (s, a, b) => 3 * a * (1 - s) * (1 - s) + 6 * (b - a) * s * (1 - s) + 3 * (1 - b) * s * s;
+    return (t) => {
+      let s = t;
+      for (let k = 0; k < 8; k++) { const e = B(s, x1, x2) - t, d = dB(s, x1, x2); if (Math.abs(e) < 1e-5 || !d) break; s = clamp(s - e / d); }
+      return B(s, y1, y2);
+    };
   }
 
   function exposureBars() {

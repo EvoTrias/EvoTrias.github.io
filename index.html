@@ -37,11 +37,11 @@
     <span>Evo<b>Trias</b></span>
   </a>
   <nav class="nav-links" id="nav-links">
+    <a href="#film">Film</a>
     <a href="#architecture">Architecture</a>
     <a href="#governance">Governance</a>
     <a href="#plugin">Plugin</a>
     <a href="#results">Results</a>
-    <a href="#film">Film</a>
     <a href="#cite">Cite</a>
   </nav>
   <button class="nav-burger" aria-label="Menu" aria-controls="nav-links" aria-expanded="false"><i></i><i></i><i></i></button>
@@ -128,7 +128,7 @@
   <div class="planes">
     <article class="plane reveal" data-d="1" data-tilt="5" style="--c: var(--gov); --c2: 46,211,160">
       <div class="pl-top"><span class="pl-num mono">01</span><span class="pl-chip mono">Skill + MCP control plane</span></div>
-      <div class="pl-dino"><img src="assets/img/dino/dino_commander.svg" alt="Dino in a commander's cap" /></div>
+      <div class="pl-dino"><img src="assets/img/dino/dino_commander.svg" alt="Dino in an officer's cap holding a plan on a clipboard" /></div>
       <h3>Structured Governance</h3>
       <p class="pl-own mono">owns <b>govern</b> · what spans rounds</p>
       <p>Distills settled outcomes into posterior evidence, adapts the selection policy, persists validated experience, and binds each new task's context capsule.</p>
@@ -225,6 +225,47 @@
     <div class="gs reveal" data-d="3"><span class="gs-n mono">𝒩 · ℳ</span><h4>Experience construction</h4><p>Condition-scoped Notes for single attempts; Meta-guidance when the best fitness stalls.</p></div>
     <div class="gs reveal" data-d="4"><span class="gs-n mono">Γ<sub>t</sub></span><h4>Context construction</h4><p>Parent by quality + UCB + potential; inspirations from a local / cross-lineage mixture.</p></div>
   </div>
+
+  <!-- experience: notes + meta-guidance case replays -->
+  <div class="sub-head reveal"><span class="sec-idx mono">WHAT GOVERNANCE REMEMBERS</span><h3>Experience is earned, not logged.</h3><p>Two channels turn settled outcomes into reusable context — and both are gated. A <b class="c-gov">Note</b> is written only when an attempt surprises its parent; <b class="c-violet">Meta-guidance</b> is requested only when the best fitness stops moving.</p></div>
+
+  <article class="case reveal" id="case-notes">
+    <header class="case-head">
+      <div><div class="sec-idx mono">NOTES · SIGNAL PROCESSING · OPUS-5 · ONE 50-ITERATION RUN</div><h3>A Note is written only when the child lands outside its parent's band.</h3></div>
+      <div class="cs-ctrl">
+        <button class="cs-play" aria-label="Play or pause the replay"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-again" d="M12 5a7 7 0 1 1-6.6 4.7M5 4v5h5"/></svg></button>
+        <div class="cs-track"><i class="cs-fill"></i><i class="cs-knob"></i></div>
+        <span class="cs-it mono">00 / 50</span>
+      </div>
+    </header>
+    <div class="case-body">
+      <div class="case-vis"><svg id="nt-svg" viewBox="0 0 820 420" aria-label="Replay: each attempt is a segment from its parent's fitness to its own; Notes fire only outside the band"></svg>
+        <div class="cs-leg mono"><span><i class="lk-band"></i>band: change too small for a Note</span><span><i class="lk-seg"></i>parent → child</span><span><i class="lk-pos"></i>positive Note</span><span><i class="lk-neg"></i>negative Note</span><span><i class="lk-best"></i>best fitness so far</span><span><i class="lk-root"></i>initial direction</span></div></div>
+      <aside class="case-side">
+        <div class="nt-gate"></div>
+        <div class="nt-card empty"></div>
+      </aside>
+    </div>
+    <div class="nt-ledger-h"><span class="sec-idx mono">LEDGER OF COMMITTED NOTES</span><span class="nt-count mono">0 positive · 0 negative</span></div>
+    <div class="nt-ledger"></div>
+  </article>
+
+  <article class="case reveal" id="case-mg">
+    <header class="case-head">
+      <div><div class="sec-idx mono">META-GUIDANCE · MINMAX-DIST-3 · ONE 50-ITERATION RUN</div><h3>Two stalls, three rounds, nine directions — and the run crosses f = 1.</h3></div>
+      <div class="cs-ctrl">
+        <span class="mg-bestl mono">best <b class="mg-bestv">—</b></span>
+        <button class="cs-play" aria-label="Play or pause the replay"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-again" d="M12 5a7 7 0 1 1-6.6 4.7M5 4v5h5"/></svg></button>
+        <div class="cs-track"><i class="cs-fill"></i><i class="cs-knob"></i></div>
+        <span class="cs-it mono">00 / 50</span>
+      </div>
+    </header>
+    <div class="case-body">
+      <div class="case-vis"><svg id="mg-svg" viewBox="0 0 820 430" aria-label="Replay of the meta-guidance lifecycle: stalls trigger guidance rounds whose directions set new bests"></svg>
+        <div class="cs-leg mono"><span><i class="lk-att"></i>unguided attempt</span><span><i class="lk-dot" style="--c:#2ed3a0"></i>guided r1</span><span><i class="lk-dot" style="--c:#e0a24a"></i>guided r2</span><span><i class="lk-dot" style="--c:#b49cff"></i>guided r3</span><span><i class="lk-nb"></i>guided new best</span><span><i class="lk-run"></i>running best</span></div></div>
+      <aside class="case-side mg-side"></aside>
+    </div>
+  </article>
 </section>
 
 <!-- ================= plugin ================= -->
@@ -273,7 +314,7 @@
   </div>
 
   <div class="counters">
-    <div class="ctr reveal" data-d="1"><div class="ctr-v"><span data-count="9">0</span><small>/12</small></div><div class="ctr-l">tasks ranked first, under <em>each</em> backbone</div></div>
+    <div class="ctr reveal" data-d="1"><div class="ctr-v"><span data-count="9">0</span><small class="frac"><i class="sl">/</i>12</small></div><div class="ctr-l">tasks ranked first, under <em>each</em> backbone</div></div>
     <div class="ctr reveal" data-d="2"><div class="ctr-v"><span data-count="80.67" data-dec="2">0</span></div><div class="ctr-l">Frontier-CS median <span class="dim">vs 67.14 for CORAL-4</span></div></div>
     <div class="ctr reveal" data-d="3"><div class="ctr-v"><span data-count="64" data-prefix="−">0</span><small>%</small></div><div class="ctr-l">token cost vs CORAL-4 <span class="dim">$41.37 vs $115.10</span></div></div>
     <div class="ctr reveal" data-d="4"><div class="ctr-v"><span data-count="16.9" data-dec="1" data-prefix="+">0</span><small>%</small></div><div class="ctr-l">solver quality on a 680K-line repo</div></div>
@@ -411,6 +452,7 @@
 <script src="js/lineage.js"></script>
 <script src="js/terminal.js"></script>
 <script src="js/charts.js"></script>
+<script src="js/cases.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

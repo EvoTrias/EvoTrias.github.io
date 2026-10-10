@@ -20,7 +20,7 @@ const UI = (() => {
   function loader(done) {
     const el = $("#loader"), bar = $(".ld-bar i"), pct = $(".ld-pct");
     const word = $(".ld-word");
-    scramble(word, "EvoTrias", 1100);
+    typeLoader(word, "EvoTrias");
     const imgs = $$("img").filter((i) => i.loading !== "lazy");
     let n = 0;
     const total = imgs.length + 1;
@@ -40,14 +40,69 @@ const UI = (() => {
     });
   }
 
-  // ------------------------------------------------------------ hero wordmark: per-letter 3D drop-in
+  // ------------------------------------------------------------ typewriter (loader word): letters strike one by one behind an underscore cursor
+  function typeLoader(el, text) {
+    el.innerHTML = `<span class="tw-txt"></span><span class="tw-cur">_</span>`;
+    const txt = el.firstChild;
+    let k = 0;
+    (function next() {
+      if (k >= text.length) return;
+      txt.textContent += text[k++];
+      setTimeout(next, 70 + Math.random() * 40);
+    })();
+  }
+
+  // ------------------------------------------------------------ hero wordmark: retro typewriter with an underscore cursor
+  // Letters keep their layout from the start; each word is revealed with a clip that advances one glyph per key
+  // (a clip, not per-letter visibility, so the gradient on "Trias" stays one continuous fill).
   function wordmark() {
     const wm = $(".wordmark");
-    let i = 0;
-    wm.querySelectorAll("span").forEach((sp) => {
-      sp.innerHTML = [...sp.textContent].map((c) => `<span class="ch" style="--i:${i++}">${c}</span>`).join("");
+    const words = $$(":scope > span", wm);
+    const chars = [];
+    words.forEach((sp) => {
+      sp.innerHTML = [...sp.textContent].map((c) => `<span class="ch">${c}</span>`).join("");
+      chars.push(...sp.querySelectorAll(".ch"));
     });
-    requestAnimationFrame(() => wm.classList.add("in"));
+    const cur = document.createElement("span");
+    cur.className = "wm-cursor";
+    cur.setAttribute("aria-hidden", "true");
+    wm.appendChild(cur);
+    if (REDUCED) { cur.remove(); return; }
+    const reveal = (k) => {
+      const lastR = k ? chars[k - 1].getBoundingClientRect().right + 2 : -1e4;
+      words.forEach((sp) => {
+        const b = sp.getBoundingClientRect();
+        const cut = Math.max(0, Math.min(b.width + 40, b.right - lastR));
+        sp.style.clipPath = cut <= 0 ? "" : `inset(-30% ${cut}px -40% -20%)`;
+      });
+    };
+    // the cursor is an absolutely placed bar under the next letter slot
+    const place = (k) => {
+      const box = wm.getBoundingClientRect();
+      const last = chars[chars.length - 1].getBoundingClientRect();
+      const r = k < chars.length ? chars[k].getBoundingClientRect() : { left: last.right + last.width * 0.12, width: last.width * 0.82 };
+      cur.style.left = `${r.left - box.left}px`;
+      cur.style.width = `${Math.max(r.width * 0.92, 18)}px`;
+    };
+    reveal(0); place(0);
+    cur.classList.add("blink");
+    let k = 0;
+    const type = () => {
+      cur.classList.remove("blink");
+      k++;
+      reveal(k); place(k);
+      if (k < chars.length) {
+        // human rhythm: a breath between "Evo" and "Trias", slight jitter on every key
+        setTimeout(type, k === 3 ? 260 : 95 + Math.random() * 70);
+      } else {
+        words.forEach((sp) => (sp.style.clipPath = ""));
+        cur.classList.add("blink");
+        setTimeout(() => cur.classList.add("gone"), 3200);
+        setTimeout(() => cur.remove(), 4200);
+        addEventListener("resize", () => cur.isConnected && place(k));
+      }
+    };
+    setTimeout(type, 620); // two cursor blinks before the first key
   }
 
   // ------------------------------------------------------------ reveals + scrambled headings

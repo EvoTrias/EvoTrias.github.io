@@ -8,6 +8,7 @@
   UI.misc();
   UI.pauseOffscreen();
   Charts.init();
+  Cases.init();
   onVisible($(".porta"), (el) => el.classList.add("in"), 0.4);
   UI.loader(() => {
     Galaxy.start();
