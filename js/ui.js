@@ -20,7 +20,7 @@ const UI = (() => {
   function loader(done) {
     const el = $("#loader"), bar = $(".ld-bar i"), pct = $(".ld-pct");
     const word = $(".ld-word");
-    typeLoader(word, "EvoTrias");
+    scramble(word, "EvoTrias", 1100);
     const imgs = $$("img").filter((i) => i.loading !== "lazy");
     // the readout chases the real progress: it rolls through every number instead of jumping, never stalls,
     // holds just short of 100 until everything is in, then lands on 100
@@ -57,18 +57,6 @@ const UI = (() => {
     Promise.race([guard, Promise.all([minShow, document.fonts.ready, ...imgs.map((im) => (im.complete ? 0 : new Promise((r) => { im.addEventListener("load", r, { once: true }); im.addEventListener("error", r, { once: true }); })))])]).then(() => { ready = true; setTimeout(finish, 1600); }); // the timer is a backstop if frames are throttled
   }
 
-  // ------------------------------------------------------------ typewriter (loader word): letters strike one by one behind an underscore cursor
-  function typeLoader(el, text) {
-    el.innerHTML = `<span class="tw-txt"></span><span class="tw-cur">_</span>`;
-    const txt = el.firstChild;
-    let k = 0;
-    (function next() {
-      if (k >= text.length) return;
-      txt.textContent += text[k++];
-      setTimeout(next, 70 + Math.random() * 40);
-    })();
-  }
-
   // ------------------------------------------------------------ hero wordmark: per-letter 3D drop-in
   function wordmark() {
     const wm = $(".wordmark");
@@ -76,6 +64,16 @@ const UI = (() => {
     wm.querySelectorAll("span").forEach((sp) => {
       sp.innerHTML = [...sp.textContent].map((c) => `<span class="ch" style="--i:${i++}">${c}</span>`).join("");
     });
+    // word-wide gradient on "Trias": tell each letter the word width and its own offset (layout, not transforms)
+    const tr = $(".wm-trias", wm);
+    const measure = () => {
+      const chs = $$(".ch", tr), x0 = chs[0].offsetLeft;
+      tr.style.setProperty("--tw", `${tr.offsetWidth}px`);
+      chs.forEach((c) => c.style.setProperty("--ox", `${c.offsetLeft - x0}px`));
+    };
+    measure();
+    document.fonts?.ready.then(measure);
+    addEventListener("resize", measure);
     requestAnimationFrame(() => wm.classList.add("in"));
   }
 

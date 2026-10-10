@@ -164,7 +164,7 @@ const Galaxy = (() => {
     const R = 1.02, t = st.time;
     const inside = (b, x, y) => b && x > b.left - 20 && x < b.right + 20 && y > b.top - 10 && y < b.bottom + 10;
     const pts = [0, 1, 2].map((i) => {
-      const a = t * 0.06 + (i * Math.PI * 2) / 3 + 0.4;
+      const a = -t * 0.065 + (i * Math.PI * 2) / 3 + 0.4; // orbits with the galaxy (clockwise)
       return project(Math.cos(a) * R, Math.sin(a) * R, 0.1 + 0.05 * Math.sin(t * 0.7 + i * 2), c);
     });
     octx.globalCompositeOperation = "lighter";
@@ -224,7 +224,8 @@ const Galaxy = (() => {
       gl.uniform1f(U.uYaw, c.yaw);
       gl.uniform1f(U.uDist, c.dist);
       gl.uniform1f(U.uFocal, c.focal);
-      gl.uniform1f(U.uSpin, 0.07 * Math.sin(st.time * 0.11) + st.scroll * 0.12); // a slow sway, never accumulates
+      // clockwise on screen (negative = clockwise with this camera); one turn every ~100 s, scrolling nudges it on
+      gl.uniform1f(U.uSpin, -(st.time * 0.065 + st.scroll * 0.35));
       gl.uniform1f(U.uFade, c.fade);
       gl.uniform1f(U.uPx, Math.min(W, 1800) / 1400);
       gl.uniform1f(U.uIntro, E.smooth(st.intro));

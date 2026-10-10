@@ -132,13 +132,15 @@ main { position: relative; z-index: 2; overflow-x: clip; }
 .wordmark { margin: 22px 0 6px; font-family: var(--disp); font-size: clamp(76px, 12vw, 188px); line-height: 0.9; letter-spacing: -0.045em; font-weight: 700; white-space: nowrap; }
 .wordmark span { display: inline-block; }
 .wm-evo { color: #fff; font-weight: 300; }
-.wm-trias { background: linear-gradient(100deg, #bff4ff 0%, #4fd1e8 25%, #22a889 55%, #e0a24a 85%, #ff8a4c); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: sheen 8s ease-in-out infinite; }
-@keyframes sheen { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+/* "Trias" carries ONE gradient across the word: every letter paints the same word-wide gradient, shifted by its own
+   offset (--ox), and the sheen moves a shared phase (--u) — so the colours flow through the word as a whole. */
+@property --u { syntax: "<number>"; inherits: true; initial-value: 0; }
+.wm-trias { --tw: 3.2em; color: transparent; animation: sheen 4.2s ease-in-out infinite; }
+@keyframes sheen { 0%, 100% { --u: 0; } 50% { --u: 1; } }
 .wordmark .ch { display: inline-block; opacity: 0; transform: translateY(0.4em) rotateX(-70deg); filter: blur(12px); transform-origin: 50% 100%; }
 .wordmark.in .ch { animation: chIn 1s var(--ease) forwards; animation-delay: calc(var(--i) * 55ms + 120ms); }
-.wm-trias .ch { background: inherit; -webkit-background-clip: text; background-clip: text; color: transparent; }
+.wm-trias .ch { --ox: 0px; background: linear-gradient(100deg, #bff4ff 0%, #4fd1e8 25%, #22a889 55%, #e0a24a 85%, #ff8a4c); background-size: calc(var(--tw) * 2) 100%; background-position: calc(var(--u) * var(--tw) * -1 - var(--ox)) 50%; background-repeat: no-repeat; -webkit-background-clip: text; background-clip: text; color: transparent; }
 @keyframes chIn { to { opacity: 1; transform: none; filter: blur(0); } }
-.tw-cur { color: var(--cyan); text-shadow: 0 0 14px var(--cyan); margin-left: 0.04em; animation: blink 0.9s steps(1) infinite; }
 .hero-claim { margin: 10px 0 4px; font-family: var(--disp); font-size: clamp(28px, 3.2vw, 44px); font-weight: 500; letter-spacing: -0.02em; color: #fff; }
 .hero-title { margin: 0 0 18px; font-size: 17px; color: var(--dim); font-family: var(--mono); letter-spacing: 0.01em; }
 .hero-lede { margin: 0 0 32px; font-size: 19px; color: #c6d6d3; max-width: 600px; }
