@@ -63,7 +63,10 @@ const Galaxy = (() => {
       return;
     }
     float rad = aPos.x * mix(0.2, 1.0, uIntro);
-    float ang = aPos.y + uSpin * (0.35 / (0.18 + aPos.x)) - (1.0 - uIntro) * 2.5 / (0.3 + aPos.x);
+    // rigid rotation: every radius turns by the same angle, so the spiral keeps its shape (a radius-dependent
+    // speed would wind the arms tighter every second until they smear into a ring)
+    // (the fixed 0.16/(0.18+r) term bakes in the gentle winding the hero shows right after the intro)
+    float ang = aPos.y + 0.16 / (0.18 + aPos.x) + uSpin - (1.0 - uIntro) * 2.5 / (0.3 + aPos.x);
     vec3 w = vec3(cos(ang) * rad, sin(ang) * rad, aPos.z);
     float cy = cos(uYaw), sy = sin(uYaw);
     w = vec3(w.x * cy - w.y * sy, w.x * sy + w.y * cy, w.z);
@@ -221,7 +224,7 @@ const Galaxy = (() => {
       gl.uniform1f(U.uYaw, c.yaw);
       gl.uniform1f(U.uDist, c.dist);
       gl.uniform1f(U.uFocal, c.focal);
-      gl.uniform1f(U.uSpin, st.time * 0.09 + st.scroll * 0.5);
+      gl.uniform1f(U.uSpin, 0.07 * Math.sin(st.time * 0.11) + st.scroll * 0.12); // a slow sway, never accumulates
       gl.uniform1f(U.uFade, c.fade);
       gl.uniform1f(U.uPx, Math.min(W, 1800) / 1400);
       gl.uniform1f(U.uIntro, E.smooth(st.intro));

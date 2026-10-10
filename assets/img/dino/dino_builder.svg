@@ -7,12 +7,14 @@
   <path d="M-13 -68 L-13 -2 M13 -68 L13 -2" stroke="#06161c" stroke-width="6" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
   <path d="M-124 -6 L 112 -6 C 140 -6 160 2 166 10 C 160 20 140 20 112 18 L-124 18 C-138 18 -138 -6 -124 -6 Z" fill="#e58f1d" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
   <rect x="-108" y="-1" width="104" height="6" rx="3" fill="#ffd27a"/>
-</g><g transform="translate(771 556) rotate(28)">
-  <rect x="-12" y="-128" width="24" height="210" rx="12" fill="#b9c4cc" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
-  <rect x="-6" y="-112" width="6" height="176" rx="3" fill="#eef3f6"/>
-  <g transform="translate(0 -158) rotate(-15)">
+</g><g transform="translate(730 574) rotate(20)">
+  <rect x="-11" y="-150" width="22" height="236" rx="11" fill="#b9c4cc" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+  <rect x="-5" y="-136" width="5" height="90" rx="2.5" fill="#eef3f6"/>
+  <g transform="translate(0 -178) rotate(-15)">
     <path d="M15 -31 A34 34 0 1 1 -15 -31 L-15 -6 L15 -6 Z" fill="#b9c4cc" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
     <path d="M-24 -18 A26 26 0 0 0 -16 16" fill="none" stroke="#eef3f6" stroke-width="5" stroke-linecap="round"/>
   </g>
-  <circle cx="0" cy="92" r="21" fill="#b9c4cc" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
-  <circle cx="0" cy="92" r="8" fill="#41a4bc" stroke="#06161c" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></g><clipPath id="paws"><polygon points="758,468 806,468 809,546 799,556 791,571 779,586 764,588 750,580 742,563 742,540 746,518 751,496"/></clipPath><use href="#body" clip-path="url(#paws)"/></svg>
+  <rect x="-26" y="-40" width="52" height="80" rx="18" fill="#ff8a4c" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M-14 -25 L-14 25 M0 -28 L0 28 M14 -25 L14 25" stroke="#c9602c" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="0" cy="96" r="20" fill="#b9c4cc" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="0" cy="96" r="7.5" fill="#41a4bc" stroke="#06161c" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></g><clipPath id="paws"><path d="M744.5 537 L745 560 L748 571 L755.5 580.5 L768 585 L781 582.5 L791 574 L797.5 560 L801 547 C790 530 758 526 744.5 537 Z"/><path d="M708 537 L713.5 559 L715 570 L712 581 L707 591 L699 599.5 L684 605 L667 604 C652 590 662 552 708 537 Z"/></clipPath><use href="#body" clip-path="url(#paws)"/><clipPath id="obj"><rect transform="translate(730 574) rotate(20)" x="-26" y="-40" width="52" height="80" rx="18"/></clipPath><g clip-path="url(#obj)"><path d="M801 547 C790 530 758 526 744.5 537" fill="none" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><path d="M667 604 C652 590 662 552 708 537" fill="none" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/></g></svg>

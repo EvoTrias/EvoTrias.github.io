@@ -22,22 +22,39 @@ const UI = (() => {
     const word = $(".ld-word");
     typeLoader(word, "EvoTrias");
     const imgs = $$("img").filter((i) => i.loading !== "lazy");
+    // the readout chases the real progress: it rolls through every number instead of jumping, never stalls,
+    // holds just short of 100 until everything is in, then lands on 100
+    let real = 0, shown = 0, ready = false, last = performance.now();
+    const t0 = last;
     let n = 0;
     const total = imgs.length + 1;
-    const tick = () => { n++; const p = Math.round((n / total) * 100); bar.style.width = `${p}%`; pct.textContent = String(p).padStart(3, "0"); };
-    imgs.forEach((im) => (im.complete ? tick() : im.addEventListener("load", tick, { once: true }) || im.addEventListener("error", tick, { once: true })));
-    const t0 = performance.now();
-    const guard = new Promise((r) => setTimeout(r, 5000)); // never hold the page hostage to a slow asset
-    Promise.race([guard, Promise.all([document.fonts.ready, ...imgs.map((im) => (im.complete ? 0 : new Promise((r) => { im.addEventListener("load", r, { once: true }); im.addEventListener("error", r, { once: true }); })))])]).then(() => {
-      tick();
+    const tick = () => { n++; real = Math.min(0.92, n / total); };
+    imgs.forEach((im) => (im.complete ? tick() : (im.addEventListener("load", tick, { once: true }), im.addEventListener("error", tick, { once: true }))));
+    const roll = (now) => {
+      if (out) return;
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      const goal = ready ? 1 : Math.max(real, Math.min(0.9, (now - t0) / 2600)); // a slow floor so it always creeps
+      shown = Math.min(goal, shown + Math.max((ready ? 0.3 : 0.1) * dt, (goal - shown) * dt * (ready ? 4.5 : 3)));
+      const v = Math.round(shown * 100);
+      bar.style.width = `${shown * 100}%`;
+      pct.textContent = String(v).padStart(3, "0");
+      if (ready && v >= 100) { setTimeout(finish, 220); return; }
+      requestAnimationFrame(roll);
+    };
+    let out = false;
+    const finish = () => {
+      if (out) return;
+      out = true;
       bar.style.width = "100%"; pct.textContent = "100";
-      setTimeout(() => {
-        el.classList.add("out");
-        document.body.classList.remove("is-loading");
-        done();
-        setTimeout(() => el.remove(), 1400);
-      }, Math.max(250, 1300 - (performance.now() - t0)));
-    });
+      el.classList.add("out");
+      document.body.classList.remove("is-loading");
+      done();
+      setTimeout(() => el.remove(), 1400);
+    };
+    requestAnimationFrame(roll);
+    const guard = new Promise((r) => setTimeout(r, 5000)); // never hold the page hostage to a slow asset
+    const minShow = new Promise((r) => setTimeout(r, 900));
+    Promise.race([guard, Promise.all([minShow, document.fonts.ready, ...imgs.map((im) => (im.complete ? 0 : new Promise((r) => { im.addEventListener("load", r, { once: true }); im.addEventListener("error", r, { once: true }); })))])]).then(() => { ready = true; setTimeout(finish, 1600); }); // the timer is a backstop if frames are throttled
   }
 
   // ------------------------------------------------------------ typewriter (loader word): letters strike one by one behind an underscore cursor
@@ -52,57 +69,14 @@ const UI = (() => {
     })();
   }
 
-  // ------------------------------------------------------------ hero wordmark: retro typewriter with an underscore cursor
-  // Letters keep their layout from the start; each word is revealed with a clip that advances one glyph per key
-  // (a clip, not per-letter visibility, so the gradient on "Trias" stays one continuous fill).
+  // ------------------------------------------------------------ hero wordmark: per-letter 3D drop-in
   function wordmark() {
     const wm = $(".wordmark");
-    const words = $$(":scope > span", wm);
-    const chars = [];
-    words.forEach((sp) => {
-      sp.innerHTML = [...sp.textContent].map((c) => `<span class="ch">${c}</span>`).join("");
-      chars.push(...sp.querySelectorAll(".ch"));
+    let i = 0;
+    wm.querySelectorAll("span").forEach((sp) => {
+      sp.innerHTML = [...sp.textContent].map((c) => `<span class="ch" style="--i:${i++}">${c}</span>`).join("");
     });
-    const cur = document.createElement("span");
-    cur.className = "wm-cursor";
-    cur.setAttribute("aria-hidden", "true");
-    wm.appendChild(cur);
-    if (REDUCED) { cur.remove(); return; }
-    const reveal = (k) => {
-      const lastR = k ? chars[k - 1].getBoundingClientRect().right + 2 : -1e4;
-      words.forEach((sp) => {
-        const b = sp.getBoundingClientRect();
-        const cut = Math.max(0, Math.min(b.width + 40, b.right - lastR));
-        sp.style.clipPath = cut <= 0 ? "" : `inset(-30% ${cut}px -40% -20%)`;
-      });
-    };
-    // the cursor is an absolutely placed bar under the next letter slot
-    const place = (k) => {
-      const box = wm.getBoundingClientRect();
-      const last = chars[chars.length - 1].getBoundingClientRect();
-      const r = k < chars.length ? chars[k].getBoundingClientRect() : { left: last.right + last.width * 0.12, width: last.width * 0.82 };
-      cur.style.left = `${r.left - box.left}px`;
-      cur.style.width = `${Math.max(r.width * 0.92, 18)}px`;
-    };
-    reveal(0); place(0);
-    cur.classList.add("blink");
-    let k = 0;
-    const type = () => {
-      cur.classList.remove("blink");
-      k++;
-      reveal(k); place(k);
-      if (k < chars.length) {
-        // human rhythm: a breath between "Evo" and "Trias", slight jitter on every key
-        setTimeout(type, k === 3 ? 260 : 95 + Math.random() * 70);
-      } else {
-        words.forEach((sp) => (sp.style.clipPath = ""));
-        cur.classList.add("blink");
-        setTimeout(() => cur.classList.add("gone"), 3200);
-        setTimeout(() => cur.remove(), 4200);
-        addEventListener("resize", () => cur.isConnected && place(k));
-      }
-    };
-    setTimeout(type, 620); // two cursor blinks before the first key
+    requestAnimationFrame(() => wm.classList.add("in"));
   }
 
   // ------------------------------------------------------------ reveals + scrambled headings

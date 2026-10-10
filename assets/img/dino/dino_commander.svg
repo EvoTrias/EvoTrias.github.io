@@ -17,7 +17,7 @@
   <!-- visor: a single glossy peak from the front of the band -->
   <path d="M26 0 C 70 -2 118 4 150 20 C 152 28 140 32 120 31 C 86 29 52 20 26 12 Z" fill="url(#cap-visor)" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
   <path d="M48 6 C 82 6 112 11 136 20" fill="none" stroke="#8ff0d6" stroke-width="3.5" stroke-linecap="round" opacity="0.35"/>
-</g><g transform="translate(726 452) rotate(-10)">
+</g><g transform="translate(735 498) rotate(-8)">
   <rect x="-66" y="-84" width="132" height="168" rx="13" fill="#b9773f" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
   <rect x="-53" y="-64" width="106" height="138" rx="6" fill="#f7f4ea" stroke="#d9cfb8" stroke-width="2"/>
   <!-- the plan: govern -> propose -> judge -->
@@ -36,4 +36,4 @@
   <!-- clip -->
   <rect x="-28" y="-97" width="56" height="26" rx="8" fill="#cfd8de" stroke="#06161c" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
   <rect x="-15" y="-90" width="30" height="7" rx="3.5" fill="#8b98a1"/>
-</g><clipPath id="paws"><polygon points="758,468 806,468 809,546 799,556 791,571 779,586 764,588 750,580 742,563 742,540 746,518 751,496"/><polygon points="626,490 655,488 667,488 686,507 702,530 710,556 710,580 701,597 685,605 665,606 626,598"/></clipPath><use href="#body" clip-path="url(#paws)"/></svg>
+</g><clipPath id="paws"><path d="M744.5 537 L745 560 L748 571 L755.5 580.5 L768 585 L781 582.5 L791 574 L797.5 560 L801 547 C790 530 758 526 744.5 537 Z"/><path d="M708 537 L713.5 559 L715 570 L712 581 L707 591 L699 599.5 L684 605 L667 604 C652 590 662 552 708 537 Z"/></clipPath><use href="#body" clip-path="url(#paws)"/><clipPath id="obj"><rect transform="translate(735 498) rotate(-8)" x="-66" y="-84" width="132" height="168" rx="13"/></clipPath><g clip-path="url(#obj)"><path d="M801 547 C790 530 758 526 744.5 537" fill="none" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/><path d="M667 604 C652 590 662 552 708 537" fill="none" stroke="#06161c" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/></g></svg>

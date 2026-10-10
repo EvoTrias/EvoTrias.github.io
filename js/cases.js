@@ -14,6 +14,11 @@ const Cases = (() => {
       const u = it / end;
       fill.style.width = `${u * 100}%`; knob.style.left = `${u * 100}%`;
     };
+    const follow = () => { // on narrow screens the chart scrolls sideways: keep the replay head in view
+      if (!xOf || vis.scrollWidth <= vis.clientWidth + 4) return;
+      const px = (xOf(it) / 820) * vis.scrollWidth;
+      vis.scrollLeft = clamp(px - vis.clientWidth * 0.62, 0, vis.scrollWidth - vis.clientWidth);
+    };
     const loop = (now) => {
       raf = 0;
       if (!playing || !visible) return;
@@ -23,19 +28,19 @@ const Cases = (() => {
         const h = holds.find((t) => it < t && next >= t); // pause on story beats so the panel can be read
         if (h) { next = h; holdUntil = now + h.ms; }
         set(next);
-        // on narrow screens the chart scrolls sideways: keep the replay head in view while playing
-        if (xOf && vis.scrollWidth > vis.clientWidth + 4) {
-          const px = (xOf(it) / 820) * vis.scrollWidth;
-          vis.scrollLeft = clamp(px - vis.clientWidth * 0.62, 0, vis.scrollWidth - vis.clientWidth);
-        }
-        if (it >= end) { stop(true); return; }
+        follow();
+        if (it >= end) { stop(); return; }
       }
       raf = requestAnimationFrame(loop);
     };
     const kick = () => { if (!raf && playing && visible) { last = performance.now(); raf = requestAnimationFrame(loop); } };
-    const play = () => { if (it >= end) set(0); playing = true; btn.classList.add("playing"); btn.classList.remove("done"); kick(); };
-    const stop = (done) => { playing = false; btn.classList.remove("playing"); btn.classList.toggle("done", !!done); };
+    const play = () => { if (it >= end) set(0); playing = true; holdUntil = 0; btn.classList.add("playing"); kick(); };
+    const stop = () => { playing = false; btn.classList.remove("playing"); };
     btn.addEventListener("click", () => (playing ? stop() : play()));
+    // step one iteration back / forward (pauses the replay)
+    const step = (d) => { stop(); set(clamp(Math.floor(it + 0.25) + d, 0, 50)); follow(); };
+    $(".cs-prev", root)?.addEventListener("click", () => step(-1));
+    $(".cs-next", root)?.addEventListener("click", () => step(1));
     // scrubbing
     let drag = false;
     const seekAt = (e) => { const b = track.getBoundingClientRect(); set(clamp((e.clientX - b.left) / b.width) * end); };
@@ -46,6 +51,7 @@ const Cases = (() => {
     set(0);
     return {
       seek: (v) => { stop(); set(v); },
+      redraw: () => set(it),
       autostart: () => { if (started) return; started = true; if (REDUCED) set(end); else play(); },
       get it() { return it; },
     };
@@ -53,6 +59,23 @@ const Cases = (() => {
   const hold = (t, ms) => Object.assign(new Number(t), { ms });
   const txt = (el, s) => { el.textContent = s; return el; };
   const pct = (v, d = 1) => `${v >= 0 ? "+" : "−"}${Math.abs(v * 100).toFixed(d)}%`;
+  // The chart's viewBox height is fitted to the side panel on wide layouts, so the two columns end together
+  // (text keeps its size: only the plot area grows). Stacked layouts keep the default height.
+  function fitter(root, H0, rebuild) {
+    const svg = $(".case-vis svg", root), side = $(".case-side", root), leg = $(".case-vis .cs-leg", root);
+    let H = H0, rz = 0;
+    const fit = () => {
+      let h = H0;
+      const sw = svg.getBoundingClientRect().width;
+      const stacked = side.getBoundingClientRect().top > svg.getBoundingClientRect().bottom - 20;
+      if (!stacked && sw > 200) h = clamp(Math.round((820 * (side.offsetHeight - leg.offsetHeight - 10)) / sw), 360, 640);
+      if (Math.abs(h - H) > 3) { H = h; rebuild(H); }
+    };
+    addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(fit, 150); });
+    document.fonts?.ready.then(fit);
+    requestAnimationFrame(fit);
+    return () => H;
+  }
 
   // ================================================================ 1. Notes: a write gate, not a diary
   const NT = {
@@ -86,74 +109,96 @@ const Cases = (() => {
     const root = $("#case-notes");
     if (!root) return;
     const svg = $("#nt-svg", root);
-    const W = 820, H = 420, m = { l: 52, r: 12, t: 22, b: 40 };
-    const x0 = m.l, x1 = W - m.r, y0 = H - m.b, y1 = m.t;
-    const xs = (i) => x0 + ((i - 0.5) / 50) * (x1 - x0), step = (x1 - x0) / 50;
-    const ys = (v) => y0 - ((v - 0.49) / (0.875 - 0.49)) * (y0 - y1);
-    svg.innerHTML = "";
-    const defs = S("defs", {}, svg);
-    defs.innerHTML = `<clipPath id="nt-clip"><rect id="nt-clip-r" x="${x0}" y="0" width="0" height="${H}"/></clipPath>
-      <filter id="nt-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-      <linearGradient id="nt-scan" x1="0" x2="1"><stop offset="0" stop-color="#4fd1e8" stop-opacity="0"/><stop offset="1" stop-color="#4fd1e8" stop-opacity="0.16"/></linearGradient>`;
-    // warm-up zone + grid
-    const wu = S("g", { class: "nt-warm" }, svg);
-    S("rect", { x: x0, y: y1, width: xs(10.5) - x0, height: y0 - y1, fill: "rgba(255,255,255,0.025)" }, wu);
-    S("line", { x1: xs(10.5), x2: xs(10.5), y1, y2: y0, stroke: "rgba(255,255,255,0.18)", "stroke-dasharray": "3 4" }, wu);
-    txt(S("text", { x: x0 + 10, y: y0 - 12, class: "cs-lab" }, wu), "warm-up · no requests fire");
-    const ax = S("g", { class: "cs-ax" }, svg);
-    [0.55, 0.65, 0.75, 0.85].forEach((v) => { S("line", { x1: x0, x2: x1, y1: ys(v), y2: ys(v) }, ax); txt(S("text", { x: x0 - 10, y: ys(v) + 4, "text-anchor": "end" }, ax), v.toFixed(2)); });
-    [1, 10, 20, 30, 40, 50].forEach((i) => txt(S("text", { x: xs(i), y: y0 + 20, "text-anchor": "middle" }, ax), i));
-    S("line", { x1: x0, x2: x1, y1: y0, y2: y0, class: "base" }, ax);
-    txt(S("text", { x: x1, y: y0 + 38, "text-anchor": "end", class: "cs-lab" }, svg), "evolution iteration →");
-    txt(S("text", { x: x0 - 44, y: y1 - 6, class: "cs-lab" }, svg), "fitness ↑");
-    // scan head
-    const scan = S("g", { class: "cs-scan" }, svg);
-    const scanR = S("rect", { x: x0, y: y1, width: 60, height: y0 - y1, fill: "url(#nt-scan)" }, scan);
-    const scanL = S("line", { x1: x0, x2: x0, y1, y2: y0, stroke: "#4fd1e8", "stroke-width": 1.2, opacity: 0.7 }, scan);
-    // iterations
-    const its = NT.rows.map(([i, p, c, lo, hi, k]) => {
-      const g = S("g", { class: `nt-it k-${k || "in"}` }, svg);
-      const x = xs(i), o = { i, p, c, lo, hi, k, g, x };
-      if (k === "root") {
-        const col = ROOT_COL[i === 34 ? 4 : i - 1];
-        o.dot = S("circle", { cx: x, cy: ys(c), r: 5.5, fill: "#071017", stroke: col, "stroke-width": 2.4, class: "cs-pop" }, g);
-      } else {
-        o.band = S("rect", { x: x - step * 0.34, y: ys(hi), width: step * 0.68, height: ys(lo) - ys(hi), rx: 2, class: "nt-band", style: `transform-origin:${x}px ${ys(p)}px` }, g);
-        const len = Math.max(0.01, Math.abs(ys(c) - ys(p)));
-        o.seg = S("line", { x1: x, x2: x, y1: ys(p), y2: ys(c), class: "nt-seg", style: `--len:${len}` }, g);
-        o.cap = S("line", { x1: x - 5, x2: x + 5, y1: ys(p), y2: ys(p), class: "nt-cap" }, g);
-        o.dot = S("circle", { cx: x, cy: ys(c), r: k ? 5 : 3.4, class: "nt-dot cs-pop" }, g);
-        if (k) {
-          const n = NT.notes.find((q) => q.it === i); o.note = n;
-          const off = { P1: 44, P2: 18, N3: 44, N2: 18 }[n.id] || 22;
-          const up = k === "p", ly = up ? Math.min(ys(c), ys(p)) - off : Math.max(ys(c), ys(p)) + off;
-          const chip = S("g", { class: "nt-chip", style: `transform-origin:${x}px ${ly}px` }, g);
-          S("line", { x1: x, x2: x, y1: up ? ly + 9 : ly - 9, y2: ys(c) + (up ? -6 : 6), class: "nt-lead" }, chip);
-          S("rect", { x: x - 14, y: ly - 10, width: 28, height: 20, rx: 6, class: "nt-pill" }, chip);
-          txt(S("text", { x, y: ly + 4.5, "text-anchor": "middle", class: "nt-pill-t" }, chip), n.id);
-          o.ring = S("circle", { cx: x, cy: ys(c), r: 6, class: "nt-ring" }, g);
+    const W = 820, m = { l: 52, r: 12, t: 22, b: 40 };
+    let V = null; // current drawing (rebuilt when the fitted height changes)
+
+    function build(H) {
+      const x0 = m.l, x1 = W - m.r, y0 = H - m.b, y1 = m.t;
+      const xs = (i) => x0 + ((i - 0.5) / 50) * (x1 - x0), step = (x1 - x0) / 50;
+      const ys = (v) => y0 - ((v - 0.49) / (0.875 - 0.49)) * (y0 - y1);
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      svg.innerHTML = "";
+      const defs = S("defs", {}, svg);
+      defs.innerHTML = `<clipPath id="nt-clip"><rect id="nt-clip-r" x="${x0}" y="0" width="0" height="${H}"/></clipPath>
+        <linearGradient id="nt-scan" x1="0" x2="1"><stop offset="0" stop-color="#4fd1e8" stop-opacity="0"/><stop offset="1" stop-color="#4fd1e8" stop-opacity="0.16"/></linearGradient>`;
+      // warm-up zone + grid
+      const wu = S("g", { class: "nt-warm" }, svg);
+      S("rect", { x: x0, y: y1, width: xs(10.5) - x0, height: y0 - y1, fill: "rgba(255,255,255,0.025)" }, wu);
+      S("line", { x1: xs(10.5), x2: xs(10.5), y1, y2: y0, stroke: "rgba(255,255,255,0.18)", "stroke-dasharray": "3 4" }, wu);
+      txt(S("text", { x: x0 + 10, y: y0 - 12, class: "cs-lab" }, wu), "warm-up · no requests fire");
+      const ax = S("g", { class: "cs-ax" }, svg);
+      [0.55, 0.65, 0.75, 0.85].forEach((v) => { S("line", { x1: x0, x2: x1, y1: ys(v), y2: ys(v) }, ax); txt(S("text", { x: x0 - 10, y: ys(v) + 4, "text-anchor": "end" }, ax), v.toFixed(2)); });
+      [1, 10, 20, 30, 40, 50].forEach((i) => txt(S("text", { x: xs(i), y: y0 + 20, "text-anchor": "middle" }, ax), i));
+      S("line", { x1: x0, x2: x1, y1: y0, y2: y0, class: "base" }, ax);
+      txt(S("text", { x: x1, y: y0 + 38, "text-anchor": "end", class: "cs-lab" }, svg), "evolution iteration →");
+      txt(S("text", { x: x0 - 44, y: y1 - 6, class: "cs-lab" }, svg), "fitness ↑");
+      // scan head
+      const scan = S("g", { class: "cs-scan" }, svg);
+      const scanR = S("rect", { x: x0, y: y1, width: 60, height: y0 - y1, fill: "url(#nt-scan)" }, scan);
+      const scanL = S("line", { x1: x0, x2: x0, y1, y2: y0, stroke: "#4fd1e8", "stroke-width": 1.2, opacity: 0.7 }, scan);
+      // iterations
+      const its = NT.rows.map(([i, p, c, lo, hi, k]) => {
+        const g = S("g", { class: `nt-it k-${k || "in"}` }, svg);
+        const x = xs(i), o = { i, p, c, lo, hi, k, g, x };
+        if (k === "root") {
+          const col = ROOT_COL[i === 34 ? 4 : i - 1];
+          S("circle", { cx: x, cy: ys(c), r: 5.5, fill: "#071017", stroke: col, "stroke-width": 2.4, class: "cs-pop" }, g);
+        } else {
+          S("rect", { x: x - step * 0.34, y: ys(hi), width: step * 0.68, height: ys(lo) - ys(hi), rx: 2, class: "nt-band", style: `transform-origin:${x}px ${ys(p)}px` }, g);
+          const len = Math.max(0.01, Math.abs(ys(c) - ys(p)));
+          S("line", { x1: x, x2: x, y1: ys(p), y2: ys(c), class: "nt-seg", style: `--len:${len}` }, g);
+          S("line", { x1: x - 5, x2: x + 5, y1: ys(p), y2: ys(p), class: "nt-cap" }, g);
+          S("circle", { cx: x, cy: ys(c), r: k ? 5 : 3.4, class: "nt-dot cs-pop" }, g);
+          if (k) {
+            const n = NT.notes.find((q) => q.it === i); o.note = n;
+            const off = { P1: 44, P2: 18, N3: 44, N2: 18 }[n.id] || 22;
+            const up = k === "p", ly = up ? Math.min(ys(c), ys(p)) - off : Math.max(ys(c), ys(p)) + off;
+            const chip = S("g", { class: "nt-chip", style: `transform-origin:${x}px ${ly}px` }, g);
+            S("line", { x1: x, x2: x, y1: up ? ly + 9 : ly - 9, y2: ys(c) + (up ? -6 : 6), class: "nt-lead" }, chip);
+            S("rect", { x: x - 14, y: ly - 10, width: 28, height: 20, rx: 6, class: "nt-pill" }, chip);
+            txt(S("text", { x, y: ly + 4.5, "text-anchor": "middle", class: "nt-pill-t" }, chip), n.id);
+            S("circle", { cx: x, cy: ys(c), r: 6, class: "nt-ring" }, g);
+          }
         }
-      }
-      const hit = S("rect", { x: x - step / 2, y: y1, width: step, height: y0 - y1, fill: "transparent" }, g);
-      hit.addEventListener("pointerenter", () => { if (o.k !== "root" && P.it >= i - 0.25) { gate(o, true); o.g.classList.add("hl"); } });
-      hit.addEventListener("pointerleave", () => { gate(null, false); o.g.classList.remove("hl"); });
-      return o;
-    });
-    // running best (dashed, revealed by the replay head)
-    let best = -1, d = "";
-    its.forEach((o, j) => { const v = Math.max(best, o.c); const y = ys(v).toFixed(1); d += j ? ` H ${xs(o.i - 0.5).toFixed(1)} V ${y}` : `M ${xs(0.5)} ${y}`; best = v; });
-    d += ` H ${xs(50.5)}`;
-    S("path", { d, class: "nt-best", "clip-path": "url(#nt-clip)" }, svg);
-    const clipR = $("#nt-clip-r", svg);
-    // side panel + ledger
+        const hit = S("rect", { x: x - step / 2, y: y1, width: step, height: y0 - y1, fill: "transparent" }, g);
+        hit.addEventListener("pointerenter", () => { if (o.k !== "root" && P.it >= i - 0.25) { gate(o, true); o.g.classList.add("hl"); } });
+        hit.addEventListener("pointerleave", () => { gate(null, false); o.g.classList.remove("hl"); });
+        return o;
+      });
+      // running best (dashed, revealed by the replay head)
+      let best = -1, d = "";
+      its.forEach((o, j) => { const v = Math.max(best, o.c); const y = ys(v).toFixed(1); d += j ? ` H ${xs(o.i - 0.5).toFixed(1)} V ${y}` : `M ${xs(0.5)} ${y}`; best = v; });
+      d += ` H ${xs(50.5)}`;
+      S("path", { d, class: "nt-best", "clip-path": "url(#nt-clip)" }, svg);
+      V = { xs, x0, its, clipR: $("#nt-clip-r", svg), scan, scanL, scanR };
+    }
+
+    // ---- side panel: both cards keep one fixed size; only their content changes
     const gEl = $(".nt-gate", root), card = $(".nt-card", root), led = $(".nt-ledger", root);
+    gEl.innerHTML = `<div class="g-h mono">THE WRITE GATE <span class="g-it"></span></div>
+      <div class="g-stack">
+        <p class="g-view g-idle on">Each attempt is judged against a band around its parent's fitness. Only a child that lands <em>outside</em> the band asks for a Note.</p>
+        <div class="g-view g-data">
+          <div class="g-row"><span>parent → child</span><b class="mono g-pc"></b></div>
+          <div class="g-row"><span>change</span><b class="mono g-d"></b></div>
+          <div class="g-row"><span>band</span><b class="mono g-b"></b></div>
+          <div class="g-meter"><i class="g-band"></i><i class="g-zero"></i><i class="g-mark"></i></div>
+          <span class="v g-v"></span>
+        </div>
+      </div>`;
+    const G = { it: $(".g-it", gEl), idle: $(".g-idle", gEl), data: $(".g-data", gEl), pc: $(".g-pc", gEl), d: $(".g-d", gEl), b: $(".g-b", gEl), band: $(".g-band", gEl), mark: $(".g-mark", gEl), v: $(".g-v", gEl) };
+    card.innerHTML = `<div class="nc nc-empty on"><div class="nc-k mono">NOTES POOL · EMPTY</div><p>No Note yet. Small changes are absorbed by the band; the pool only grows when an outcome is surprising enough to teach something.</p></div>` +
+      NT.notes.map((n) => `<div class="nc ${n.id[0] === "P" ? "pos" : "neg"}" data-id="${n.id}"><div class="nc-k mono"><b>${n.id}</b>${n.id[0] === "P" ? "positive" : "negative"} Note · iteration ${n.it}<span>${n.d}</span></div>
+        <h4>${n.t}</h4><p>${n.l}</p><div class="nc-e mono">${n.e}</div></div>`).join("");
+    const cards = $$(".nc", card);
     led.innerHTML = NT.notes.map((n) => `<button class="lg-cell ${n.id[0] === "P" ? "pos" : "neg"}" data-it="${n.it}"><b>${n.id}</b><span class="mono">iteration ${n.it}</span><strong>${n.d}</strong><span class="mono">threshold ${n.th}</span><span class="mono">vs. best ${n.vb}</span></button>`).join("");
     const cells = $$(".lg-cell", led);
+    const itOf = (i) => V.its.find((q) => q.i === i);
     cells.forEach((c) => {
-      const o = its.find((q) => q.i === +c.dataset.it);
-      c.addEventListener("click", () => { P.seek(o.i + 0.2); showCard(o.note, true); });
-      c.addEventListener("pointerenter", () => { o.g.classList.add("hl"); if (P.it >= o.i - 0.25) gate(o, true); });
-      c.addEventListener("pointerleave", () => { o.g.classList.remove("hl"); gate(null, false); });
+      const i = +c.dataset.it;
+      c.addEventListener("click", () => P.seek(i + 0.2));
+      c.addEventListener("pointerenter", () => { itOf(i).g.classList.add("hl"); if (P.it >= i - 0.25) gate(itOf(i), true); });
+      c.addEventListener("pointerleave", () => { itOf(i).g.classList.remove("hl"); gate(null, false); });
     });
     let gateCur = null, gatePin = null, gateAuto = "idle", cardCur = null;
     function gate(o, pin) {
@@ -161,37 +206,36 @@ const Cases = (() => {
       const show = gatePin || gateAuto;
       if (!show || show === gateCur) return;
       gateCur = show;
-      if (show === "idle") { gEl.innerHTML = `<div class="g-h mono">THE WRITE GATE</div><p class="g-idle">Each attempt is judged against a band around its parent's fitness. Only a child that lands <em>outside</em> the band asks for a Note.</p>`; return; }
+      const idle = show === "idle" || show.k === "root";
+      G.idle.classList.toggle("on", idle); G.data.classList.toggle("on", !idle);
+      G.it.textContent = idle ? "" : `iteration ${show.i}`;
+      if (idle) return;
       const { i, p, c, lo, hi, k } = show;
-      if (k === "root") return;
       const dlt = c / p - 1, tm = 1 - lo / p, tp = hi / p - 1;
-      const warm = i <= 10, out = c < lo || c > hi;
-      const verdict = warm ? `<span class="v warm">warm-up · gate closed</span>` : k ? `<span class="v ${k === "p" ? "pos" : "neg"}">outside → ${show.note.id} written</span>` : `<span class="v in">inside band · no Note</span>`;
-      gEl.innerHTML = `<div class="g-h mono">THE WRITE GATE <span>iteration ${i}</span></div>
-        <div class="g-row"><span>parent → child</span><b class="mono">${p.toFixed(4)} → ${c.toFixed(4)}</b></div>
-        <div class="g-row"><span>change</span><b class="mono ${k === "p" ? "c-gov" : k === "n" ? "c-neg" : ""}">${pct(dlt)}</b></div>
-        <div class="g-row"><span>band</span><b class="mono">−${(tm * 100).toFixed(1)}% / +${(tp * 100).toFixed(1)}%</b></div>
-        <div class="g-meter"><i class="g-band" style="left:${50 - tm * 250}%;width:${(tm + tp) * 250}%"></i><i class="g-mark ${out ? "out" : ""} ${k}" style="left:${clamp(50 + dlt * 250, 2, 98)}%"></i><i class="g-zero"></i></div>
-        ${verdict}`;
+      G.pc.textContent = `${p.toFixed(4)} → ${c.toFixed(4)}`;
+      G.d.textContent = pct(dlt); G.d.className = `mono g-d ${k === "p" ? "c-gov" : k === "n" ? "c-neg" : ""}`;
+      G.b.textContent = `−${(tm * 100).toFixed(1)}% / +${(tp * 100).toFixed(1)}%`;
+      G.band.style.left = `${50 - tm * 250}%`; G.band.style.width = `${(tm + tp) * 250}%`;
+      G.mark.className = `g-mark ${k}`; G.mark.style.left = `${clamp(50 + dlt * 250, 2, 98)}%`;
+      const warm = i <= 10;
+      G.v.className = `v g-v ${warm ? "warm" : k === "p" ? "pos" : k === "n" ? "neg" : "in"}`;
+      G.v.textContent = warm ? "warm-up · gate closed" : k ? `outside → ${show.note.id} written` : "inside band · no Note";
     }
-    function showCard(n, force) {
-      if (!n) { if (cardCur !== "none") { cardCur = "none"; card.className = "nt-card empty"; card.innerHTML = `<div class="nc-k mono">NOTES POOL · EMPTY</div><p>No Note yet. Small changes are absorbed by the band; the pool only grows when an outcome is surprising enough to teach something.</p>`; } return; }
-      if (n === cardCur && !force) return;
-      cardCur = n;
-      const pos = n.id[0] === "P";
-      card.className = `nt-card ${pos ? "pos" : "neg"}`;
-      card.innerHTML = `<div class="nc-k mono"><b>${n.id}</b>${pos ? "positive" : "negative"} Note · iteration ${n.it}<span>${n.d}</span></div>
-        <h4>${n.t}</h4><p>${n.l}</p><div class="nc-e mono">${n.e}</div>`;
-      void card.offsetWidth; card.classList.add("in");
+    function showCard(n) {
+      const id = n ? n.id : "";
+      if (id === cardCur) return;
+      cardCur = id;
+      cards.forEach((c) => c.classList.toggle("on", (c.dataset.id || "") === id));
+      card.className = `nt-card ${n ? (n.id[0] === "P" ? "pos" : "neg") : "empty"}`;
     }
-    const ctr = $(".cs-it", root);
+    const ctr = $(".cs-it", root), cnt = $(".nt-count", root);
     let lastCur = -1;
     const render = (it) => {
-      const hx = xs(clamp(it + 0.5, 0.5, 50.5));
-      clipR.setAttribute("width", Math.max(0, hx - x0));
-      scanL.setAttribute("x1", hx); scanL.setAttribute("x2", hx); scanR.setAttribute("x", hx - 60);
-      scan.style.opacity = it > 0.05 && it < 50.6 ? 1 : 0;
-      for (const o of its) {
+      const hx = V.xs(clamp(it + 0.5, 0.5, 50.5));
+      V.clipR.setAttribute("width", Math.max(0, hx - V.x0));
+      V.scanL.setAttribute("x1", hx); V.scanL.setAttribute("x2", hx); V.scanR.setAttribute("x", hx - 60);
+      V.scan.style.opacity = it > 0.05 && it < 50.6 ? 1 : 0;
+      for (const o of V.its) {
         const g = o.g.classList;
         g.toggle("b", it >= o.i - 0.8);
         g.toggle("s", it >= o.i - 0.6);
@@ -202,15 +246,17 @@ const Cases = (() => {
       if (cur !== lastCur) {
         lastCur = cur;
         txt(ctr, `${String(clamp(cur, 0, 50)).padStart(2, "0")} / 50`);
-        const o = its.find((q) => q.i === cur && q.k !== "root");
+        const o = V.its.find((q) => q.i === cur && q.k !== "root");
         if (o) gate(o); else if (cur < 5) gate("idle");
         const done = NT.notes.filter((n) => it >= n.it - 0.15);
         showCard(done[done.length - 1]);
         cells.forEach((c) => c.classList.toggle("on", it >= +c.dataset.it - 0.15));
-        $(".nt-count", root).textContent = `${done.filter((n) => n.id[0] === "P").length} positive · ${done.filter((n) => n.id[0] === "N").length} negative`;
+        cnt.textContent = `${done.filter((n) => n.id[0] === "P").length} positive · ${done.filter((n) => n.id[0] === "N").length} negative`;
       }
     };
-    const P = player(root, { end: 50.6, rate: 2.7, holds: NT.notes.map((n) => hold(n.it - 0.1, 1100)).concat([hold(10.6, 700)]).sort((a, b) => a - b), render, xOf: (it) => xs(clamp(it + 0.5, 0.5, 50.5)) });
+    build(420);
+    const P = player(root, { end: 50.6, rate: 2.7, holds: NT.notes.map((n) => hold(n.it - 0.1, 1100)).concat([hold(10.6, 700)]).sort((a, b) => a - b), render, xOf: (it) => V.xs(clamp(it + 0.5, 0.5, 50.5)) });
+    fitter(root, 420, (H) => { build(H); gateCur = null; lastCur = -1; P.redraw(); });
     onVisible(root, () => P.autostart(), 0.35);
     return P;
   }
@@ -243,121 +289,120 @@ const Cases = (() => {
     const root = $("#case-mg");
     if (!root) return;
     const svg = $("#mg-svg", root);
-    const W = 820, H = 430, m = { l: 58, r: 12, t: 40, b: 40 };
-    const x0 = m.l, x1 = W - m.r, y0 = H - m.b, YT = m.t + 18, YB = 300, YL = 318;
-    const xs = (i) => x0 + ((i - 0.4) / 50.3) * (x1 - x0);
-    // axis expanded above 0.99, compressed below (as in the paper)
-    const ys = (v) => v >= 0.99 ? YB - ((v - 0.99) / 0.0112) * (YB - YT) : v >= 0.6 ? YL + ((0.99 - v) / 0.39) * 34 : YL + 34 + ((0.6 - v) / 0.35) * (y0 - YL - 38);
-    svg.innerHTML = "";
-    const defs = S("defs", {}, svg);
-    defs.innerHTML = `<clipPath id="mg-clip"><rect id="mg-clip-r" x="${x0}" y="0" width="0" height="${H}"/></clipPath>
-      <filter id="mg-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-      <linearGradient id="mg-scan" x1="0" x2="1"><stop offset="0" stop-color="#bff4ff" stop-opacity="0"/><stop offset="1" stop-color="#bff4ff" stop-opacity="0.13"/></linearGradient>`;
-    // rounds (behind everything)
-    const rG = MG.rounds.map((r) => {
-      const g = S("g", { class: "mg-round" }, svg);
-      const bx = xs(r.x[0]), bw = xs(r.x[1]) - bx;
-      S("rect", { x: bx, y: m.t - 18, width: bw, height: y0 - m.t + 18, fill: r.col, class: "mg-rband", style: `transform-origin:${bx}px 0px` }, g);
-      S("line", { x1: bx, x2: bx, y1: m.t - 18, y2: y0, stroke: r.col, "stroke-opacity": 0.5, "stroke-dasharray": "2 4" }, g);
-      const chip = S("g", { class: "mg-rchip" }, g);
-      S("rect", { x: bx + bw / 2 - 38, y: m.t - 30, width: 76, height: 22, rx: 7, fill: r.col }, chip);
-      txt(S("text", { x: bx + bw / 2, y: m.t - 14.5, "text-anchor": "middle", class: "mg-rchip-t" }, chip), `round ${r.n}`);
-      S("circle", { cx: bx, cy: m.t - 18, r: 6, fill: "none", stroke: r.col, class: "mg-ping" }, g);
-      return { r, g };
-    });
-    // axes
-    const ax = S("g", { class: "cs-ax" }, svg);
-    [[0.99, "0.99"], [0.995, "0.995"], [1, "1"]].forEach(([v, l]) => { S("line", { x1: x0, x2: x1, y1: ys(v), y2: ys(v) }, ax); txt(S("text", { x: x0 - 10, y: ys(v) + 4, "text-anchor": "end" }, ax), l); });
-    [[0.6, "0.6"], [0.3, "0.3"]].forEach(([v, l]) => { S("line", { x1: x0, x2: x1, y1: ys(v), y2: ys(v), "stroke-dasharray": "2 5" }, ax); txt(S("text", { x: x0 - 10, y: ys(v) + 4, "text-anchor": "end" }, ax), l); });
-    [1, 10, 20, 30, 40, 50].forEach((i) => txt(S("text", { x: xs(i), y: y0 + 20, "text-anchor": "middle" }, ax), i));
-    S("line", { x1: x0, x2: x1, y1: y0, y2: y0, class: "base" }, ax);
-    // axis break (double slash) between the expanded and compressed ranges
-    S("path", { d: `M ${x0 - 8} ${YB + 9} l 16 -6 M ${x0 - 8} ${YB + 15} l 16 -6`, stroke: "#8ea3a0", "stroke-width": 1.4 }, ax);
-    txt(S("text", { x: x1, y: y0 + 38, "text-anchor": "end", class: "cs-lab" }, svg), "iteration →");
-    txt(S("text", { x: x0 - 52, y: m.t - 16, class: "cs-lab" }, svg), "fitness (expanded above 0.99)");
-    // f = 1 reference
-    S("line", { x1: x0, x2: x1, y1: ys(1), y2: ys(1), class: "mg-ref" }, svg);
-    txt(S("text", { x: x0 + 10, y: ys(1) - 8, class: "mg-ref-t" }, svg), "f = 1 · AlphaEvolve reference");
-    // stall brackets
-    const bracket = (from, to, y, up) => {
-      const g = S("g", { class: "mg-stall" }, svg);
-      const ln = S("path", { d: "", class: "mg-br" }, g);
-      const t = S("text", { x: 0, y: y + (up ? -8 : 17), "text-anchor": "middle", class: "mg-br-t" }, g);
-      return { from, to, y, g, ln, t };
-    };
-    const st = [bracket(10, 20, ys(0.9931) - 22, true), bracket(21, 40, ys(0.99944) + 22, false)];
-    // scan head
-    const scan = S("g", { class: "cs-scan" }, svg);
-    const scanR = S("rect", { x: x0, y: m.t - 18, width: 60, height: y0 - m.t + 18, fill: "url(#mg-scan)" }, scan);
-    const scanL = S("line", { x1: x0, x2: x0, y1: m.t - 18, y2: y0, stroke: "#bff4ff", "stroke-width": 1.2, opacity: 0.6 }, scan);
-    // running best
+    const W = 820, m = { l: 58, r: 12, t: 40, b: 40 };
     const pts = [...MG.attempts.map(([i, v]) => ({ i, v, k: 0 })), ...MG.rounds.flatMap((r) => r.ds.flatMap((dd) => dd.u.map(([i, v]) => ({ i, v, k: r.n, d: dd.id }))))].sort((a, b) => a.i - b.i);
-    let best = -1, d = "";
-    pts.forEach((p, j) => { const v = Math.max(best, p.v); const y = ys(v).toFixed(1); d += j ? ` H ${xs(p.i).toFixed(1)} V ${y}` : `M ${xs(p.i).toFixed(1)} ${y}`; p.nb = v > best && j > 0 && p.k > 0; best = v; });
-    d += ` H ${xs(50.6)}`;
-    S("path", { d, class: "mg-best-glow", "clip-path": "url(#mg-clip)" }, svg);
-    S("path", { d, class: "mg-best", "clip-path": "url(#mg-clip)" }, svg);
-    const clipR = $("#mg-clip-r", svg);
-    // outcomes
-    const dots = pts.map((p) => {
-      const g = S("g", { class: "mg-pt" }, svg);
-      const x = xs(p.i), y = ys(p.v);
-      if (p.nb) {
-        S("circle", { cx: x, cy: y, r: 9, class: "mg-burst", stroke: MG.rounds[p.k - 1].col }, g);
-        const dia = (r) => `M ${x} ${y - r} L ${x + r} ${y} L ${x} ${y + r} L ${x - r} ${y} Z`;
-        S("path", { d: dia(10), fill: "#0a1a17", stroke: MG.rounds[p.k - 1].col, "stroke-width": 2.6, "stroke-linejoin": "round", class: "cs-pop", filter: "url(#mg-glow)" }, g);
-        S("path", { d: dia(4.6), fill: MG.rounds[p.k - 1].col, class: "cs-pop" }, g);
-      } else if (p.k) S("circle", { cx: x, cy: y, r: 4.6, fill: MG.rounds[p.k - 1].col, class: "cs-pop" }, g);
-      else S("circle", { cx: x, cy: y, r: 3.6, fill: "#071017", stroke: "#8a9c9a", "stroke-width": 1.6, class: "cs-pop" }, g);
-      const hit = S("circle", { cx: x, cy: y, r: 10, fill: "transparent" }, g);
-      const val = p.v >= 0.99 ? p.v.toFixed(p.v > 1 ? 6 : 5) : p.k ? p.v.toFixed(4) : "< 0.99";
-      hit.addEventListener("pointermove", (e) => { const tip = $("#tip"); tip.innerHTML = `<div class="th">iteration ${p.i}${p.k ? ` · ${p.d} · round ${p.k}` : " · unguided"}</div><div class="tr"><span>fitness</span><b>${val}</b></div>`; tip.classList.add("on"); tip.style.left = `${e.clientX + 14 > innerWidth - 200 ? e.clientX - 200 : e.clientX}px`; tip.style.top = `${e.clientY}px`; });
-      hit.addEventListener("pointerleave", () => $("#tip").classList.remove("on"));
-      return { ...p, g };
-    });
-    // annotations on the three guided new bests
-    const ann = [
-      [21, "D1 · SLSQP breaks the stall (+0.0064)", "#2ed3a0", (x) => x - 14, (y) => y + 36, "end"],
-      [41, "D8 · interior point crosses f = 1", "#c9b8ff", (x) => x - 12, (y) => y - 24, "end"],
-      [45, "D9 · final best", "#c9b8ff", () => x1 - 2, (y) => y + 40, "end"],
-    ].map(([i, s, c, fx, fy, anchor]) => {
-      const g = S("g", { class: "mg-ann" }, svg);
-      const p = dots.find((q) => q.i === i), x = xs(i), y = ys(p.v);
-      const tx = fx(x), ty = fy(y), below = ty > y;
-      S("path", { d: `M ${x} ${y + (below ? 10 : -10)} L ${Math.min(x, tx + 4)} ${ty + (below ? -13 : 5)}`, stroke: c, "stroke-width": 1, opacity: 0.7 }, g);
-      txt(S("text", { x: tx, y: ty, fill: c, "text-anchor": anchor, class: "mg-ann-t" }, g), s);
-      return { i, g };
-    });
-    // side panel
+    let V = null;
+
+    function build(H) {
+      const x0 = m.l, x1 = W - m.r, y0 = H - m.b, YT = m.t + 18, YB = y0 - 90, YL = YB + 18;
+      const xs = (i) => x0 + ((i - 0.4) / 50.3) * (x1 - x0);
+      // axis expanded above 0.99, compressed below (as in the paper)
+      const ys = (v) => v >= 0.99 ? YB - ((v - 0.99) / 0.0112) * (YB - YT) : v >= 0.6 ? YL + ((0.99 - v) / 0.39) * 34 : YL + 34 + ((0.6 - v) / 0.35) * (y0 - YL - 38);
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      svg.innerHTML = "";
+      const defs = S("defs", {}, svg);
+      defs.innerHTML = `<clipPath id="mg-clip"><rect id="mg-clip-r" x="${x0}" y="0" width="0" height="${H}"/></clipPath>
+        <filter id="mg-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <linearGradient id="mg-scan" x1="0" x2="1"><stop offset="0" stop-color="#bff4ff" stop-opacity="0"/><stop offset="1" stop-color="#bff4ff" stop-opacity="0.13"/></linearGradient>`;
+      // rounds (behind everything)
+      const rG = MG.rounds.map((r) => {
+        const g = S("g", { class: "mg-round" }, svg);
+        const bx = xs(r.x[0]), bw = xs(r.x[1]) - bx;
+        S("rect", { x: bx, y: m.t - 18, width: bw, height: y0 - m.t + 18, fill: r.col, class: "mg-rband", style: `transform-origin:${bx}px 0px` }, g);
+        S("line", { x1: bx, x2: bx, y1: m.t - 18, y2: y0, stroke: r.col, "stroke-opacity": 0.5, "stroke-dasharray": "2 4" }, g);
+        const chip = S("g", { class: "mg-rchip" }, g);
+        S("rect", { x: bx + bw / 2 - 38, y: m.t - 30, width: 76, height: 22, rx: 7, fill: r.col }, chip);
+        txt(S("text", { x: bx + bw / 2, y: m.t - 14.5, "text-anchor": "middle", class: "mg-rchip-t" }, chip), `round ${r.n}`);
+        S("circle", { cx: bx, cy: m.t - 18, r: 6, fill: "none", stroke: r.col, class: "mg-ping" }, g);
+        return { r, g };
+      });
+      // axes
+      const ax = S("g", { class: "cs-ax" }, svg);
+      [[0.99, "0.99"], [0.995, "0.995"], [1, "1"]].forEach(([v, l]) => { S("line", { x1: x0, x2: x1, y1: ys(v), y2: ys(v) }, ax); txt(S("text", { x: x0 - 10, y: ys(v) + 4, "text-anchor": "end" }, ax), l); });
+      [[0.6, "0.6"], [0.3, "0.3"]].forEach(([v, l]) => { S("line", { x1: x0, x2: x1, y1: ys(v), y2: ys(v), "stroke-dasharray": "2 5" }, ax); txt(S("text", { x: x0 - 10, y: ys(v) + 4, "text-anchor": "end" }, ax), l); });
+      [1, 10, 20, 30, 40, 50].forEach((i) => txt(S("text", { x: xs(i), y: y0 + 20, "text-anchor": "middle" }, ax), i));
+      S("line", { x1: x0, x2: x1, y1: y0, y2: y0, class: "base" }, ax);
+      // axis break (double slash) between the expanded and compressed ranges
+      S("path", { d: `M ${x0 - 8} ${YB + 9} l 16 -6 M ${x0 - 8} ${YB + 15} l 16 -6`, stroke: "#8ea3a0", "stroke-width": 1.4 }, ax);
+      txt(S("text", { x: x1, y: y0 + 38, "text-anchor": "end", class: "cs-lab" }, svg), "iteration →");
+      txt(S("text", { x: x0 - 52, y: m.t - 16, class: "cs-lab" }, svg), "fitness (expanded above 0.99)");
+      // f = 1 reference
+      S("line", { x1: x0, x2: x1, y1: ys(1), y2: ys(1), class: "mg-ref" }, svg);
+      txt(S("text", { x: x0 + 10, y: ys(1) - 8, class: "mg-ref-t" }, svg), "f = 1 · AlphaEvolve reference");
+      // stall brackets
+      const bracket = (from, to, y, up) => {
+        const g = S("g", { class: "mg-stall" }, svg);
+        const ln = S("path", { d: "", class: "mg-br" }, g);
+        const t = S("text", { x: 0, y: y + (up ? -8 : 17), "text-anchor": "middle", class: "mg-br-t" }, g);
+        return { from, to, y, g, ln, t };
+      };
+      const st = [bracket(10, 20, ys(0.9931) - 22, true), bracket(21, 40, ys(0.99944) + 22, false)];
+      // scan head
+      const scan = S("g", { class: "cs-scan" }, svg);
+      const scanR = S("rect", { x: x0, y: m.t - 18, width: 60, height: y0 - m.t + 18, fill: "url(#mg-scan)" }, scan);
+      const scanL = S("line", { x1: x0, x2: x0, y1: m.t - 18, y2: y0, stroke: "#bff4ff", "stroke-width": 1.2, opacity: 0.6 }, scan);
+      // running best
+      let best = -1, d = "";
+      pts.forEach((p, j) => { const v = Math.max(best, p.v); const y = ys(v).toFixed(1); d += j ? ` H ${xs(p.i).toFixed(1)} V ${y}` : `M ${xs(p.i).toFixed(1)} ${y}`; p.nb = v > best && j > 0 && p.k > 0; best = v; });
+      d += ` H ${xs(50.6)}`;
+      S("path", { d, class: "mg-best-glow", "clip-path": "url(#mg-clip)" }, svg);
+      S("path", { d, class: "mg-best", "clip-path": "url(#mg-clip)" }, svg);
+      // outcomes
+      const dots = pts.map((p) => {
+        const g = S("g", { class: "mg-pt" }, svg);
+        const x = xs(p.i), y = ys(p.v);
+        if (p.nb) {
+          S("circle", { cx: x, cy: y, r: 9, class: "mg-burst", stroke: MG.rounds[p.k - 1].col }, g);
+          const dia = (r) => `M ${x} ${y - r} L ${x + r} ${y} L ${x} ${y + r} L ${x - r} ${y} Z`;
+          S("path", { d: dia(10), fill: "#0a1a17", stroke: MG.rounds[p.k - 1].col, "stroke-width": 2.6, "stroke-linejoin": "round", class: "cs-pop", filter: "url(#mg-glow)" }, g);
+          S("path", { d: dia(4.6), fill: MG.rounds[p.k - 1].col, class: "cs-pop" }, g);
+        } else if (p.k) S("circle", { cx: x, cy: y, r: 4.6, fill: MG.rounds[p.k - 1].col, class: "cs-pop" }, g);
+        else S("circle", { cx: x, cy: y, r: 3.6, fill: "#071017", stroke: "#8a9c9a", "stroke-width": 1.6, class: "cs-pop" }, g);
+        const hit = S("circle", { cx: x, cy: y, r: 10, fill: "transparent" }, g);
+        const val = p.v >= 0.99 ? p.v.toFixed(p.v > 1 ? 6 : 5) : p.k ? p.v.toFixed(4) : "< 0.99";
+        hit.addEventListener("pointermove", (e) => { const tip = $("#tip"); tip.innerHTML = `<div class="th">iteration ${p.i}${p.k ? ` · ${p.d} · round ${p.k}` : " · unguided"}</div><div class="tr"><span>fitness</span><b>${val}</b></div>`; tip.classList.add("on"); tip.style.left = `${e.clientX + 14 > innerWidth - 200 ? e.clientX - 200 : e.clientX}px`; tip.style.top = `${e.clientY}px`; });
+        hit.addEventListener("pointerleave", () => $("#tip").classList.remove("on"));
+        return { i: p.i, g };
+      });
+      // annotations on the three guided new bests
+      const ann = [
+        [21, "D1 · SLSQP breaks the stall (+0.0064)", "#2ed3a0", (x) => x - 14, (y) => y + 36, "end"],
+        [41, "D8 · interior point crosses f = 1", "#c9b8ff", (x) => x - 12, (y) => y - 24, "end"],
+        [45, "D9 · final best", "#c9b8ff", () => x1 - 2, (y) => y + 40, "end"],
+      ].map(([i, s, c, fx, fy, anchor]) => {
+        const g = S("g", { class: "mg-ann" }, svg);
+        const p = pts.find((q) => q.i === i), x = xs(i), y = ys(p.v);
+        const tx = fx(x), ty = fy(y), below = ty > y;
+        S("path", { d: `M ${x} ${y + (below ? 10 : -10)} L ${Math.min(x, tx + 4)} ${ty + (below ? -13 : 5)}`, stroke: c, "stroke-width": 1, opacity: 0.7 }, g);
+        txt(S("text", { x: tx, y: ty, fill: c, "text-anchor": anchor, class: "mg-ann-t" }, g), s);
+        return { i, g };
+      });
+      V = { xs, x0, rG, st, scan, scanL, scanR, dots, ann, clipR: $("#mg-clip-r", svg) };
+    }
+
+    // ---- side panel: all four panes are laid out in one cell, so the panel never changes height
     const side = $(".mg-side", root), ctr = $(".cs-it", root), bestEl = $(".mg-bestv", root);
-    let phase = -1;
-    const deck = (k) => {
-      if (k === 0) {
-        side.innerHTML = `<div class="mg-ph mono">STALL DETECTOR</div><h4>Watching the running best.</h4>
-          <p class="mg-p">A guidance request fires when consecutive windows show no improvement and the newest outcome is not a new best. One request may be pending at a time.</p>
-          <div class="mg-stallbox"><span class="mono">stalled outcomes</span><b class="mg-stalln mono">0</b></div>`;
-        return;
-      }
-      const r = MG.rounds[k - 1];
-      side.innerHTML = `<div class="mg-ph mono" style="--c:${r.col}"><i></i>ROUND ${r.n} · META-GUIDANCE</div>
+    side.innerHTML = `<div class="mg-pane" data-ph="0"><div class="mg-ph mono">STALL DETECTOR</div><h4>Watching the running best.</h4>
+        <p class="mg-p">A guidance request fires when consecutive windows show no improvement and the newest outcome is not a new best. One request may be pending at a time.</p>
+        <div class="mg-stallbox"><span class="mono">stalled outcomes</span><b class="mg-stalln mono">0</b></div></div>` +
+      MG.rounds.map((r) => `<div class="mg-pane" data-ph="${r.n}"><div class="mg-ph mono" style="--c:${r.col}"><i></i>ROUND ${r.n} · META-GUIDANCE</div>
         <div class="mg-why">${r.why} · best <b class="mono">${r.open}</b> when it opened</div>
-        <div class="mg-deck">${r.ds.map((dd) => `<div class="dcard s-${dd.s}" style="--c:${r.col}" data-id="${dd.id}">
+        <div class="mg-deck">${r.ds.map((dd, j) => `<div class="dcard s-${dd.s}" style="--c:${r.col};animation-delay:${j * 120}ms" data-id="${dd.id}">
           <div class="dc-h"><b class="mono">${dd.id}</b><span>${dd.t}</span></div><p>${dd.l}</p>
           <div class="dc-u">${dd.u.map(([i, v]) => `<span class="use mono" data-it="${i}"><i></i>${v >= 0.99 ? v.toFixed(v > 1 ? 6 : 5) : v.toFixed(4)}</span>`).join("")}<em class="dc-out mono">${dd.out}</em></div></div>`).join("")}</div>
-        <p class="mg-foot">${r.foot}</p>`;
-      $$(".dcard", side).forEach((c, j) => (c.style.animationDelay = `${j * 120}ms`));
-    };
+        <p class="mg-foot">${r.foot}</p></div>`).join("");
+    const panes = $$(".mg-pane", side), uses = $$(".use", side), dcards = $$(".dcard", side), stallN = $(".mg-stalln", side);
     const bestAt = (it) => { let b = 0; for (const p of pts) if (it >= p.i - 0.25) b = Math.max(b, p.v); return b; };
-    let lastCur = -1;
+    let lastCur = -1, phase = -1;
     const render = (it) => {
-      const hx = xs(clamp(it, 0.4, 50.7));
-      clipR.setAttribute("width", Math.max(0, hx - x0));
-      scanL.setAttribute("x1", hx); scanL.setAttribute("x2", hx); scanR.setAttribute("x", hx - 60);
-      scan.style.opacity = it > 0.05 && it < 50.6 ? 1 : 0;
-      for (const p of dots) p.g.classList.toggle("on", it >= p.i - 0.25);
-      for (const a of ann) a.g.classList.toggle("on", it >= a.i);
-      for (const { r, g } of rG) g.classList.toggle("on", it >= r.at);
-      st.forEach((s, j) => {
+      const hx = V.xs(clamp(it, 0.4, 50.7)), xs = V.xs;
+      V.clipR.setAttribute("width", Math.max(0, hx - V.x0));
+      V.scanL.setAttribute("x1", hx); V.scanL.setAttribute("x2", hx); V.scanR.setAttribute("x", hx - 60);
+      V.scan.style.opacity = it > 0.05 && it < 50.6 ? 1 : 0;
+      for (const p of V.dots) p.g.classList.toggle("on", it >= p.i - 0.25);
+      for (const a of V.ann) a.g.classList.toggle("on", it >= a.i);
+      for (const { r, g } of V.rG) g.classList.toggle("on", it >= r.at);
+      V.st.forEach((s, j) => {
         const on = it >= s.from + (j ? 0.3 : 0);
         s.g.classList.toggle("on", on);
         if (!on) return;
@@ -368,7 +413,7 @@ const Cases = (() => {
         s.g.classList.toggle("full", it >= s.to);
       });
       const ph = it >= 40.5 ? 3 : it >= 31.5 ? 2 : it >= 19.5 ? 1 : 0;
-      if (ph !== phase) { phase = ph; deck(ph); }
+      if (ph !== phase) { phase = ph; panes.forEach((p) => p.classList.toggle("on", +p.dataset.ph === ph)); }
       const cur = Math.floor(it + 0.25);
       if (cur !== lastCur) {
         lastCur = cur;
@@ -376,12 +421,14 @@ const Cases = (() => {
         const b = bestAt(it);
         bestEl.textContent = b ? b.toFixed(b > 1 ? 6 : b >= 0.99 ? 5 : 4) : "—";
         bestEl.classList.toggle("over", b > 1);
-        if (ph === 0) { const sn = $(".mg-stalln", side); if (sn) sn.textContent = it >= 10 ? clamp(Math.floor(it) - 9, 1, 11) : 0; }
-        $$(".use", side).forEach((u) => u.classList.toggle("on", it >= +u.dataset.it - 0.25));
-        $$(".dcard", side).forEach((c) => { const us = $$(".use", c); c.classList.toggle("settled", us.every((u) => u.classList.contains("on"))); });
+        stallN.textContent = it >= 10 ? clamp(Math.floor(it) - 9, 1, 11) : 0;
+        uses.forEach((u) => u.classList.toggle("on", it >= +u.dataset.it - 0.25));
+        dcards.forEach((c) => c.classList.toggle("settled", $$(".use", c).every((u) => u.classList.contains("on"))));
       }
     };
-    const P = player(root, { end: 50.6, rate: 2.5, holds: [hold(10.2, 600), hold(19.6, 1900), hold(21.05, 1200), hold(31.6, 1900), hold(40.6, 1900), hold(41.05, 1000), hold(45.05, 1300)], render, xOf: (it) => xs(clamp(it, 0.4, 50.7)) });
+    build(430);
+    const P = player(root, { end: 50.6, rate: 2.5, holds: [hold(10.2, 600), hold(19.6, 1900), hold(21.05, 1200), hold(31.6, 1900), hold(40.6, 1900), hold(41.05, 1000), hold(45.05, 1300)], render, xOf: (it) => V.xs(clamp(it, 0.4, 50.7)) });
+    fitter(root, 430, (H) => { build(H); lastCur = -1; P.redraw(); });
     onVisible(root, () => P.autostart(), 0.35);
     return P;
   }
