@@ -195,7 +195,9 @@ h3 { font-family: var(--disp); letter-spacing: -0.02em; font-weight: 600; }
 .reveal { opacity: 0; transform: translateY(34px); transition: opacity 1s var(--ease), transform 1.1s var(--ease); transition-delay: calc(var(--d, 0) * 110ms); }
 .reveal[data-d="1"] { --d: 1; } .reveal[data-d="2"] { --d: 2; } .reveal[data-d="3"] { --d: 3; } .reveal[data-d="4"] { --d: 4; }
 .reveal.in { opacity: 1; transform: none; }
-.scr-g { color: var(--cyan); opacity: 0.8; }
+/* scramble glyphs paint over a transparent copy of the real character, so the layout never changes (see scramble()) */
+.scr-g { position: relative; color: transparent; }
+.scr-g::after { content: attr(data-g); position: absolute; left: 50%; top: 0; transform: translateX(-50%); color: var(--cyan); opacity: 0.8; }
 
 /* ---------------------------------------------------------------- film */
 .film-wrap { perspective: 1600px; }

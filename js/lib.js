@@ -38,7 +38,10 @@ function watchVisible(el, cb) {
 }
 
 const GLYPHS = "!<>-_\\/[]{}=+*^?#01ABCDEFXYZ";
+const escHTML = (c) => (c === "<" ? "&lt;" : c === "&" ? "&amp;" : c);
 // Decode-style text reveal, same effect as the film's tagline.
+// Layout always uses the real characters (the glyph is painted over a transparent copy), so line breaks never change
+// mid-animation — otherwise a heading near its wrap point flips between line counts and the page jumps.
 function scramble(el, text, dur = 900) {
   const t0 = performance.now();
   const r = rng(text.length * 97 + 13);
@@ -48,9 +51,9 @@ function scramble(el, text, dur = 900) {
     for (let i = 0; i < text.length; i++) {
       const at = (i / text.length) * 0.7;
       const c = text[i];
-      if (c === " " || u >= at + 0.3) out += c === "<" ? "&lt;" : c;
-      else if (u >= at) out += `<span class="scr-g">${GLYPHS[Math.floor(r() * GLYPHS.length)]}</span>`;
-      else out += `<span style="opacity:0">${c}</span>`;
+      if (c === " " || u >= at + 0.3) out += escHTML(c);
+      else if (u >= at) out += `<span class="scr-g" data-g="${escHTML(GLYPHS[Math.floor(r() * GLYPHS.length)])}">${escHTML(c)}</span>`;
+      else out += `<span style="opacity:0">${escHTML(c)}</span>`;
     }
     el.innerHTML = out;
     if (u < 1) requestAnimationFrame(tick);
