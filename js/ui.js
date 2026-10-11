@@ -48,6 +48,8 @@ const UI = (() => {
       bar.style.width = "100%"; pct.textContent = "100";
       el.classList.add("out");
       document.body.classList.remove("is-loading");
+      const ready = () => requestAnimationFrame(() => document.documentElement.classList.add("ready"));
+      if (document.readyState === "complete") ready(); else addEventListener("load", ready, { once: true });
       done();
       setTimeout(() => el.remove(), 1400);
     };
