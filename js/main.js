@@ -3,9 +3,11 @@
   UI.magnetic();
   UI.tilt();
   UI.nav();
+  UI.navInk();
   UI.counters();
   UI.film();
   UI.misc();
+  UI.footLight();
   UI.pauseOffscreen();
   Charts.init();
   Cases.init();

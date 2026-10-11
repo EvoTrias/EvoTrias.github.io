@@ -1,4 +1,4 @@
-// Page-wide interaction layer: loader, magnetic buttons, 3D tilt, reveals, nav, counters, film.
+// Page-wide interaction layer: loader, magnetic buttons, 3D tilt, reveals, nav (with hover ink), counters, film, footer spotlight.
 const UI = (() => {
   // ------------------------------------------------------------ segmented controls (sliding ink)
   function seg(root, onPick) {
@@ -193,11 +193,48 @@ const UI = (() => {
     }
   }
 
+  // ------------------------------------------------------------ nav: one pill glides to the hovered link
+  function navInk() {
+    const nl = $(".nav-links");
+    const ink = document.createElement("i");
+    ink.className = "nav-ink";
+    nl.prepend(ink);
+    let shown = false;
+    const go = (a) => {
+      if (!shown) { ink.style.transition = "none"; requestAnimationFrame(() => (ink.style.transition = "")); }
+      ink.style.width = `${a.offsetWidth}px`;
+      ink.style.transform = `translateX(${a.offsetLeft}px)`;
+      shown = true;
+    };
+    $$("a", nl).forEach((a) => a.addEventListener("pointerenter", () => go(a)));
+    nl.addEventListener("pointerleave", () => (shown = false));
+  }
+
+  // ------------------------------------------------------------ footer wordmark: spotlight follows the pointer
+  function footLight() {
+    const w = $(".foot-word"), host = w.closest(".foot");
+    let tx = 50, ty = 60, cx = 50, cy = 60, hover = false, vis = false;
+    host.addEventListener("pointermove", (e) => {
+      const b = w.getBoundingClientRect();
+      tx = ((e.clientX - b.left) / b.width) * 100; ty = ((e.clientY - b.top) / b.height) * 100; hover = true;
+    });
+    host.addEventListener("pointerleave", () => (hover = false));
+    const tick = (now) => {
+      if (!vis) return;
+      if (!hover) { const t = now / 1000; tx = 50 + 36 * Math.sin(t * 0.45); ty = 55 + 18 * Math.sin(t * 0.8); }
+      cx = lerp(cx, tx, 0.07); cy = lerp(cy, ty, 0.07);
+      w.style.setProperty("--mx", `${cx.toFixed(2)}%`); w.style.setProperty("--my", `${cy.toFixed(2)}%`);
+      requestAnimationFrame(tick);
+    };
+    if (REDUCED) return;
+    watchVisible(w, (v) => { if (v && !vis) { vis = true; requestAnimationFrame(tick); } else if (!v) vis = false; });
+  }
+
   // pause CSS animations of sections that are not on screen
   function pauseOffscreen() {
     const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("offscreen", !e.isIntersecting)), { rootMargin: "200px 0px" });
     $$("main > section").forEach((s) => io.observe(s));
   }
 
-  return { seg, loader, wordmark, reveals, magnetic, tilt, nav, counters, film, misc, pauseOffscreen };
+  return { seg, loader, wordmark, reveals, magnetic, tilt, nav, navInk, counters, film, misc, footLight, pauseOffscreen };
 })();
