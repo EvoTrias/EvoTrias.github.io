@@ -9,7 +9,7 @@ const Lineage = (() => {
   nodes.forEach((n) => n.parent && byId[n.parent].kids.push(n));
 
   // ---- tidy layout: x by generation, y by leaf order inside each lineage band
-  const VW = 980, VH = 600, X0 = 40, XS = 128, Y0 = 22, Y1 = VH - 22;
+  const VW = 980, VH = 680, X0 = 40, XS = 128, Y0 = 22, Y1 = VH - 22;
   const roots = [0, 1, 2, 3].map((l) => nodes.find((n) => n.lineage === l && !n.parent));
   let leaf = 0;
   const leafGap = 0.9; // extra gap between lineages, in leaf units
@@ -171,33 +171,39 @@ const Lineage = (() => {
     shown = k;
   }
 
-  // ---- playback
+  // ---- playback: play / pause / replay in the middle, single steps either side (stepping pauses)
   const btn = $(".rp-play");
-  let playing = false, pos = 0, last = 0, visible = false, endHold = 0;
+  const END = nodes.length;
+  let playing = false, pos = 0, last = 0, userPaused = false;
   const SPEED = 1.9; // tasks per second
+  const mark = () => { btn.classList.toggle("playing", playing); btn.classList.toggle("ended", !playing && pos >= END); };
   function loop(now) {
     if (!playing) return;
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
-    if (pos >= nodes.length) {
-      endHold += dt;
-      if (endHold > 3.5) { endHold = 0; pos = 0; render(0, false); }
-    } else pos = Math.min(nodes.length, pos + dt * SPEED);
+    pos = Math.min(END, pos + dt * SPEED);
     render(Math.floor(pos), true);
+    if (pos >= END) { play(false); return; } // stop on the last task and offer a replay
     requestAnimationFrame(loop);
   }
   function play(on) {
     playing = on;
-    btn.classList.toggle("playing", on);
-    if (on) { if (pos >= nodes.length) { pos = 0; render(0, false); } last = performance.now(); requestAnimationFrame(loop); }
+    if (on) { if (pos >= END) { pos = 0; render(0, false); } last = performance.now(); requestAnimationFrame(loop); }
+    mark();
   }
   btn.addEventListener("click", () => { userPaused = playing; play(!playing); });
-  let userPaused = false;
+  const step = (d) => {
+    userPaused = true; play(false);
+    const k = clamp(shown + d, 0, END);
+    pos = k; render(k, d > 0); mark();
+  };
+  $(".rp-prev").addEventListener("click", () => step(-1));
+  $(".rp-next").addEventListener("click", () => step(1));
   const track = $(".rp-track");
-  const seek = (e) => { const b = track.getBoundingClientRect(); pos = clamp((e.clientX - b.left) / b.width) * nodes.length; render(Math.floor(pos), false); };
-  track.addEventListener("pointerdown", (e) => { play(false); seek(e); track.setPointerCapture(e.pointerId); track.onpointermove = seek; });
+  const seek = (e) => { const b = track.getBoundingClientRect(); pos = clamp((e.clientX - b.left) / b.width) * END; render(Math.floor(pos), false); mark(); };
+  track.addEventListener("pointerdown", (e) => { userPaused = true; play(false); seek(e); track.setPointerCapture(e.pointerId); track.onpointermove = seek; });
   track.addEventListener("pointerup", () => { track.onpointermove = null; });
-  watchVisible(svg, (v) => { visible = v; if (v && !playing && !userPaused) play(true); else if (!v && playing) play(false); });
+  watchVisible(svg, (v) => { if (v && !playing && !userPaused && pos < END) play(true); else if (!v && playing) play(false); });
   emptyFeed();
   render(0, false);
 })();

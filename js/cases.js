@@ -13,6 +13,7 @@ const Cases = (() => {
       render(it);
       const u = it / end;
       fill.style.width = `${u * 100}%`; knob.style.left = `${u * 100}%`;
+      btn.classList.toggle("ended", !playing && it >= end); // finished: the middle button becomes "replay"
     };
     const follow = () => { // on narrow screens the chart scrolls sideways: keep the replay head in view
       if (!xOf || vis.scrollWidth <= vis.clientWidth + 4) return;
@@ -34,8 +35,8 @@ const Cases = (() => {
       raf = requestAnimationFrame(loop);
     };
     const kick = () => { if (!raf && playing && visible) { last = performance.now(); raf = requestAnimationFrame(loop); } };
-    const play = () => { if (it >= end) set(0); playing = true; holdUntil = 0; btn.classList.add("playing"); kick(); };
-    const stop = () => { playing = false; btn.classList.remove("playing"); };
+    const play = () => { if (it >= end) set(0); playing = true; holdUntil = 0; btn.classList.add("playing"); btn.classList.remove("ended"); kick(); };
+    const stop = () => { playing = false; btn.classList.remove("playing"); btn.classList.toggle("ended", it >= end); };
     btn.addEventListener("click", () => (playing ? stop() : play()));
     // step one iteration back / forward (pauses the replay)
     const step = (d) => { stop(); set(clamp(Math.floor(it + 0.25) + d, 0, 50)); follow(); };

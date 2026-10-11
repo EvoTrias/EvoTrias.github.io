@@ -192,9 +192,13 @@
           <span>best cost <b id="rp-best">—</b></span>
         </div>
       </div>
-      <div class="rp-scroll"><svg id="lineage-svg" viewBox="0 0 980 600" aria-label="Lineage tree replay"></svg></div>
+      <div class="rp-scroll"><svg id="lineage-svg" viewBox="0 0 980 680" aria-label="Lineage tree replay"></svg></div>
       <div class="rp-ctrl">
-        <button class="rp-play" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+        <div class="rp-btns">
+        <button class="cs-step rp-prev" aria-label="Previous task"><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
+        <button class="rp-play" aria-label="Play, pause or replay"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-replay" d="M12 5V1.5L7 6.5l5 5V7.5c3.04 0 5.5 2.46 5.5 5.5S15.04 18.5 12 18.5 6.5 16.04 6.5 13H4.5c0 4.14 3.36 7.5 7.5 7.5s7.5-3.36 7.5-7.5S16.14 5 12 5z"/></svg></button>
+        <button class="cs-step rp-next" aria-label="Next task"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
+        </div>
         <div class="rp-track"><i class="rp-fill"></i><i class="rp-knob"></i></div>
         <div class="rp-legend mono">
           <span><i class="lg-root"></i>root direction</span>
@@ -219,12 +223,6 @@
     </aside>
   </div>
 
-  <div class="gov-stages">
-    <div class="gs reveal" data-d="1"><span class="gs-n mono">E<sub>t</sub></span><h4>Posterior evidence</h4><p>Artifact, lineage and global fields distilled from every settled outcome.</p></div>
-    <div class="gs reveal" data-d="2"><span class="gs-n mono">Π<sub>t</sub></span><h4>Policy construction</h4><p>Phase switching, progress annealing, share rebalancing, guidance anchoring.</p></div>
-    <div class="gs reveal" data-d="3"><span class="gs-n mono">𝒩 · ℳ</span><h4>Experience construction</h4><p>Condition-scoped Notes for single attempts; Meta-guidance when the best fitness stalls.</p></div>
-    <div class="gs reveal" data-d="4"><span class="gs-n mono">Γ<sub>t</sub></span><h4>Context construction</h4><p>Parent by quality + UCB + potential; inspirations from a local / cross-lineage mixture.</p></div>
-  </div>
 
   <!-- experience: notes + meta-guidance case replays -->
   <div class="sub-head reveal"><span class="sec-idx mono">WHAT GOVERNANCE REMEMBERS</span><h3>Experience is earned, not logged.</h3><p>Two channels turn settled outcomes into reusable context — and both are gated. A <b class="c-gov">Note</b> is written only when an attempt surprises its parent; <b class="c-violet">Meta-guidance</b> is requested only when the best fitness stops moving.</p></div>
@@ -234,7 +232,7 @@
       <div><div class="sec-idx mono">NOTES · SIGNAL PROCESSING · OPUS-5 · ONE 50-ITERATION RUN</div><h3>A Note is written only when the child lands outside its parent's band.</h3></div>
       <div class="cs-ctrl">
         <button class="cs-step cs-prev" aria-label="Previous iteration"><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
-        <button class="cs-play" aria-label="Play or pause the replay"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+        <button class="cs-play" aria-label="Play, pause or replay"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-replay" d="M12 5V1.5L7 6.5l5 5V7.5c3.04 0 5.5 2.46 5.5 5.5S15.04 18.5 12 18.5 6.5 16.04 6.5 13H4.5c0 4.14 3.36 7.5 7.5 7.5s7.5-3.36 7.5-7.5S16.14 5 12 5z"/></svg></button>
         <button class="cs-step cs-next" aria-label="Next iteration"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
         <div class="cs-track"><i class="cs-fill"></i><i class="cs-knob"></i></div>
         <span class="cs-it mono">00 / 50</span>
@@ -258,7 +256,7 @@
       <div class="cs-ctrl">
         <span class="mg-bestl mono">best <b class="mg-bestv">—</b></span>
         <button class="cs-step cs-prev" aria-label="Previous iteration"><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
-        <button class="cs-play" aria-label="Play or pause the replay"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+        <button class="cs-play" aria-label="Play, pause or replay"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-replay" d="M12 5V1.5L7 6.5l5 5V7.5c3.04 0 5.5 2.46 5.5 5.5S15.04 18.5 12 18.5 6.5 16.04 6.5 13H4.5c0 4.14 3.36 7.5 7.5 7.5s7.5-3.36 7.5-7.5S16.14 5 12 5z"/></svg></button>
         <button class="cs-step cs-next" aria-label="Next iteration"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
         <div class="cs-track"><i class="cs-fill"></i><i class="cs-knob"></i></div>
         <span class="cs-it mono">00 / 50</span>
