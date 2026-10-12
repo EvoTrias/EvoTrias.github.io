@@ -176,6 +176,37 @@ const UI = (() => {
     btn.addEventListener("click", () => v.play());
     v.addEventListener("play", () => frame.classList.add("playing"));
     v.addEventListener("ended", () => frame.classList.remove("playing"));
+    filmPrefetch(v);
+  }
+
+  // Have the film ready before anyone presses play. On desktop, once the page has settled, the whole file is pulled
+  // in the background (low priority) and, if playback hasn't started yet, the player switches to that in-memory copy:
+  // play starts instantly and never buffers. Phones, data-saver and slow links skip the 25 MB download and only let
+  // the browser buffer ahead as the section approaches. Pressing play mid-download hands over to normal streaming.
+  function filmPrefetch(v) {
+    const url = $("source", v).src;
+    const conn = navigator.connection || {};
+    const lean = TOUCH || conn.saveData || /2g|3g/.test(conn.effectiveType || "");
+    const started = () => !v.paused || v.played.length > 0 || v.currentTime > 0;
+    const buffer = () => { if (v.preload !== "auto") v.preload = "auto"; };
+    let ctl = null, asked = false;
+    const full = () => {
+      if (asked || started()) return;
+      asked = true;
+      ctl = new AbortController();
+      v.addEventListener("play", () => ctl?.abort(), { once: true });
+      fetch(url, { signal: ctl.signal, priority: "low" })
+        .then((r) => (r.ok ? r.blob() : Promise.reject(r.status)))
+        .then((b) => { ctl = null; if (!started()) { v.preload = "auto"; v.src = URL.createObjectURL(b); } })
+        .catch(() => { ctl = null; if (!started()) buffer(); }); // offline file:// preview, aborted or failed: plain buffering
+    };
+    // reaching the film (about a screen away) starts whichever path applies, if the idle prefetch hasn't already
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); lean ? buffer() : full(); } }, { rootMargin: "100% 0px" });
+    io.observe(v);
+    if (lean) return;
+    const later = (fn) => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 1500));
+    const kick = () => setTimeout(() => later(full), 1200);
+    if (document.readyState === "complete") kick(); else addEventListener("load", kick, { once: true });
   }
 
   // ------------------------------------------------------------ bibtex, placeholders, confetti
