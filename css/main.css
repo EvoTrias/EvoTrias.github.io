@@ -544,12 +544,17 @@ h3 { font-family: var(--disp); letter-spacing: -0.02em; font-weight: 600; }
 .ho-ring { position: absolute; inset: 10%; border-radius: 50%; border: 1px dashed rgba(79, 209, 232, 0.3); animation: spin 60s linear infinite; }
 .ho-ring.r2 { inset: 26%; border: 1px solid rgba(224, 162, 74, 0.18); animation-direction: reverse; animation-duration: 40s; }
 .ho-dino { position: absolute; left: 50%; top: 50%; width: 42%; translate: -50% -52%; animation: bob 3.6s ease-in-out infinite; filter: drop-shadow(0 0 30px rgba(79, 209, 232, 0.3)); }
-.host { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform: rotate(calc(var(--a) + var(--spin, 0deg))) translateY(calc(min(420px, 90vw) * -0.4)) rotate(calc(-1 * (var(--a) + var(--spin, 0deg)))); }
+.host { position: absolute; left: 50%; top: 50%; width: 0; height: 0; padding: 0; transform: rotate(calc(var(--a) + var(--spin, 0deg))) translateY(calc(min(420px, 90vw) * -0.4)) rotate(calc(-1 * (var(--a) + var(--spin, 0deg)))); }
 .host img { position: absolute; left: -32px; top: -32px; width: 64px; height: 64px; max-width: none; border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); transition: transform 0.4s var(--ease), box-shadow 0.4s; }
 .host span { position: absolute; left: 50%; top: 40px; transform: translateX(-50%); font-size: 12.5px; font-weight: 600; white-space: nowrap; color: var(--dim); transition: color 0.3s; }
 .host.on img, .host:hover img { transform: scale(1.18); box-shadow: 0 0 0 2px var(--cyan), 0 0 36px rgba(79, 209, 232, 0.6); }
 .host.on span, .host:hover span { color: #fff; }
 .kit { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+/* planned hosts: a quiet asterisk and a footnote, kept below the visual weight of the orbit */
+.soon-mark { position: absolute; left: 100%; top: 0.1em; margin-left: 1px; font-size: 0.78em; font-weight: 400; line-height: 1; color: var(--faint); } /* outside the name box, so the name itself stays centred */
+.hosts-note { margin: -12px 0 0; font-size: 10.5px; letter-spacing: 0.04em; color: var(--faint); opacity: 0.85; }
+/* decorative text (illustrative terminal session, code wall) is look-only: not selectable */
+.term, .repo-code { -webkit-user-select: none; user-select: none; cursor: default; }
 .kit-chip { padding: 8px 16px; border-radius: 999px; font-family: var(--mono); font-size: 13px; color: #e7dcff; background: rgba(155, 138, 208, 0.12); border: 1px solid rgba(155, 138, 208, 0.4); }
 .porta { margin-top: 18px; padding: 24px 28px; border-radius: 24px; background: var(--surface) padding-box, var(--edge) border-box; border: 1px solid transparent; }
 .po-k { font-size: 11.5px; letter-spacing: 0.16em; color: var(--dim); margin-bottom: 12px; }
@@ -644,9 +649,11 @@ h3 { font-family: var(--disp); letter-spacing: -0.02em; font-weight: 600; }
 #tip .tr.ours { color: var(--cyan); font-weight: 700; }
 .repo { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 20px; }
 .repo-code { position: relative; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); background: #060b10; min-height: 360px; margin-bottom: 20px; }
-.rc-scroll { position: absolute; inset: 0; padding: 14px 18px; font-size: 11.5px; line-height: 1.55; color: #3e5a5c; white-space: pre; mask: linear-gradient(180deg, transparent, #000 20%, #000 70%, transparent); }
-.rc-scroll .hl { color: #7fe0cf; background: rgba(79, 209, 232, 0.1); }
+.rc-scroll { position: absolute; inset: 0; overflow: hidden; font-size: 11.5px; line-height: 1.55; color: #3e5a5c; white-space: pre; -webkit-mask: linear-gradient(180deg, transparent, #000 18%, #000 72%, transparent); mask: linear-gradient(180deg, transparent, #000 18%, #000 72%, transparent); }
+/* the viewport (and its fade) stays put; only the track moves, in a seamless loop over two identical copies (js/charts.js) */
+.rc-track { padding: 0 18px; will-change: transform; }
 .rc-scroll .kw { color: #4f7f88; }
+.rc-scroll .cm { color: #2c4547; font-style: italic; }
 .rc-count { position: absolute; left: 0; right: 0; bottom: 0; padding: 60px 22px 20px; background: linear-gradient(180deg, transparent, rgba(6, 11, 16, 0.96) 45%); }
 .rc-count b { display: block; font-family: var(--disp); font-size: 56px; letter-spacing: -0.04em; line-height: 1; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .rc-count span { font-family: var(--mono); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); }
@@ -759,7 +766,7 @@ h3 { font-family: var(--disp); letter-spacing: -0.02em; font-weight: 600; }
   #main-table { font-size: 12.5px; min-width: 640px; }
   #main-table th, #main-table td { padding: 8px 8px; }
   #main-table td { font-size: 12.5px; }
-  #main-table th:first-child, #main-table td:first-child { position: sticky; left: 0; z-index: 1; background: #0a121a; box-shadow: 8px 0 12px -8px rgba(0, 0, 0, 0.8); }
+  #main-table th:first-child, #main-table td:first-child { position: sticky; left: 0; z-index: 1; background: #0a121a; box-shadow: 8px 0 12px -8px rgba(0, 0, 0, 0.8); white-space: normal; min-width: 128px; line-height: 1.3; }
   #main-table tr.grp td { position: static; box-shadow: none; }
   .legend { gap: 4px 8px; } .legend button { font-size: 11.5px; padding: 4px 8px 4px 6px; }
   .repo-code { min-height: 250px; margin-bottom: 14px; } .rc-count b { font-size: 44px; } .rc-scroll { font-size: 10.5px; }

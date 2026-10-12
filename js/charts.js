@@ -103,7 +103,23 @@ const Charts = (() => {
   function mainTable() {
     const T = P.main_table.backbones;
     const table = $("#main-table");
-    const short = { OpenEvolve: "OpenE.", AdaEvolve: "AdaE." };
+    const short = {};
+    // full task names as in the paper's task table (Appendix B); the hover note says which benchmark variant it is
+    // (checked against the reference constants in the benchmark evaluators)
+    const TASKS = {
+      "Circle-Pack. (Sq.)": ["Circle Packing (square)", "26 circles in a unit square · maximize the sum of radii"],
+      "Circle-Pack. (Rect.)": ["Circle Packing (rectangle)", "21 circles in a rectangle of perimeter 4 · maximize the sum of radii"],
+      "Heilbronn-Tri.": ["Heilbronn Triangles", "11 points in a triangle · maximize the smallest triangle area"],
+      "Heilbronn-Conv.": ["Heilbronn Convex", "13 points · maximize the smallest triangle area relative to the convex hull"],
+      "MinMax-Dist.": ["MinMax Distance", "14 points in 3D · maximize the squared min/max pairwise-distance ratio"],
+      "Signal-Proc.": ["Signal Processing", "real-time adaptive filtering · composite filtering score"],
+      "Third-Autocorr.": ["Third Autocorrelation", "third autocorrelation inequality · minimize the constant"],
+      Cloudcast: ["Cloudcast", "multi-cloud broadcast routing · minimize total transfer cost"],
+      EPLB: ["EPLB", "Expert Parallelism Load Balancer for MoE inference"],
+      "LLM-SQL": ["LLM-SQL", "column reordering for LLM prefix caching"],
+      Prism: ["Prism", "GPU model placement · inverse KV-cache pressure"],
+      TXN: ["TXN", "transaction scheduling · minimize database makespan"],
+    };
     function render(bb) {
       const D = T[bb];
       const phone = innerWidth < 700;
@@ -119,7 +135,8 @@ const Charts = (() => {
         let dl = ((ours - bestB) / Math.abs(bestB)) * 100 * (r.lower_is_better ? -1 : 1);
         const cls = Math.abs(dl) < 0.005 ? "even" : dl > 0 ? "up" : "down";
         const dtxt = Math.abs(dl) < 0.005 ? "±0.00%" : `${dl > 0 ? "+" : "−"}${Math.abs(dl) < 0.1 ? Math.abs(dl).toFixed(3) : Math.abs(dl).toFixed(2)}%`;
-        html += `<tr style="animation-delay:${ri++ * 40}ms"><td>${r.task}${r.lower_is_better ? ' <span class="dim">↓</span>' : ""}</td>`;
+        const [name, note] = TASKS[r.task] || [r.task, ""];
+        html += `<tr style="animation-delay:${ri++ * 40}ms"><td title="${note}">${name}${r.lower_is_better ? ' <span class="dim">↓</span>' : ""}</td>`;
         const dCell = `<td class="delta ${cls}">${dtxt}</td>`;
         order.forEach((i) => { html += `<td class="${i === 5 ? "ours " : ""}${r.first.includes(i) ? "first" : r.second.includes(i) ? "second" : ""}"><span class="v">${r.display[i]}</span></td>` + (phone && i === 5 ? dCell : ""); });
         html += `${phone ? "" : dCell}</tr>`;
@@ -334,24 +351,166 @@ const Charts = (() => {
     });
     const lg = $("#lg-ortools");
     lg.innerHTML = SER.map(([k, c, lab]) => `<button><i style="background:${c}"></i>${lab} · best-so-far</button>`).join("") + `<button><i style="background:repeating-linear-gradient(90deg,#aaa 0 3px,transparent 3px 6px)"></i>one-shot agent</button>`;
-    // code-rain + line counter
+    // code wall (decorative, CP-SAT-style local-search C++) + line counter
     const code = $("#repo-code");
-    const SNIP = [
-      "namespace operations_research::sat {", "", "// Feasibility jump local search.", "bool FeasibilityJumpSolver::DoSomeGeneralIterations() {",
-      "  if (!evaluator_->ViolatedConstraints().empty()) {", "    ++num_restarts_;", "  }", "  for (int i = 0; i < params_.num_violation_ls(); ++i) {",
-      "    const int var = SelectVariableToJump();", "    if (var == -1) break;", "    const int64_t delta = ComputeBestJump(var);", "    ApplyJump(var, delta);",
-      "    UpdateViolatedConstraintWeights();", "  }", "  return true;", "}", "", "void LsEvaluator::UpdateScoreOnWeightUpdate(int c) {",
-      "  const double w = jump_weights_[c];", "  for (const int var : constraint_to_vars_[c]) {", "    jump_scores_[var] += w * ScoreDelta(c, var);", "  }", "}", "",
-      "int64_t CompoundMoveBuilder::Backtrack(int* var) {", "  DCHECK(!stack_.empty());", "  *var = stack_.back().var;", "  stack_.pop_back();", "  return value;", "}",
-    ];
-    const r = rng(9);
-    let txt = "";
-    for (let i = 0; i < 120; i++) {
-      const s = SNIP[i % SNIP.length].replace(/(bool|void|int|const|return|for|if|double|int64_t)\b/g, '<span class="kw">$1</span>');
-      txt += (r() < 0.07 ? `<span class="hl">${s || " "}</span>` : s) + "\n";
+    const SNIP = `namespace operations_research::sat {
+
+// Feasibility jump: greedy moves on a weighted violation score.
+bool FeasibilityJumpSolver::DoSomeGeneralIterations() {
+  if (!evaluator_->ViolatedConstraints().empty()) {
+    ++num_restarts_;
+  }
+  for (int i = 0; i < params_.num_violation_ls(); ++i) {
+    const int var = SelectVariableToJump();
+    if (var == -1) break;
+    const int64_t delta = ComputeBestJump(var);
+    ApplyJump(var, delta);
+    UpdateViolatedConstraintWeights();
+  }
+  return true;
+}
+
+void LsEvaluator::UpdateScoreOnWeightUpdate(int c) {
+  const double w = jump_weights_[c];
+  for (const int var : constraint_to_vars_[c]) {
+    jump_scores_[var] += w * ScoreDelta(c, var);
+  }
+}
+
+int FeasibilityJumpSolver::SelectVariableToJump() {
+  int best_var = -1;
+  double best_score = 0.0;
+  for (const int var : good_jumps_) {
+    const double score = jump_scores_[var];
+    if (score < best_score) {
+      best_score = score;
+      best_var = var;
     }
-    code.innerHTML = txt + txt;
-    code.animate([{ transform: "translateY(0)" }, { transform: "translateY(-50%)" }], { duration: 60000, iterations: Infinity });
+  }
+  return best_var;
+}
+
+int64_t FeasibilityJumpSolver::ComputeBestJump(int var) {
+  const Domain& domain = var_domains_[var];
+  const int64_t current = evaluator_->current_solution()[var];
+  int64_t best_value = current;
+  double best_delta = 0.0;
+  for (const int64_t value : CandidateValues(var, domain)) {
+    if (value == current) continue;
+    const double delta = evaluator_->WeightedViolationDelta(var, value - current);
+    if (delta < best_delta) {
+      best_delta = delta;
+      best_value = value;
+    }
+  }
+  return best_value - current;
+}
+
+void FeasibilityJumpSolver::UpdateViolatedConstraintWeights() {
+  ++num_weight_updates_;
+  for (const int c : evaluator_->ViolatedConstraints()) {
+    jump_weights_[c] *= params_.feasibility_jump_weight_decay();
+    jump_weights_[c] += 1.0;
+    UpdateScoreOnWeightUpdate(c);
+  }
+}
+
+// Compound moves: chain single-variable flips, backtrack if they don't pay off.
+bool CompoundMoveBuilder::Extend(int var, int64_t old_value, double score) {
+  if (stack_.size() >= params_.max_compound_depth()) return false;
+  stack_.push_back({var, old_value, score});
+  sum_scores_ += score;
+  return true;
+}
+
+int64_t CompoundMoveBuilder::Backtrack(int* var) {
+  DCHECK(!stack_.empty());
+  *var = stack_.back().var;
+  const int64_t value = stack_.back().prev_value;
+  sum_scores_ -= stack_.back().score;
+  stack_.pop_back();
+  return value;
+}
+
+bool CompoundMoveBuilder::IsImproving() const {
+  return sum_scores_ < -kEpsilon && !stack_.empty();
+}
+
+void LsEvaluator::ComputeAllViolations() {
+  violated_constraints_.clear();
+  for (int c = 0; c < num_constraints(); ++c) {
+    const int64_t violation = constraints_[c]->Violation();
+    if (violation > 0) violated_constraints_.insert(c);
+  }
+}
+
+void LinearIncrementalEvaluator::UpdateVariableAndScores(
+    int var, int64_t delta, absl::Span<double> jump_scores) {
+  for (const int c : var_to_constraints_[var]) {
+    const int64_t coeff = coefficients_[c][var];
+    const int64_t old_activity = activities_[c];
+    activities_[c] += coeff * delta;
+    const int64_t old_violation = Violation(c, old_activity);
+    const int64_t new_violation = Violation(c, activities_[c]);
+    if (old_violation == new_violation) continue;
+    for (const int other : constraint_to_vars_[c]) {
+      jump_scores[other] += weights_[c] * (new_violation - old_violation);
+    }
+  }
+}
+
+// Restarts perturb the incumbent instead of starting from scratch.
+void FeasibilityJumpSolver::PerturbSolution(absl::BitGenRef random) {
+  const double ratio = params_.feasibility_jump_perturbation_ratio();
+  for (int var = 0; var < num_variables(); ++var) {
+    if (!absl::Bernoulli(random, ratio)) continue;
+    const Domain& domain = var_domains_[var];
+    solution_[var] = domain.ValueAtOrBefore(
+        absl::Uniform<int64_t>(random, domain.Min(), domain.Max() + 1));
+  }
+  evaluator_->ComputeAllViolations(solution_);
+}
+
+std::function<void()> FeasibilityJumpSolver::GenerateTask(int64_t /*id*/) {
+  task_generated_ = true;
+  return [this] {
+    if (!Initialize()) return;
+    while (!shared_time_limit_->LimitReached()) {
+      if (!DoSomeGeneralIterations()) break;
+      if (evaluator_->ViolatedConstraints().empty()) {
+        shared_response_->NewSolution(solution_, name());
+        PerturbSolution(*random_);
+      }
+    }
+  };
+}
+
+}  // namespace operations_research::sat
+`.split("\n");
+    const KW = /\b(bool|void|int|const|return|for|if|while|continue|break|double|int64_t|namespace|auto|this|std)\b/g;
+    const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const line = (s) => {
+      const i = s.indexOf("//");
+      const body = esc(i < 0 ? s : s.slice(0, i)).replace(KW, '<span class="kw">$1</span>');
+      return i < 0 ? body : body + `<span class="cm">${esc(s.slice(i))}</span>`;
+    };
+    const one = SNIP.map(line).join("\n") + "\n\n";
+    // two identical copies; the track moves up by exactly one copy and wraps, so the loop has no visible seam
+    code.innerHTML = `<div class="rc-track"><div class="rc-copy">${one}</div><div class="rc-copy" aria-hidden="true">${one}</div></div>`;
+    const track = $(".rc-track", code), copy = $(".rc-copy", code);
+    let period = 0, y = 0, last = 0, running = false;
+    const measure = () => (period = copy.offsetHeight);
+    measure();
+    document.fonts?.ready.then(measure);
+    addEventListener("resize", measure);
+    const SPEED = 24; // px per second
+    const roll = (now) => {
+      if (!running) return;
+      const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
+      if (period) { y = (y + SPEED * dt) % period; track.style.transform = `translate3d(0, ${(-y).toFixed(2)}px, 0)`; }
+      requestAnimationFrame(roll);
+    };
+    if (!REDUCED) watchVisible(code, (v) => { if (v && !running) { running = true; last = performance.now(); requestAnimationFrame(roll); } else if (!v) running = false; });
     const loc = $("#loc");
     onVisible(code, () => {
       const t0 = performance.now();

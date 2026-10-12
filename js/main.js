@@ -8,6 +8,7 @@
   UI.film();
   UI.misc();
   UI.footLight();
+  UI.filmSnap();
   UI.pauseOffscreen();
   Charts.init();
   Cases.init();

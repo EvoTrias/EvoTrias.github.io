@@ -232,11 +232,91 @@ const UI = (() => {
     watchVisible(w, (v) => { if (v && !vis) { vis = true; requestAnimationFrame(tick); } else if (!v) vis = false; });
   }
 
+  // ------------------------------------------------------------ hero → film: scrolling down out of the hero glides onto the film
+  function filmSnap() {
+    if (REDUCED) return;
+    const hero = $(".hero"), sec = $("#film"), label = $(".sec-idx", sec), wrap = $(".film-wrap", sec);
+    // resting place: the whole film block (label → video) centred under the nav if it fits, else the label just under the nav
+    const target = () => {
+      const top = sec.getBoundingClientRect().top + scrollY + label.offsetTop; // offsets ignore the reveal transforms
+      const span = wrap.offsetTop + wrap.offsetHeight - label.offsetTop;
+      const nav = innerWidth < 700 ? 70 : 84, room = innerHeight - nav - 24;
+      return Math.round(top - nav - (span <= room ? (room - span) / 2 : 28));
+    };
+    // only where the hero is a single screen; a taller hero would have content skipped by the jump
+    const armed = () => !document.body.classList.contains("is-loading") && hero.offsetHeight <= innerHeight * 1.15;
+    let anim = 0, gliding = false, lockUntil = 0, lockCap = 0, lastDy = 0;
+    const glide = (to) => {
+      cancelAnimationFrame(anim);
+      const from = scrollY, d = to - from, t0 = performance.now();
+      const dur = clamp(620 + Math.abs(d) * 0.32, 780, 1250);
+      gliding = true;
+      const step = (now) => {
+        const u = clamp((now - t0) / dur);
+        scrollTo({ top: from + d * E.inOut(u), behavior: "instant" });
+        if (u < 1) { anim = requestAnimationFrame(step); return; }
+        gliding = false;
+        lockUntil = now + 220; lockCap = now + 2200; // swallow the tail of a trackpad flick so it doesn't carry past the film
+      };
+      anim = requestAnimationFrame(step);
+    };
+    const stop = () => { if (gliding) { cancelAnimationFrame(anim); gliding = false; } };
+    const below = () => { const t = target(); return scrollY < t - 30 ? t : null; };
+
+    addEventListener("wheel", (e) => {
+      if (e.ctrlKey || !armed()) return;
+      const down = e.deltaY > 0 && Math.abs(e.deltaY) >= Math.abs(e.deltaX);
+      const dy = Math.abs(e.deltaY);
+      if (gliding) { if (down) { e.preventDefault(); lastDy = dy; } else stop(); return; }
+      const now = performance.now();
+      // momentum events keep coming and fade out; a clearly stronger event is a new, deliberate scroll and goes through
+      if (down && now < lockUntil && now < lockCap && dy <= lastDy * 1.3 + 4) { e.preventDefault(); lockUntil = now + 160; lastDy = dy; return; }
+      lockUntil = 0;
+      if (!down) return;
+      const t = below();
+      if (t == null) return;
+      e.preventDefault();
+      glide(t);
+    }, { passive: false });
+    addEventListener("keydown", (e) => {
+      if (!["PageDown", " ", "ArrowDown"].includes(e.key) || e.shiftKey || e.altKey || !armed()) return;
+      if (e.target.closest?.("input, textarea, select, button, video, [contenteditable]")) return;
+      const t = below();
+      if (t == null || gliding) return;
+      e.preventDefault();
+      glide(t);
+    });
+    // touch: let the flick run natively, then settle onto the film if it came to rest inside the hero heading down
+    let lastY = scrollY, dir = 0, idle = 0, touching = false;
+    const settle = () => {
+      clearTimeout(idle);
+      idle = setTimeout(() => {
+        if (touching || gliding || dir <= 0 || !armed() || scrollY < 40) return;
+        const t = below();
+        if (t != null) glide(t);
+      }, 140);
+    };
+    addEventListener("touchstart", () => { touching = true; stop(); }, { passive: true });
+    addEventListener("touchend", () => { touching = false; settle(); }, { passive: true });
+    addEventListener("scroll", () => {
+      if (gliding) return;
+      if (scrollY !== lastY) dir = scrollY > lastY ? 1 : -1;
+      lastY = scrollY;
+      if (TOUCH) settle();
+    }, { passive: true });
+    // links to the film ("Watch the film", nav, scroll cue) land on the same resting place with the same glide
+    $$('a[href="#film"]').forEach((a) => a.addEventListener("click", (e) => {
+      e.preventDefault();
+      glide(target());
+      history.replaceState(null, "", "#film");
+    }));
+  }
+
   // pause CSS animations of sections that are not on screen
   function pauseOffscreen() {
     const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("offscreen", !e.isIntersecting)), { rootMargin: "200px 0px" });
     $$("main > section").forEach((s) => io.observe(s));
   }
 
-  return { seg, loader, wordmark, reveals, magnetic, tilt, nav, navInk, counters, film, misc, footLight, pauseOffscreen };
+  return { seg, loader, wordmark, reveals, magnetic, tilt, nav, navInk, counters, film, misc, footLight, filmSnap, pauseOffscreen };
 })();
