@@ -187,7 +187,7 @@ const Charts = (() => {
     const host = $("#ch-median");
     const F = P.frontier;
     mount(host, () => {
-    const f = frame(host, 640, 380, [12, 70, 30, 110], [10, 54, 46, 84]);
+    const f = frame(host, 640, 380, [12, 70, 46, 110], [10, 54, 46, 84]);
     const ms = METHODS.slice().sort((a, b) => F.median[b] - F.median[a]);
     const xs = scale(0, 90, f.x0, f.x1);
     const bh = (f.y0 - f.y1) / ms.length;
@@ -205,7 +205,8 @@ const Charts = (() => {
         el.addEventListener("pointerleave", tipHide);
       });
     });
-    const k = f.narrow ? S("text", { x: f.x0, y: f.y0 + 38, "text-anchor": "start", class: "lab" }, f.svg) : S("text", { x: f.x1 + 64, y: f.y0 + 18, "text-anchor": "end", class: "lab" }, f.svg);
+    // key sits on its own row under the tick labels (on the tick row it collided with "80")
+    const k = f.narrow ? S("text", { x: f.x0, y: f.y0 + 38, "text-anchor": "start", class: "lab" }, f.svg) : S("text", { x: f.x1 + 64, y: f.y0 + 38, "text-anchor": "end", class: "lab" }, f.svg);
     k.textContent = "bar = median · tick = mean";
     });
   }
@@ -636,7 +637,7 @@ std::function<void()> FeasibilityJumpSolver::GenerateTask(int64_t /*id*/) {
     function draw(anim) {
       $$("button", pick).forEach((b, i) => b.classList.toggle("on", i === sel));
       const c = C.c[sel];
-      read.innerHTML = `c = <b>${c}</b> · <b>${C.wallclock_min[sel].toFixed(0)}</b> min · <b>${C.speedup[sel].toFixed(1)}×</b> faster · fitness <b class="${C.fitness_change[sel] < -0.02 ? "neg" : ""}">${C.fitness_change[sel] === 0 ? "±0" : C.fitness_change[sel].toFixed(4)}</b>`;
+      read.innerHTML = `c = <b>${c}</b> · <b>${C.speedup[sel].toFixed(1)}×</b> faster · fitness <b class="fv ${C.fitness_change[sel] < -0.02 ? "neg" : ""}">${C.fitness_change[sel] === 0 ? "±0" : C.fitness_change[sel].toFixed(4)}</b>`;
       const f = frame(host, 640, 340, [30, 56, 40, 50]);
       const xs = (i) => f.x0 + ((i + 0.5) / C.c.length) * (f.x1 - f.x0);
       const ys = scale(0, 520, f.y0, f.y1);

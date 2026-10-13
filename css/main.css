@@ -665,6 +665,10 @@ h3 { font-family: var(--disp); letter-spacing: -0.02em; font-weight: 600; }
 .conc-read { font-family: var(--mono); font-size: 13px; color: var(--dim); text-align: right; }
 .conc-read b { color: #fff; font-size: 17px; }
 .conc-read .neg { color: #ff7a59; }
+/* when the row is a little short (laptop widths), tighten the picker and readout so the readout stays beside it */
+.conc { container-type: inline-size; }
+.conc-read .fv { display: inline-block; min-width: 7ch; text-align: left; } /* "±0" reserves the width of "-0.0308": same line length for every c */
+@container (max-width: 590px) { .conc-pick { gap: 4px; } .conc-pick button { width: 36px; } .conc-read { font-size: 12px; } .conc-read b { font-size: 15px; } }
 @media (max-width: 1000px) { .counters { grid-template-columns: 1fr 1fr; } .duo, .repo { grid-template-columns: 1fr; } }
 
 /* ---------------------------------------------------------------- cite */
