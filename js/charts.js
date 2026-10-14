@@ -334,7 +334,7 @@ const Charts = (() => {
     SER.forEach(([k, c], si) => {
       O[k].per_iteration.forEach((v, i) => {
         const vv = Math.max(LO + 0.5, v);
-        S("circle", { cx: xs(i + 1), cy: ys(vv), r: v < LO ? 3.5 : 2.3, fill: c, opacity: 0.35, class: "pop", style: `--dl:${0.2 + i * 0.02}s` }, f.svg);
+        S("circle", { cx: xs(i + 1), cy: ys(vv), r: 2.3, fill: c, opacity: 0.35, class: "pop", style: `--dl:${0.2 + i * 0.02}s` }, f.svg);
       });
       S("line", { x1: f.x0, x2: f.x1, y1: ys(O.one_shot_mean[k]), y2: ys(O.one_shot_mean[k]), stroke: c, "stroke-dasharray": "2 5", "stroke-width": 1.5, opacity: 0.8 }, f.svg);
       const pts = O[k].best_so_far.map((v, i) => [i + 1, v]);
