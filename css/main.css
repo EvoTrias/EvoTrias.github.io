@@ -771,7 +771,8 @@ h3 { font-family: var(--disp); letter-spacing: -0.02em; font-weight: 600; }
   #main-table th, #main-table td { padding: 8px 8px; }
   #main-table td { font-size: 12.5px; }
   #main-table th:first-child, #main-table td:first-child { position: sticky; left: 0; z-index: 1; background: #0a121a; box-shadow: 8px 0 12px -8px rgba(0, 0, 0, 0.8); white-space: normal; min-width: 128px; line-height: 1.3; }
-  #main-table tr.grp td { position: static; box-shadow: none; }
+  #main-table tr.grp td { position: static; box-shadow: none; background: none; }
+  #main-table tr.grp td span { position: sticky; left: 8px; }
   .legend { gap: 4px 8px; } .legend button { font-size: 11.5px; padding: 4px 8px 4px 6px; }
   .repo-code { min-height: 250px; margin-bottom: 14px; } .rc-count b { font-size: 44px; } .rc-scroll { font-size: 10.5px; }
   .conc { gap: 8px; } .conc-pick button { width: 42px; height: 40px; } .conc-read { text-align: left; font-size: 12px; } .conc-read b { font-size: 15px; }

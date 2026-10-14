@@ -129,7 +129,7 @@ const Charts = (() => {
       let html = `<thead><tr><th>Task</th>${heads}${phone ? "" : dHead}</tr></thead><tbody>`;
       let grp = null, ri = 0;
       D.rows.forEach((r) => {
-        if (r.group !== grp) { grp = r.group; html += `<tr class="grp"><td colspan="${D.methods.length + 2}">${grp.toUpperCase()}</td></tr>`; }
+        if (r.group !== grp) { grp = r.group; html += `<tr class="grp"><td colspan="${D.methods.length + 2}"><span>${grp.toUpperCase()}</span></td></tr>`; }
         const ours = r.values[5], base = r.values.slice(0, 5);
         const bestB = r.lower_is_better ? Math.min(...base) : Math.max(...base);
         let dl = ((ours - bestB) / Math.abs(bestB)) * 100 * (r.lower_is_better ? -1 : 1);
@@ -343,7 +343,6 @@ const Charts = (() => {
       const t = S("text", { x: f.x1 + 8, y: ys(pts[pts.length - 1][1]) + 5, fill: c, "font-family": "Space Grotesk, sans-serif", "font-size": 17, "font-weight": 700, class: "pop", style: `--dl:${2 + si * 0.2}s` }, f.svg);
       t.textContent = `+${fin}%`;
     });
-    const tail = S("text", { x: xs(42) + 6, y: ys(LO + 0.5) + 4, class: "lab" }, f.svg); tail.textContent = "↓ −62%";
     hover(f, xs, (x, e) => {
       const it = clamp(Math.round(x), 1, 50);
       tipShow(`<div class="th">iteration ${it}</div>` + SER.map(([k, c, lab]) => `<div class="tr"><span><i style="background:${c}"></i>${lab}</span><b>${O[k].best_so_far[it - 1] > 0 ? "+" : ""}${O[k].best_so_far[it - 1].toFixed(1)}%</b></div>`).join(""), e);
