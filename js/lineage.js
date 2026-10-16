@@ -36,7 +36,7 @@ const Lineage = (() => {
     const t = S("text", { x: X0 + g * XS, y: VH + 6, "text-anchor": "middle", fill: "#4d5f62", "font-family": "JetBrains Mono, monospace", "font-size": 10 }, bg);
     t.textContent = `G${g}`;
   }
-  const gEdges = S("g", {}, svg), gInsp = S("g", {}, svg), gMg = S("g", {}, svg), gNodes = S("g", {}, svg);
+  const gEdges = S("g", {}, svg), gInsp = S("g", {}, svg), gNodes = S("g", {}, svg);
 
   const curve = (a, b) => { const mx = (a.x + b.x) / 2; return `M ${a.x} ${a.y} C ${mx} ${a.y} ${mx} ${b.y} ${b.x} ${b.y}`; };
   nodes.forEach((n) => {
@@ -46,10 +46,6 @@ const Lineage = (() => {
       n.elen = n.edge.getTotalLength();
       n.edge.setAttribute("stroke-dasharray", n.elen);
       n.edge.setAttribute("stroke-dashoffset", n.elen);
-    }
-    if (n.guidance) {
-      const a = byId[D.guidance_ideas[n.guidance]?.anchor] || byId[n.parent];
-      n.mg = S("path", { d: `M ${a.x} ${a.y} Q ${(a.x + n.x) / 2} ${Math.min(a.y, n.y) - 60} ${n.x} ${n.y}`, fill: "none", stroke: "#b39cff", "stroke-width": 1.4, "stroke-dasharray": "3 5", opacity: 0 }, gMg);
     }
     const g = S("g", { transform: `translate(${n.x} ${n.y})`, opacity: 0, class: "ln-node" }, gNodes);
     const r = 3.8 + n.q * 4.6;
@@ -126,7 +122,6 @@ const Lineage = (() => {
         n.edge.style.transition = animate && !back ? "stroke-dashoffset .7s cubic-bezier(.22,1,.36,1)" : "none";
         n.edge.style.strokeDashoffset = vis ? 0 : n.elen;
       }
-      if (n.mg) n.mg.setAttribute("opacity", vis ? 0.75 : 0);
     });
     let best = null;
     nodes.slice(0, k).forEach((n) => { if (!best || n.cost < best.cost) best = n; });
@@ -159,7 +154,7 @@ const Lineage = (() => {
       beams(n);
       if (n.guidance) {
         const gi = D.guidance_ideas[n.guidance];
-        card("guidance", gi.idea, `anchored at the canonical best · ${n.id}: ${n.is_new_best ? "new best" : n.cost > byId[n.parent].cost + 1e-6 ? "regression" : "no gain"}`, `meta-guidance ${n.guidance} → ${n.id}`);
+        card("guidance", gi.idea, `anchored at the then-best ${n.parent} · ${n.id}: ${n.is_new_best ? "new best" : n.cost > byId[n.parent].cost + 1e-6 ? "regression" : "no gain"}`, `meta-guidance ${n.guidance} → ${n.id}`);
       }
       (n.notes || []).forEach((kind) => {
         const ex = EX[n.id];
