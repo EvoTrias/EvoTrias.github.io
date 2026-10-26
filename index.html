@@ -17,7 +17,7 @@
   if ((tq || ts) === "light") document.documentElement.dataset.theme = "light"; })();</script>
 <link rel="icon" type="image/svg+xml" href="assets/img/dino/dino_plain.svg" />
 <link rel="stylesheet" href="css/fonts.css?v=20261013a" />
-<link rel="stylesheet" href="css/main.css?v=20261026w" />
+<link rel="stylesheet" href="css/main.css?v=20261027f" />
 </head>
 <body class="is-loading">
 
@@ -89,6 +89,31 @@
   </div>
 
   <div class="hero-dino" data-parallax="0.04">
+    <div class="porthole" aria-hidden="true">
+      <svg class="pt-frame" viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="pt-metal" x1="0.15" y1="0.05" x2="0.85" y2="0.95"><stop offset="0" stop-color="#ffffff" /><stop offset="0.45" stop-color="#eef2f4" /><stop offset="1" stop-color="#cdd7db" /></linearGradient>
+          <linearGradient id="pt-lip" x1="0.15" y1="0.05" x2="0.85" y2="0.95"><stop offset="0" stop-color="#b9c4c9" /><stop offset="0.5" stop-color="#e3e9eb" /><stop offset="1" stop-color="#ffffff" /></linearGradient>
+          <radialGradient id="pt-bolt" cx="0.38" cy="0.35" r="0.7"><stop offset="0" stop-color="#ffffff" /><stop offset="0.55" stop-color="#d5dde0" /><stop offset="1" stop-color="#9aa8ae" /></radialGradient>
+          <radialGradient id="pt-bs"><stop offset="0.5" stop-color="#5b6f77" stop-opacity="0.35" /><stop offset="1" stop-color="#5b6f77" stop-opacity="0" /></radialGradient>
+        </defs>
+        <path d="M50 0a50 50 0 1 0 0.001 0zM50 11.2a38.8 38.8 0 1 1 -0.001 0z" fill="url(#pt-metal)" fill-rule="evenodd" />
+        <circle cx="50" cy="50" r="49.55" fill="none" stroke="#ffffff" stroke-width="0.6" opacity="0.9" />
+        <circle cx="50" cy="50" r="40.6" fill="none" stroke="url(#pt-lip)" stroke-width="3.2" />
+        <circle cx="50" cy="50" r="39.1" fill="none" stroke="#1d2a30" stroke-width="0.9" />
+        <circle cx="92.42" cy="64.13" r="1.35" fill="url(#pt-bs)" /><circle cx="92.42" cy="63.78" r="1.2" fill="url(#pt-bolt)" />
+        <circle cx="76.22" cy="86.43" r="1.35" fill="url(#pt-bs)" /><circle cx="76.22" cy="86.08" r="1.2" fill="url(#pt-bolt)" />
+        <circle cx="50.00" cy="94.95" r="1.35" fill="url(#pt-bs)" /><circle cx="50.00" cy="94.60" r="1.2" fill="url(#pt-bolt)" />
+        <circle cx="23.78" cy="86.43" r="1.35" fill="url(#pt-bs)" /><circle cx="23.78" cy="86.08" r="1.2" fill="url(#pt-bolt)" />
+        <circle cx="7.58" cy="64.13" r="1.35" fill="url(#pt-bs)" /><circle cx="7.58" cy="63.78" r="1.2" fill="url(#pt-bolt)" />
+        <circle cx="7.58" cy="36.57" r="1.35" fill="url(#pt-bs)" /><circle cx="7.58" cy="36.22" r="1.2" fill="url(#pt-bolt)" />
+        <circle cx="23.78" cy="14.27" r="1.35" fill="url(#pt-bs)" /><circle cx="23.78" cy="13.92" r="1.2" fill="url(#pt-bolt)" />
+        <circle cx="50.00" cy="5.75" r="1.35" fill="url(#pt-bs)" /><circle cx="50.00" cy="5.40" r="1.2" fill="url(#pt-bolt)" />
+        <circle cx="76.22" cy="14.27" r="1.35" fill="url(#pt-bs)" /><circle cx="76.22" cy="13.92" r="1.2" fill="url(#pt-bolt)" />
+        <circle cx="92.42" cy="36.57" r="1.35" fill="url(#pt-bs)" /><circle cx="92.42" cy="36.22" r="1.2" fill="url(#pt-bolt)" />
+      </svg>
+      <div class="pt-glass"></div>
+    </div>
     <div class="orbit o1"><i></i></div>
     <div class="orbit o2"><i></i></div>
     <img class="dino-float" src="assets/img/dino/dino_astronaut.svg" alt="EvoTrias mascot: a small dinosaur in a space helmet" data-zh-alt="EvoTrias 吉祥物：戴着太空头盔的小恐龙" />
@@ -468,9 +493,9 @@
 <script src="js/data.js?v=20261013a"></script>
 <script src="js/lib.js?v=20261026a"></script>
 <script src="js/i18n.js?v=20261026b"></script>
-<script src="js/theme.js?v=20261026b"></script>
-<script src="js/galaxy.js?v=20261026t"></script>
-<script src="js/ui.js?v=20261026a"></script>
+<script src="js/theme.js?v=20261027b"></script>
+<script src="js/galaxy.js?v=20261027c"></script>
+<script src="js/ui.js?v=20261027a"></script>
 <script src="js/loop.js?v=20261026a"></script>
 <script src="js/lineage.js?v=20261026a"></script>
 <script src="js/terminal.js?v=20261026a"></script>

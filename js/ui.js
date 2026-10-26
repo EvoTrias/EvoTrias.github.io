@@ -133,7 +133,7 @@ const UI = (() => {
     const navEl = $("#nav"), bar = $(".nav-progress i");
     const links = $$(".nav-links a");
     const secs = links.map((a) => $(a.getAttribute("href")));
-    const hd = $(".hero-dino");
+    const hd = $(".hero-dino"), pt = $(".porthole");
     let queued = false, lastCur = -2;
     const update = () => {
       queued = false;
@@ -145,7 +145,7 @@ const UI = (() => {
       bar.style.transform = `scaleX(${clamp(y / max)})`;
       navEl.classList.toggle("scrolled", y > 30);
       if (cur !== lastCur) { links.forEach((a, i) => a.classList.toggle("on", i === cur)); lastCur = cur; }
-      if (hd && y < innerHeight * 1.5) hd.style.translate = `0 ${y * -0.18}px`;
+      if (hd && y < innerHeight * 1.5) { hd.style.translate = `0 ${y * -0.18}px`; if (pt) pt.style.translate = `0 ${y * 0.18}px`; } // the dino drifts; its porthole stays on the wall
     };
     addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
     update();

@@ -4,12 +4,12 @@
 // the light theme defines those variables (css/main.css, "light theme"). Scripts draw SVG with literal colours too,
 // so this module maps them the same way: fill / stroke / stop-color attributes and colours in style attributes are
 // swapped to their light values (originals kept on the element), for what is on the page and for whatever the
-// charts draw later. The terminal keeps its dark look in both themes.
+// charts draw later. The terminal, the film and the porthole (drawn for the light cabin) keep their own colours.
 const Theme = (() => {
   const root = document.documentElement;
   const KEY = "theme";
   const ATTRS = ["fill", "stroke", "stop-color", "flood-color"];
-  const KEEP = ".term, .film-frame";
+  const KEEP = ".term, .film-frame, .porthole";
   const isLight = () => root.dataset.theme === "light";
 
   // light value of a literal colour, read from the stylesheet's variables (cached per theme switch)
@@ -93,15 +93,34 @@ const Theme = (() => {
     try { localStorage.setItem(KEY, mode); } catch (_) {}
     sync();
   }
-  $$(".theme-btn").forEach((b) => b.addEventListener("click", () => {
+  // The switch is an aperture on the porthole: going light, the universe closes in around the window (you step back
+  // into the cabin); going dark, it opens out of the window until it fills the screen. With the porthole off screen
+  // the aperture is centred on the switch. The aperture waits for a rendered frame, so a page that is not painting
+  // (background tab) switches directly.
+  const glassCircle = () => {
+    const g = $(".pt-glass"), b = g && g.getBoundingClientRect();
+    return b && b.width > 4 && b.bottom > 0 && b.top < innerHeight ? { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 } : null;
+  };
+  function toggle(btn) {
     const next = isLight() ? "dark" : "light";
-    // crossfade the whole page, including the canvas and the redrawn charts; the crossfade waits for a rendered
-    // frame, so a page that is not painting (background tab) switches directly
-    if (document.startViewTransition && !REDUCED) {
-      document.startViewTransition(() => set(next));
-      setTimeout(() => { if (isLight() !== (next === "light")) set(next); }, 300);
-    } else set(next);
-  }));
+    if (!document.startViewTransition || REDUCED) { set(next); return; }
+    const bb = btn.getBoundingClientRect();
+    const at = (c) => c || { x: bb.left + bb.width / 2, y: bb.top + bb.height / 2, r: 0 };
+    const far = (c) => Math.hypot(Math.max(c.x, innerWidth - c.x), Math.max(c.y, innerHeight - c.y)) + 2;
+    const leave = next === "dark" ? at(glassCircle()) : null; // the window we step out through (light layout)
+    root.classList.add("vt-iris", next === "light" ? "vt-in" : "vt-out");
+    const vt = document.startViewTransition(() => set(next));
+    setTimeout(() => { if (isLight() !== (next === "light")) set(next); }, 300);
+    vt.ready.then(() => {
+      const c = leave || at(glassCircle()); // going light: the window we arrive at
+      const big = `circle(${far(c)}px at ${c.x}px ${c.y}px)`, small = `circle(${c.r}px at ${c.x}px ${c.y}px)`;
+      const opt = { duration: 1150, easing: "cubic-bezier(0.65, 0, 0.25, 1)", fill: "forwards" };
+      if (next === "light") root.animate([{ clipPath: big, opacity: 1 }, { clipPath: small, opacity: 1, offset: 0.8 }, { clipPath: small, opacity: 0 }], { ...opt, pseudoElement: "::view-transition-old(root)" });
+      else root.animate([{ clipPath: small, opacity: 0.35 }, { opacity: 1, offset: 0.2 }, { clipPath: big, opacity: 1 }], { ...opt, pseudoElement: "::view-transition-new(root)" });
+    }).catch(() => {});
+    vt.finished.finally(() => root.classList.remove("vt-iris", "vt-in", "vt-out"));
+  }
+  $$(".theme-btn").forEach((b) => b.addEventListener("click", () => toggle(b)));
   sync();
   return { isLight, mapColors };
 })();

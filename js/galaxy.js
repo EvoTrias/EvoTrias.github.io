@@ -1,5 +1,7 @@
 // Background universe: a WebGL spiral galaxy (same look as the film's cosmos) that the whole page scrolls over.
 // The three powers orbit it as a triangle — the "Trias" — drawn on a 2D overlay with the same camera.
+// Light theme: the page is the inside of a white cabin and the same universe is seen through the hero's porthole —
+// both canvases are clipped to the porthole glass and the camera frames the galaxy in it.
 const Galaxy = (() => {
   const cv = $("#galaxy");
   const ov = $("#triad");
@@ -14,18 +16,12 @@ const Galaxy = (() => {
   // ------------------------------------------------------------ particles
   const r = rng(7);
   const gauss = () => (r() + r() + r() + r() - 2) * 0.87;
-  // light theme: the same galaxy drawn as ink on paper, each colour taken down to a deeper ink of its hue
-  const INK = { "#ffe2a8": "#d99a2b", "#fff4dc": "#c98a2a", "#ffffff": "#2b6f86", "#ffd08a": "#c27f12", "#4fd1e8": "#0898b0", "#7fe0cf": "#1f9e8a",
-    "#9fdcff": "#3d8fc4", "#22a889": "#128a70", "#bff4ff": "#0a6f82", "#9b8ad0": "#6f5cc4", "#2e6fd0": "#2e5fc0", "#ff6fb0": "#d0508a", "#e0a24a": "#c27f12", "#ff8fc0": "#c8467f" };
-  const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
-  const hex = (h) => Object.assign(rgb(h), { ink: rgb(INK[h] || h) });
+  const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
   const WARM = ["#ffe2a8", "#fff4dc", "#ffffff", "#ffd08a"].map(hex);
   const ARMC = ["#4fd1e8", "#7fe0cf", "#9fdcff", "#22a889", "#ffffff", "#bff4ff", "#9b8ad0", "#4fd1e8"].map(hex);
   const NEB = ["#4fd1e8", "#22a889", "#2e6fd0", "#9b8ad0", "#ff6fb0", "#e0a24a", "#4fd1e8", "#22a889"].map(hex);
-  const pos = [], col = [], colInk = [], ext = [];
-  // on paper overlapping dots add up fast (no glow to spread them), so ink is laid on thinner; background stars stay faint
-  const INK_A = [0.72, 0.55, 0.3];
-  const push = (rad, ang, z, kind, c, a, size, seed) => { pos.push(rad, ang, z, kind); col.push(c[0], c[1], c[2], a); colInk.push(c.ink[0], c.ink[1], c.ink[2], a * INK_A[kind]); ext.push(size, seed); };
+  const pos = [], col = [], ext = [];
+  const push = (rad, ang, z, kind, c, a, size, seed) => { pos.push(rad, ang, z, kind); col.push(c[0], c[1], c[2], a); ext.push(size, seed); };
   const ARM = (rad, arm) => arm * Math.PI + Math.log(rad / 0.07) * 2.25;
   for (let i = 0; i < 3600; i++) { // bulge
     const rad = Math.abs(gauss()) * 0.11 + 0.004;
@@ -98,15 +94,7 @@ const Galaxy = (() => {
     gl_FragColor = vec4(vCol.rgb * a, a);
   }`;
 
-  let program, U = {}, colBuf = null, inked = false;
-  const light = () => document.documentElement.dataset.theme === "light";
-  // dark: light adds up on black; light: ink lies over paper (premultiplied "over")
-  function setInk(on) {
-    inked = on;
-    gl.bindBuffer(gl.ARRAY_BUFFER, colBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(on ? colInk : col), gl.STATIC_DRAW);
-    gl.blendFunc(gl.ONE, on ? gl.ONE_MINUS_SRC_ALPHA : gl.ONE);
-  }
+  let program, U = {};
   function init() {
     if (!gl) return;
     const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; };
@@ -122,9 +110,8 @@ const Galaxy = (() => {
       const loc = gl.getAttribLocation(program, name);
       gl.enableVertexAttribArray(loc);
       gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0);
-      return b;
     };
-    buf(pos, "aPos", 4); colBuf = buf(col, "aCol", 4); buf(ext, "aExt", 2);
+    buf(pos, "aPos", 4); buf(col, "aCol", 4); buf(ext, "aExt", 2);
     ["uTime", "uAspect", "uDpr", "uTilt", "uYaw", "uDist", "uFocal", "uSpin", "uFade", "uPx", "uCenter", "uMouse", "uIntro"].forEach((n) => (U[n] = gl.getUniformLocation(program, n)));
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE);
@@ -138,8 +125,34 @@ const Galaxy = (() => {
     if (gl) gl.viewport(0, 0, cv.width, cv.height);
   }
 
+  // ------------------------------------------------------------ porthole (light theme)
+  const glass = $(".pt-glass");
+  const win = { on: false, x: 0, y: 0, r: 0, shown: false };
+  let clipKey = "";
+  const setClip = (v) => { if (v !== clipKey) { clipKey = v; cv.style.clipPath = ov.style.clipPath = v; } };
+  function readWindow() {
+    win.on = document.documentElement.dataset.theme === "light" && !!glass;
+    if (!win.on) { setClip(""); return; }
+    const b = glass.getBoundingClientRect();
+    win.r = b.width / 2; win.x = b.left + win.r; win.y = b.top + win.r;
+    win.shown = win.r > 2 && b.bottom > 0 && b.top < H;
+    setClip(win.shown ? `circle(${win.r.toFixed(1)}px at ${win.x.toFixed(1)}px ${win.y.toFixed(1)}px)` : "circle(0px at 0px 0px)");
+  }
+  // the galaxy fills the glass with its arms running past the rim; it is centred when the window is mid-screen and
+  // lags the window as it moves away (a far-away object moves less than the wall it is seen through)
+  function windowCamera() {
+    const k = (1.32 * win.r) / (1.15 * H * 0.5);
+    const gy = win.y - (win.y - H / 2) * 0.22;
+    return {
+      cx: (win.x / W) * 2 - 1, cy: 1 - (gy / H) * 2,
+      tilt: 0.98 + st.my * 0.1, yaw: -0.35 + st.mx * 0.12 + st.scroll * 0.08,
+      dist: 1.6 / k, focal: 1.6, fade: 1,
+    };
+  }
+
   // Camera as a function of scroll: hero → galaxy sits right of the title; later it drifts to the centre, tips over and recedes.
   function camera() {
+    if (win.on) return windowCamera();
     const p = st.scroll, hero = E.smooth(prog(p, 0, 1.1));
     const narrow = W < 1000;
     const mx = st.mx, my = st.my;
@@ -161,13 +174,12 @@ const Galaxy = (() => {
   // ------------------------------------------------------------ triad overlay
   const labels = $$(".triad-labels .tl");
   const dinoEl = $(".dino-float"), copyEl = $(".hero-copy");
-  const TRI_DARK = [[46, 211, 160], [255, 138, 76], [111, 140, 255]], TRI_INK = [[15, 158, 116], [224, 102, 42], [74, 99, 230]];
-  let TRI = TRI_DARK;
+  const TRI = [[46, 211, 160], [255, 138, 76], [111, 140, 255]];
   let triadClear = false;
   const labelOp = [-1, -1, -1];
   const setLabel = (i, op) => { const v = Math.round(op * 100) / 100; if (v !== labelOp[i]) { labels[i].style.opacity = String(v); labelOp[i] = v; } };
   function drawTriad(c) {
-    const vis = W < 1000 ? 0 : (1 - E.smooth(prog(st.scroll, 0.15, 0.7))) * E.smooth(prog(st.intro, 0.35, 1));
+    const vis = W < 1000 ? 0 : (win.on ? (win.shown ? 1 : 0) : 1 - E.smooth(prog(st.scroll, 0.15, 0.7))) * E.smooth(prog(st.intro, 0.35, 1));
     if (vis <= 0.01) {
       if (!triadClear) { octx.setTransform(ODPR, 0, 0, ODPR, 0, 0); octx.clearRect(0, 0, W, H); labels.forEach((_, i) => setLabel(i, 0)); triadClear = true; }
       return;
@@ -177,15 +189,13 @@ const Galaxy = (() => {
     const dr = dinoEl ? dinoEl.getBoundingClientRect() : null, cr = copyEl ? copyEl.getBoundingClientRect() : null;
     octx.setTransform(ODPR, 0, 0, ODPR, 0, 0);
     octx.clearRect(0, 0, W, H);
-    const R = 1.02, t = st.time, ink = light();
-    TRI = ink ? TRI_INK : TRI_DARK;
-    const CORE = ink ? (i) => TRI[i] : () => [255, 255, 255]; // white-hot cores only glow on black
+    const R = win.on ? 0.66 : 1.02, t = st.time;
     const inside = (b, x, y) => b && x > b.left - 20 && x < b.right + 20 && y > b.top - 10 && y < b.bottom + 10;
     const pts = [0, 1, 2].map((i) => {
       const a = -t * 0.065 + (i * Math.PI * 2) / 3 + 0.4; // orbits with the galaxy (clockwise)
       return project(Math.cos(a) * R, Math.sin(a) * R, 0.1 + 0.05 * Math.sin(t * 0.7 + i * 2), c);
     });
-    octx.globalCompositeOperation = ink ? "source-over" : "lighter";
+    octx.globalCompositeOperation = "lighter";
     // edges + contract pulses travelling G → P → J → G
     for (let i = 0; i < 3; i++) {
       const a = pts[i], b = pts[(i + 1) % 3];
@@ -198,14 +208,14 @@ const Galaxy = (() => {
         const u = (t * 0.22 + k / 3 + i * 0.13) % 1;
         const x = lerp(a.x, b.x, u), y = lerp(a.y, b.y, u);
         const rg = octx.createRadialGradient(x, y, 0, x, y, 10);
-        rg.addColorStop(0, `rgba(${CORE(i)},${0.9 * vis * Math.sin(u * Math.PI)})`); rg.addColorStop(0.3, `rgba(${TRI[i]},${0.6 * vis})`); rg.addColorStop(1, ink ? `rgba(${TRI[i]},0)` : "rgba(0,0,0,0)");
+        rg.addColorStop(0, `rgba(255,255,255,${0.9 * vis * Math.sin(u * Math.PI)})`); rg.addColorStop(0.3, `rgba(${TRI[i]},${0.6 * vis})`); rg.addColorStop(1, "rgba(0,0,0,0)");
         octx.fillStyle = rg; octx.fillRect(x - 10, y - 10, 20, 20);
       }
     }
     pts.forEach((p, i) => {
       const s = 0.8 + p.k * 0.25, pul = 1 + 0.15 * Math.sin(t * 2.4 + i * 2);
       const rg = octx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 46 * s * pul);
-      rg.addColorStop(0, `rgba(${CORE(i)},${0.95 * vis})`); rg.addColorStop(0.12, `rgba(${TRI[i]},${0.9 * vis})`); rg.addColorStop(0.4, `rgba(${TRI[i]},${0.22 * vis})`); rg.addColorStop(1, ink ? `rgba(${TRI[i]},0)` : "rgba(0,0,0,0)");
+      rg.addColorStop(0, `rgba(255,255,255,${0.95 * vis})`); rg.addColorStop(0.12, `rgba(${TRI[i]},${0.9 * vis})`); rg.addColorStop(0.4, `rgba(${TRI[i]},${0.22 * vis})`); rg.addColorStop(1, "rgba(0,0,0,0)");
       octx.fillStyle = rg; octx.fillRect(p.x - 60 * s, p.y - 60 * s, 120 * s, 120 * s);
       octx.strokeStyle = `rgba(${TRI[i]},${0.7 * vis})`; octx.lineWidth = 1.2;
       octx.beginPath(); octx.arc(p.x, p.y, 14 * s * pul, 0, Math.PI * 2); octx.stroke();
@@ -231,10 +241,11 @@ const Galaxy = (() => {
     st.time = now / 1000;
     st.mx = lerp(st.mx, st.tmx, 0.04); st.my = lerp(st.my, st.tmy, 0.04);
     st.scroll = scrollY / Math.max(1, H);
+    readWindow();
     const c = camera();
+    if (win.on && !win.shown) { drawTriad(c); return; } // porthole scrolled away: nothing to draw
     if (gl) {
-      if (light() !== inked) setInk(!inked);
-      if (inked) gl.clearColor(0.984, 0.988, 0.988, 1); else gl.clearColor(0.012, 0.024, 0.04, 1);
+      gl.clearColor(0.012, 0.024, 0.04, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(U.uTime, st.time);
       gl.uniform1f(U.uAspect, W / H);
