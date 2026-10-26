@@ -5,7 +5,7 @@ const Loop = (() => {
   const P = { G: [280, 96], P: [96, 392], J: [464, 392] };
   const COL = { G: "#2ed3a0", P: "#ff8a4c", J: "#6f8cff" };
   const IMG = { G: "assets/img/dino/dino_commander.svg", P: "assets/img/dino/dino_builder.svg", J: "assets/img/dino/dino_judge.svg" };
-  const NAME = { G: "Governance", P: "Proposal", J: "Judgment" };
+  const NAME = { G: L("Governance", "治理"), P: L("Proposal", "提议"), J: L("Judgment", "评判") };
   const defs = S("defs", {}, svg);
   defs.innerHTML = `<filter id="lg" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     <radialGradient id="lpk"><stop offset="0" stop-color="#bff4ff" stop-opacity="0.7"/><stop offset="1" stop-color="#4fd1e8" stop-opacity="0"/></radialGradient>
@@ -17,13 +17,13 @@ const Loop = (() => {
   const hr2 = S("g", {}, hook);
   S("circle", { cx: 280, cy: 290, r: 250, fill: "none", stroke: "#e0a24a", "stroke-width": 8, "stroke-dasharray": "40 90", opacity: 0.12 }, hr2);
   S("circle", { cx: 280, cy: 290, r: 250, fill: "none", stroke: "#e0a24a", "stroke-width": 2, "stroke-dasharray": "40 90", opacity: 0.6 }, hr2);
-  const hl = S("text", { x: 280, y: 580, "text-anchor": "middle", fill: "#e0a24a", "font-family": "JetBrains Mono, monospace", "font-size": 10.5, "letter-spacing": 3 }, hook);
-  hl.textContent = "HOOK LAYER";
+  const hl = S("text", { x: 280, y: 580, "text-anchor": "middle", fill: "#e0a24a", "font-family": MONO, "font-size": 10.5, "letter-spacing": 3 }, hook);
+  hl.textContent = L("HOOK LAYER", "HOOK 层");
   S("circle", { cx: 280, cy: 290, r: 120, fill: "url(#lcore)" }, svg);
-  const ct = S("text", { x: 280, y: 296, "text-anchor": "middle", fill: "#8ea3a0", "font-family": "JetBrains Mono, monospace", "font-size": 11, "letter-spacing": 2 }, svg);
-  ct.textContent = "TYPED CONTRACTS";
+  const ct = S("text", { x: 280, y: 296, "text-anchor": "middle", fill: "#8ea3a0", "font-family": MONO, "font-size": 11, "letter-spacing": 2 }, svg);
+  ct.textContent = L("TYPED CONTRACTS", "类型化契约");
 
-  const SEG = [["G", "P", "Γₜ  context capsule"], ["P", "J", "xₜ  candidate artifact"], ["J", "G", "yₜ  normalized outcome"]];
+  const SEG = [["G", "P", L("Γₜ  context capsule", "Γₜ  上下文胶囊")], ["P", "J", L("xₜ  candidate artifact", "xₜ  候选产物")], ["J", "G", L("yₜ  normalized outcome", "yₜ  归一化结果")]];
   const paths = SEG.map(([a, b, lab], i) => {
     const [x0, y0] = P[a], [x1, y1] = P[b];
     const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
@@ -39,7 +39,7 @@ const Loop = (() => {
     const lx = qx + (i === 0 ? -18 : i === 2 ? 18 : 0), ly = qy + (i === 1 ? 30 : -4);
     const t = S("text", { x: lx, y: ly, "text-anchor": side, fill: "#c6d6d3", "font-family": "Cambria Math, serif", "font-size": 16 }, svg);
     t.textContent = lab.split("  ")[0];
-    const t2 = S("text", { x: lx, y: ly + 16, "text-anchor": side, fill: "#6f8280", "font-family": "JetBrains Mono, monospace", "font-size": 10.5 }, svg);
+    const t2 = S("text", { x: lx, y: ly + 16, "text-anchor": side, fill: "#6f8280", "font-family": MONO, "font-size": 10.5 }, svg);
     t2.textContent = lab.split("  ")[1];
     return { el: hot, strokes: [hotGlow, hotCore], len: 0, d };
   });
@@ -55,7 +55,7 @@ const Loop = (() => {
     const cp = S("clipPath", { id: `lc-${k}` }, defs);
     S("circle", { r: 62 }, cp);
     S("image", { href: IMG[k], x: -58, y: -62, width: 116, height: 124, "clip-path": `url(#lc-${k})`, preserveAspectRatio: "xMidYMid meet" }, g);
-    const lab = S("text", { x: k === "G" ? 84 : 0, y: k === "G" ? 6 : 96, "text-anchor": k === "G" ? "start" : "middle", fill: COL[k], "font-family": "Space Grotesk, sans-serif", "font-size": 16, "font-weight": 600 }, g);
+    const lab = S("text", { x: k === "G" ? 84 : 0, y: k === "G" ? 6 : 96, "text-anchor": k === "G" ? "start" : "middle", fill: COL[k], "font-family": DISP, "font-size": 16, "font-weight": 600 }, g);
     lab.textContent = NAME[k];
     nodeEls[k] = { halo, ring };
   }

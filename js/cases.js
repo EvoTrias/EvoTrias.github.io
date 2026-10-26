@@ -85,23 +85,23 @@ const Cases = (() => {
     // the nine committed Notes, ledger values as printed in the paper
     notes: [
       { id: "N1", it: 13, d: "−12.3%", th: "±3.3%", vb: "81.3%", t: "Don't swap the L2 roughness post-filter for an unguarded L1 dead-zone + knot refit",
-        l: "The swap lost accuracy and smoothness at once; the permissive knot set added slope changes instead of removing them.", e: "task_013 0.6261 vs parent task_010 0.7137 · slope changes 14.8 → 33.8" },
+        l: "The swap lost accuracy and smoothness at once; the permissive knot set added slope changes instead of removing them.", e: "task_013 0.6261 vs parent task_010 0.7137 · slope changes 14.8 → 33.8", tz: "不要把 L2 粗糙度后置滤波换成无保护的 L1 死区 + 节点重拟合", lz: "这次替换同时损失了精度和平滑度；过于宽松的节点集非但没有消除斜率变化，反而增加了它们。" },
       { id: "P1", it: 15, d: "+12.4%", th: "±5.0%", vb: "104.7%", t: "Suppress reversals by post-hoc persistence pruning, not by narrowing bandwidth",
-        l: "Smoothness and accuracy trade off only when bandwidth is the sole knob. Persistence pruning plus a monotone PAVA projection after the smoother cut reversals further, without the lag cost.", e: "task_015 0.8144 vs parent task_007 0.7249 · slope changes 18.0 → 5.4" },
+        l: "Smoothness and accuracy trade off only when bandwidth is the sole knob. Persistence pruning plus a monotone PAVA projection after the smoother cut reversals further, without the lag cost.", e: "task_015 0.8144 vs parent task_007 0.7249 · slope changes 18.0 → 5.4", tz: "用事后的持续性剪枝抑制反转，而不是收窄带宽", lz: "只有当带宽是唯一的调节参数时，平滑度与精度才此消彼长。在平滑器之后加上持续性剪枝和单调 PAVA 投影，能进一步减少反转，而且没有滞后代价。" },
       { id: "P2", it: 16, d: "+10.5%", th: "±5.0%", vb: "98.3%", t: "Cut slope changes with a shape-domain post-stage, not a narrower band",
-        l: "Reversals dominate fitness. After Whittaker smoothing, 4σ persistence pruning and PAVA cut them at near-zero correlation cost — unlike spectral narrowing.", e: "task_016 0.8007 vs parent task_007 0.7249 · slope changes 18.0 → 7.8" },
+        l: "Reversals dominate fitness. After Whittaker smoothing, 4σ persistence pruning and PAVA cut them at near-zero correlation cost — unlike spectral narrowing.", e: "task_016 0.8007 vs parent task_007 0.7249 · slope changes 18.0 → 7.8", tz: "用形状域的后处理阶段削减斜率变化，而不是更窄的频带", lz: "反转主导着适应度。在 Whittaker 平滑之后，4σ 持续性剪枝与 PAVA 几乎不损失相关性就能削减反转，这是频谱收窄做不到的。" },
       { id: "P3", it: 17, d: "+10.1%", th: "±5.0%", vb: "88.4%", t: "Select the L1 trend-filter λ by a surrogate sweep",
-        l: "A 12-rung geometric λ ladder scored by an internal surrogate replaced a fixed discrepancy-principle λ; the idea was adapted from inspiration task_014.", e: "task_017 0.7198 vs parent task_009 0.6540 · slope changes 20.0 → 10.6" },
+        l: "A 12-rung geometric λ ladder scored by an internal surrogate replaced a fixed discrepancy-principle λ; the idea was adapted from inspiration task_014.", e: "task_017 0.7198 vs parent task_009 0.6540 · slope changes 20.0 → 10.6", tz: "通过代理指标扫描来选择 L1 趋势滤波的 λ", lz: "用内部代理指标为 12 级几何 λ 阶梯打分，取代了按偏差原则固定的 λ；这个想法改编自灵感 task_014。" },
       { id: "P4", it: 19, d: "+36.5%", th: "±5.0%", vb: "94.9%", t: "Select the reversal-pruning level by a surrogate objective",
-        l: "Enumerate the full pruning path once and select with exact slope counts, a Cp risk and an accuracy floor — do not hand-tune a significance constant.", e: "task_019 0.7730 vs parent task_004 0.5664 · slope changes 24.4 → 13.8" },
+        l: "Enumerate the full pruning path once and select with exact slope counts, a Cp risk and an accuracy floor — do not hand-tune a significance constant.", e: "task_019 0.7730 vs parent task_004 0.5664 · slope changes 24.4 → 13.8", tz: "通过代理目标选择反转剪枝的强度", lz: "一次性枚举完整的剪枝路径，再用精确的斜率计数、Cp 风险和精度下限来挑选，不要手工调节显著性常数。" },
       { id: "P5", it: 26, d: "+15.3%", th: "±5.0%", vb: "98.8%", t: "Jointly sweep bandwidth and pruning with a Cp surrogate",
-        l: "Freeing the smoothing corner as a second knob alongside the pruning level improved every axis at once; the Cp accuracy term prevented over-pruning.", e: "task_026 0.8047 vs parent task_005 0.6976 · false reversals 19 → 7.4" },
+        l: "Freeing the smoothing corner as a second knob alongside the pruning level improved every axis at once; the Cp accuracy term prevented over-pruning.", e: "task_026 0.8047 vs parent task_005 0.6976 · false reversals 19 → 7.4", tz: "用 Cp 代理指标联合扫描带宽与剪枝", lz: "把平滑拐点作为与剪枝强度并列的第二个调节参数放开后，各项指标同时提升；Cp 精度项防止了过度剪枝。" },
       { id: "N2", it: 29, d: "−5.8%", th: "±5.0%", vb: "93.0%", t: "Gate L0 changepoint branches on reversal count, not just a 1.30× Cp-risk bar",
-        l: "A many-segment fit won on accuracy while tripling reversals — and smoothness dominates this objective.", e: "task_029 0.7673 vs parent task_015 0.8144 · slope changes 5.4 → 15.0" },
+        l: "A many-segment fit won on accuracy while tripling reversals — and smoothness dominates this objective.", e: "task_029 0.7673 vs parent task_015 0.8144 · slope changes 5.4 → 15.0", tz: "把关 L0 变点分支时要看反转次数，而不只是 1.30× 的 Cp 风险线", lz: "一个多段拟合在精度上胜出，却让反转次数翻了三倍，而这个目标恰恰由平滑度主导。" },
       { id: "N3", it: 30, d: "−7.5%", th: "±5.0%", vb: "91.4%", t: "Guard the cross-branch surrogate against reversal inflation",
-        l: "A changepoint branch raised correlation 0.817 → 0.943 but quadrupled slope changes; the surrogate under-weighted the reversal terms.", e: "child 0.754 vs parent 0.814 · false reversals 3.2 → 19.2" },
+        l: "A changepoint branch raised correlation 0.817 → 0.943 but quadrupled slope changes; the surrogate under-weighted the reversal terms.", e: "child 0.754 vs parent 0.814 · false reversals 3.2 → 19.2", tz: "防止跨分支代理指标被反转次数的膨胀蒙蔽", lz: "一个变点分支把相关性从 0.817 提到 0.943，斜率变化却翻了两番；代理指标低估了反转项的权重。" },
       { id: "N4", it: 44, d: "−5.3%", th: "±2.6%", vb: "94.5%", t: "Validate a replacement selection criterion against realised correlation and noise reduction",
-        l: "A five-term plug-in criterion picked over-smoothed shapes: reversals halved while correlation and noise reduction both fell.", e: "task_044 0.7820 vs parent task_027 0.8257 · correlation 0.821 → 0.744" },
+        l: "A five-term plug-in criterion picked over-smoothed shapes: reversals halved while correlation and noise reduction both fell.", e: "task_044 0.7820 vs parent task_027 0.8257 · correlation 0.821 → 0.744", tz: "用实际的相关性和降噪效果来验证替换后的选择准则", lz: "一个五项 plug-in 准则选出了过度平滑的形状：反转次数减半，相关性和降噪效果却双双下降。" },
     ],
   };
   const ROOT_COL = ["#4fd1e8", "#e0a24a", "#2ed3a0", "#6f8cff", "#b49cff"];
@@ -126,13 +126,13 @@ const Cases = (() => {
       const wu = S("g", { class: "nt-warm" }, svg);
       S("rect", { x: x0, y: y1, width: xs(10.5) - x0, height: y0 - y1, fill: "rgba(255,255,255,0.025)" }, wu);
       S("line", { x1: xs(10.5), x2: xs(10.5), y1, y2: y0, stroke: "rgba(255,255,255,0.18)", "stroke-dasharray": "3 4" }, wu);
-      txt(S("text", { x: x0 + 10, y: y0 - 12, class: "cs-lab" }, wu), "warm-up · no requests fire");
+      txt(S("text", { x: x0 + 10, y: y0 - 12, class: "cs-lab" }, wu), L("warm-up · no requests fire", "预热期 · 不会触发请求"));
       const ax = S("g", { class: "cs-ax" }, svg);
       [0.55, 0.65, 0.75, 0.85].forEach((v) => { S("line", { x1: x0, x2: x1, y1: ys(v), y2: ys(v) }, ax); txt(S("text", { x: x0 - 10, y: ys(v) + 4, "text-anchor": "end" }, ax), v.toFixed(2)); });
       [1, 10, 20, 30, 40, 50].forEach((i) => txt(S("text", { x: xs(i), y: y0 + 20, "text-anchor": "middle" }, ax), i));
       S("line", { x1: x0, x2: x1, y1: y0, y2: y0, class: "base" }, ax);
-      txt(S("text", { x: x1, y: y0 + 38, "text-anchor": "end", class: "cs-lab" }, svg), "evolution iteration →");
-      txt(S("text", { x: x0 - 44, y: y1 - 6, class: "cs-lab" }, svg), "fitness ↑");
+      txt(S("text", { x: x1, y: y0 + 38, "text-anchor": "end", class: "cs-lab" }, svg), L("evolution iteration →", "进化迭代 →"));
+      txt(S("text", { x: x0 - 44, y: y1 - 6, class: "cs-lab" }, svg), L("fitness ↑", "适应度 ↑"));
       // scan head
       const scan = S("g", { class: "cs-scan" }, svg);
       const scanR = S("rect", { x: x0, y: y1, width: 60, height: y0 - y1, fill: "url(#nt-scan)" }, scan);
@@ -176,23 +176,27 @@ const Cases = (() => {
 
     // ---- side panel: both cards keep one fixed size; only their content changes
     const gEl = $(".nt-gate", root), card = $(".nt-card", root), led = $(".nt-ledger", root);
-    gEl.innerHTML = `<div class="g-h mono">THE WRITE GATE <span class="g-it"></span></div>
+    gEl.innerHTML = `<div class="g-h mono">${L("THE WRITE GATE", "写入门槛")} <span class="g-it"></span></div>
       <div class="g-stack">
-        <p class="g-view g-idle on">Each attempt is judged against a band around its parent's fitness. Only a child that lands <em>outside</em> the band asks for a Note.</p>
+        <p class="g-view g-idle on">${L("Each attempt is judged against a band around its parent's fitness. Only a child that lands <em>outside</em> the band asks for a Note.", "每次尝试都以父代适应度周围的区间为基准来评判。只有落在区间<em>之外</em>的子代，才会请求写入 Note。")}</p>
         <div class="g-view g-data">
-          <div class="g-row"><span>parent → child</span><b class="mono g-pc"></b></div>
-          <div class="g-row"><span>change</span><b class="mono g-d"></b></div>
-          <div class="g-row"><span>band</span><b class="mono g-b"></b></div>
+          <div class="g-row"><span>${L("parent → child", "父代 → 子代")}</span><b class="mono g-pc"></b></div>
+          <div class="g-row"><span>${L("change", "变化")}</span><b class="mono g-d"></b></div>
+          <div class="g-row"><span>${L("band", "区间")}</span><b class="mono g-b"></b></div>
           <div class="g-meter"><i class="g-band"></i><i class="g-zero"></i><i class="g-mark"></i></div>
           <span class="v g-v"></span>
         </div>
       </div>`;
     const G = { it: $(".g-it", gEl), idle: $(".g-idle", gEl), data: $(".g-data", gEl), pc: $(".g-pc", gEl), d: $(".g-d", gEl), b: $(".g-b", gEl), band: $(".g-band", gEl), mark: $(".g-mark", gEl), v: $(".g-v", gEl) };
-    card.innerHTML = `<div class="nc nc-empty on"><div class="nc-k mono">NOTES POOL · EMPTY</div><p>No Note yet. Small changes are absorbed by the band; the pool only grows when an outcome is surprising enough to teach something.</p></div>` +
-      NT.notes.map((n) => `<div class="nc ${n.id[0] === "P" ? "pos" : "neg"}" data-id="${n.id}"><div class="nc-k mono"><b>${n.id}</b>${n.id[0] === "P" ? "positive" : "negative"} Note · iteration ${n.it}<span>${n.d}</span></div>
-        <h4>${n.t}</h4><p>${n.l}</p><div class="nc-e mono">${n.e}</div></div>`).join("");
+    // evidence lines keep their numbers; only the words are swapped
+    const ez = (e) => L(e, e.replace(/ vs parent /g, " vs 父代 ").replace(/^child /, "子代 ").replace(" vs parent", " vs 父代").replace("slope changes", "斜率变化").replace("false reversals", "虚假反转").replace("correlation", "相关性"));
+    const kind = (n) => (n.id[0] === "P" ? L("positive", "正向") : L("negative", "负向"));
+    const itl = (i) => L(`iteration ${i}`, `迭代 ${i}`);
+    card.innerHTML = `<div class="nc nc-empty on"><div class="nc-k mono">${L("NOTES POOL · EMPTY", "NOTES 池 · 空")}</div><p>${L("No Note yet. Small changes are absorbed by the band; the pool only grows when an outcome is surprising enough to teach something.", "还没有 Note。小幅变化会被区间吸收；只有足够出人意料、值得记取的结果，才会让池子增长。")}</p></div>` +
+      NT.notes.map((n) => `<div class="nc ${n.id[0] === "P" ? "pos" : "neg"}" data-id="${n.id}"><div class="nc-k mono"><b>${n.id}</b>${kind(n)} Note · ${itl(n.it)}<span>${n.d}</span></div>
+        <h4>${L(n.t, n.tz)}</h4><p>${L(n.l, n.lz)}</p><div class="nc-e mono">${ez(n.e)}</div></div>`).join("");
     const cards = $$(".nc", card);
-    led.innerHTML = NT.notes.map((n) => `<button class="lg-cell ${n.id[0] === "P" ? "pos" : "neg"}" data-it="${n.it}"><b>${n.id}</b><span class="mono">iteration ${n.it}</span><strong>${n.d}</strong><span class="mono">threshold ${n.th}</span><span class="mono">vs. best ${n.vb}</span></button>`).join("");
+    led.innerHTML = NT.notes.map((n) => `<button class="lg-cell ${n.id[0] === "P" ? "pos" : "neg"}" data-it="${n.it}"><b>${n.id}</b><span class="mono">${itl(n.it)}</span><strong>${n.d}</strong><span class="mono">${L("threshold", "阈值")} ${n.th}</span><span class="mono">${L("vs. best", "相对最优")} ${n.vb}</span></button>`).join("");
     const cells = $$(".lg-cell", led);
     const itOf = (i) => V.its.find((q) => q.i === i);
     cells.forEach((c) => {
@@ -209,7 +213,7 @@ const Cases = (() => {
       gateCur = show;
       const idle = show === "idle" || show.k === "root";
       G.idle.classList.toggle("on", idle); G.data.classList.toggle("on", !idle);
-      G.it.textContent = idle ? "" : `iteration ${show.i}`;
+      G.it.textContent = idle ? "" : itl(show.i);
       if (idle) return;
       const { i, p, c, lo, hi, k } = show;
       const dlt = c / p - 1, tm = 1 - lo / p, tp = hi / p - 1;
@@ -220,7 +224,7 @@ const Cases = (() => {
       G.mark.className = `g-mark ${k}`; G.mark.style.left = `${clamp(50 + dlt * 250, 2, 98)}%`;
       const warm = i <= 10;
       G.v.className = `v g-v ${warm ? "warm" : k === "p" ? "pos" : k === "n" ? "neg" : "in"}`;
-      G.v.textContent = warm ? "warm-up · gate closed" : k ? `outside → ${show.note.id} written` : "inside band · no Note";
+      G.v.textContent = warm ? L("warm-up · gate closed", "预热期 · 门槛关闭") : k ? L(`outside → ${show.note.id} written`, `区间外 → 写入 ${show.note.id}`) : L("inside band · no Note", "区间内 · 不写 Note");
     }
     function showCard(n) {
       const id = n ? n.id : "";
@@ -252,7 +256,8 @@ const Cases = (() => {
         const done = NT.notes.filter((n) => it >= n.it - 0.15);
         showCard(done[done.length - 1]);
         cells.forEach((c) => c.classList.toggle("on", it >= +c.dataset.it - 0.15));
-        cnt.textContent = `${done.filter((n) => n.id[0] === "P").length} positive · ${done.filter((n) => n.id[0] === "N").length} negative`;
+        const np = done.filter((n) => n.id[0] === "P").length, nn = done.filter((n) => n.id[0] === "N").length;
+        cnt.textContent = L(`${np} positive · ${nn} negative`, `${np} 条正向 · ${nn} 条负向`);
       }
     };
     build(420);
@@ -266,24 +271,24 @@ const Cases = (() => {
   const MG = {
     attempts: [[1,0.770918],[2,0.728627],[3,0.88097],[4,0.927669],[5,0.278886],[6,0.88097],[7,0.873865],[8,0.88097],[9,0.933947],[10,0.993065],[11,0.932291],[12,0.991838],[13,0.88097],[14,0.993065],[15,0.933947],[16,0.993065],[17,0.993065],[18,0.991838],[19,0.990001],[22,0.994819],[27,0.993065],[28,0.993065],[29,0.993726],[30,0.993065],[31,0.990981],[34,0.996266],[39,0.990001],[40,0.997502]],
     rounds: [
-      { n: 1, at: 19.5, x: [19.5, 26.5], col: "#2ed3a0", why: "requested after 11 stalled outcomes", open: "0.9931",
+      { n: 1, at: 19.5, x: [19.5, 26.5], col: "#2ed3a0", why: "requested after 11 stalled outcomes", whyz: "在 11 次停滞结果后请求", open: "0.9931",
         ds: [
-          { id: "D1", t: "Constrained dual program", l: "Drop the smooth surrogate and attack the hard program itself with an active-set SQP solver.", u: [[20, 0.9452], [21, 0.99944]], out: "new best · +0.0064", s: "win" },
-          { id: "D2", t: "Exact algebraic construction", l: "Build the 14 points from coordinates reported for the Tammes problem.", u: [[23, 0.8803], [24, 0.9331]], out: "retired", s: "ret" },
-          { id: "D3", t: "Spherical-code portfolio", l: "Seed from published spherical-code tables, polish each, keep the best.", u: [[25, 0.9913], [26, 0.9332]], out: "retired", s: "ret" },
-        ], foot: "D1's artifact becomes the anchor parent of both later rounds." },
-      { n: 2, at: 31.5, x: [31.5, 38.5], col: "#e0a24a", why: "requested after 20 stalled outcomes", open: "0.99944",
+          { id: "D1", t: "Constrained dual program", l: "Drop the smooth surrogate and attack the hard program itself with an active-set SQP solver.", u: [[20, 0.9452], [21, 0.99944]], out: "new best · +0.0064", s: "win", tz: "约束对偶规划", lz: "放弃平滑代理，直接用有效集 SQP 求解器攻克原始的硬规划问题。", oz: "新最优 · +0.0064" },
+          { id: "D2", t: "Exact algebraic construction", l: "Build the 14 points from coordinates reported for the Tammes problem.", u: [[23, 0.8803], [24, 0.9331]], out: "retired", s: "ret", tz: "精确代数构造", lz: "用 Tammes 问题已公布的坐标构造这 14 个点。", oz: "已淘汰" },
+          { id: "D3", t: "Spherical-code portfolio", l: "Seed from published spherical-code tables, polish each, keep the best.", u: [[25, 0.9913], [26, 0.9332]], out: "retired", s: "ret", tz: "球面码组合", lz: "以已发表的球面码表为种子，逐一精修，保留最优。", oz: "已淘汰" },
+        ], foot: "D1's artifact becomes the anchor parent of both later rounds.", footz: "D1 的产物成为后两轮的锚定父代。" },
+      { n: 2, at: 31.5, x: [31.5, 38.5], col: "#e0a24a", why: "requested after 20 stalled outcomes", whyz: "在 20 次停滞结果后请求", open: "0.99944",
         ds: [
-          { id: "D4", t: "Hybrid global-local polish", l: "Feed the SLSQP artifact back through the surrogate, Nelder-Mead and basin hops.", u: [[32, 0.99944], [33, 0.99944]], out: "returns the anchor", s: "same" },
-          { id: "D5", t: "CMA-ES black box", l: "Derivative-free CMA-ES seeded at the anchored best, to cross basins.", u: [[35, 0.99944], [36, 0.99944]], out: "returns the anchor", s: "same" },
-          { id: "D6", t: "Structured multi-start", l: "SLSQP from 40+ seeds drawn from named symmetry families.", u: [[37, 0.9908], [38, 0.9412]], out: "retired", s: "ret" },
-        ], foot: "Two independent families land on the same point to the last digit — the basin looks exhausted." },
-      { n: 3, at: 40.5, x: [40.5, 46.5], col: "#b49cff", why: "round-2 record carried as failure history", open: "0.99944",
+          { id: "D4", t: "Hybrid global-local polish", l: "Feed the SLSQP artifact back through the surrogate, Nelder-Mead and basin hops.", u: [[32, 0.99944], [33, 0.99944]], out: "returns the anchor", s: "same", tz: "全局-局部混合精修", lz: "把 SLSQP 产物送回代理模型、Nelder‑Mead 和盆地跳跃中再处理。", oz: "回到锚点" },
+          { id: "D5", t: "CMA-ES black box", l: "Derivative-free CMA-ES seeded at the anchored best, to cross basins.", u: [[35, 0.99944], [36, 0.99944]], out: "returns the anchor", s: "same", tz: "CMA-ES 黑盒", lz: "以锚定的最优解为种子，运行无导数的 CMA‑ES，尝试跨越盆地。", oz: "回到锚点" },
+          { id: "D6", t: "Structured multi-start", l: "SLSQP from 40+ seeds drawn from named symmetry families.", u: [[37, 0.9908], [38, 0.9412]], out: "retired", s: "ret", tz: "结构化多起点", lz: "从若干已知对称族中抽取 40 多个种子，分别运行 SLSQP。", oz: "已淘汰" },
+        ], foot: "Two independent families land on the same point to the last digit — the basin looks exhausted.", footz: "两个彼此独立的方法族收敛到同一个点，连最后一位都相同：这个盆地看来已经挖尽了。" },
+      { n: 3, at: 40.5, x: [40.5, 46.5], col: "#b49cff", why: "round-2 record carried as failure history", whyz: "第 2 轮的记录作为失败历史带入", open: "0.99944",
         ds: [
-          { id: "D7", t: "Dual-anchor ring construction", l: "Closed form: two poles and two staggered rings of six, one root-find.", u: [[42, 0.99944], [44, 0.99944]], out: "same optimum, 3rd family", s: "same" },
-          { id: "D8", t: "Interior-point solver", l: "Keep D1's program, swap the active-set solver for a primal-dual interior-point method.", u: [[41, 1.000013], [43, 1.000013]], out: "crosses f = 1", s: "win" },
-          { id: "D9", t: "Perturbation portfolio", l: "Re-run SLSQP from twelve structured perturbations of the anchor.", u: [[45, 1.0000159], [46, 0.99944]], out: "final best", s: "win" },
-        ], foot: "Both escapes cross the reference; all three new bests after ramp-up come from guided tasks." },
+          { id: "D7", t: "Dual-anchor ring construction", l: "Closed form: two poles and two staggered rings of six, one root-find.", u: [[42, 0.99944], [44, 0.99944]], out: "same optimum, 3rd family", s: "same", tz: "双锚环构造", lz: "闭式解：两个极点加两圈错开的六点环，只需一次求根。", oz: "同一最优，第 3 个方法族" },
+          { id: "D8", t: "Interior-point solver", l: "Keep D1's program, swap the active-set solver for a primal-dual interior-point method.", u: [[41, 1.000013], [43, 1.000013]], out: "crosses f = 1", s: "win", tz: "内点法求解器", lz: "保留 D1 的规划，把有效集求解器换成原始-对偶内点法。", oz: "越过 f = 1" },
+          { id: "D9", t: "Perturbation portfolio", l: "Re-run SLSQP from twelve structured perturbations of the anchor.", u: [[45, 1.0000159], [46, 0.99944]], out: "final best", s: "win", tz: "扰动组合", lz: "从锚点的 12 个结构化扰动出发，重新运行 SLSQP。", oz: "最终最优" },
+        ], foot: "Both escapes cross the reference; all three new bests after ramp-up come from guided tasks.", footz: "两次突围都越过了参考值；预热期之后的三次新最优全部来自受指导的任务。" },
     ],
   };
   function meta() {
@@ -313,7 +318,7 @@ const Cases = (() => {
         S("line", { x1: bx, x2: bx, y1: m.t - 18, y2: y0, stroke: r.col, "stroke-opacity": 0.5, "stroke-dasharray": "2 4" }, g);
         const chip = S("g", { class: "mg-rchip" }, g);
         S("rect", { x: bx + bw / 2 - 38, y: m.t - 30, width: 76, height: 22, rx: 7, fill: r.col }, chip);
-        txt(S("text", { x: bx + bw / 2, y: m.t - 14.5, "text-anchor": "middle", class: "mg-rchip-t" }, chip), `round ${r.n}`);
+        txt(S("text", { x: bx + bw / 2, y: m.t - 14.5, "text-anchor": "middle", class: "mg-rchip-t" }, chip), L(`round ${r.n}`, `第 ${r.n} 轮`));
         S("circle", { cx: bx, cy: m.t - 18, r: 6, fill: "none", stroke: r.col, class: "mg-ping" }, g);
         return { r, g };
       });
@@ -325,11 +330,11 @@ const Cases = (() => {
       S("line", { x1: x0, x2: x1, y1: y0, y2: y0, class: "base" }, ax);
       // axis break (double slash) between the expanded and compressed ranges
       S("path", { d: `M ${x0 - 8} ${YB + 9} l 16 -6 M ${x0 - 8} ${YB + 15} l 16 -6`, stroke: "#8ea3a0", "stroke-width": 1.4 }, ax);
-      txt(S("text", { x: x1, y: y0 + 38, "text-anchor": "end", class: "cs-lab" }, svg), "iteration →");
-      txt(S("text", { x: x0 - 52, y: m.t - 16, class: "cs-lab" }, svg), "fitness (expanded above 0.99)");
+      txt(S("text", { x: x1, y: y0 + 38, "text-anchor": "end", class: "cs-lab" }, svg), L("iteration →", "迭代 →"));
+      txt(S("text", { x: x0 - 52, y: m.t - 16, class: "cs-lab" }, svg), L("fitness (expanded above 0.99)", "适应度（0.99 以上放大显示）"));
       // f = 1 reference
       S("line", { x1: x0, x2: x1, y1: ys(1), y2: ys(1), class: "mg-ref" }, svg);
-      txt(S("text", { x: x0 + 10, y: ys(1) - 8, class: "mg-ref-t" }, svg), "f = 1 · AlphaEvolve reference");
+      txt(S("text", { x: x0 + 10, y: ys(1) - 8, class: "mg-ref-t" }, svg), L("f = 1 · AlphaEvolve reference", "f = 1 · AlphaEvolve 参考值"));
       // stall brackets
       const bracket = (from, to, y, up) => {
         const g = S("g", { class: "mg-stall" }, svg);
@@ -361,15 +366,15 @@ const Cases = (() => {
         else S("circle", { cx: x, cy: y, r: 3.6, fill: "#071017", stroke: "#8a9c9a", "stroke-width": 1.6, class: "cs-pop" }, g);
         const hit = S("circle", { cx: x, cy: y, r: 10, fill: "transparent" }, g);
         const val = p.v >= 0.99 ? p.v.toFixed(p.v > 1 ? 6 : 5) : p.k ? p.v.toFixed(4) : "< 0.99";
-        hit.addEventListener("pointermove", (e) => { const tip = $("#tip"); tip.innerHTML = `<div class="th">iteration ${p.i}${p.k ? ` · ${p.d} · round ${p.k}` : " · unguided"}</div><div class="tr"><span>fitness</span><b>${val}</b></div>`; tip.classList.add("on"); tip.style.left = `${e.clientX + 14 > innerWidth - 200 ? e.clientX - 200 : e.clientX}px`; tip.style.top = `${e.clientY}px`; });
+        hit.addEventListener("pointermove", (e) => { const tip = $("#tip"); tip.innerHTML = `<div class="th">${L("iteration", "迭代")} ${p.i}${p.k ? ` · ${p.d} · ${L(`round ${p.k}`, `第 ${p.k} 轮`)}` : L(" · unguided", " · 无指导")}</div><div class="tr"><span>${L("fitness", "适应度")}</span><b>${val}</b></div>`; tip.classList.add("on"); tip.style.left = `${e.clientX + 14 > innerWidth - 200 ? e.clientX - 200 : e.clientX}px`; tip.style.top = `${e.clientY}px`; });
         hit.addEventListener("pointerleave", () => $("#tip").classList.remove("on"));
         return { i: p.i, g };
       });
       // annotations on the three guided new bests
       const ann = [
-        [21, "D1 · SLSQP breaks the stall (+0.0064)", "#2ed3a0", (x) => x - 14, (y) => y + 36, "end"],
-        [41, "D8 · interior point crosses f = 1", "#c9b8ff", (x) => x - 12, (y) => y - 24, "end"],
-        [45, "D9 · final best", "#c9b8ff", () => x1 - 2, (y) => y + 40, "end"],
+        [21, L("D1 · SLSQP breaks the stall (+0.0064)", "D1 · SLSQP 打破停滞 (+0.0064)"), "#2ed3a0", (x) => x - 14, (y) => y + 36, "end"],
+        [41, L("D8 · interior point crosses f = 1", "D8 · 内点法越过 f = 1"), "#c9b8ff", (x) => x - 12, (y) => y - 24, "end"],
+        [45, L("D9 · final best", "D9 · 最终最优"), "#c9b8ff", () => x1 - 2, (y) => y + 40, "end"],
       ].map(([i, s, c, fx, fy, anchor]) => {
         const g = S("g", { class: "mg-ann" }, svg);
         const p = pts.find((q) => q.i === i), x = xs(i), y = ys(p.v);
@@ -383,15 +388,15 @@ const Cases = (() => {
 
     // ---- side panel: all four panes are laid out in one cell, so the panel never changes height
     const side = $(".mg-side", root), ctr = $(".cs-it", root), bestEl = $(".mg-bestv", root);
-    side.innerHTML = `<div class="mg-pane" data-ph="0"><div class="mg-ph mono">STALL DETECTOR</div><h4>Watching the running best.</h4>
-        <p class="mg-p">A guidance request fires when consecutive windows show no improvement and the newest outcome is not a new best. One request may be pending at a time.</p>
-        <div class="mg-stallbox"><span class="mono">stalled outcomes</span><b class="mg-stalln mono">0</b></div></div>` +
-      MG.rounds.map((r) => `<div class="mg-pane" data-ph="${r.n}"><div class="mg-ph mono" style="--c:${r.col}"><i></i>ROUND ${r.n} · META-GUIDANCE</div>
-        <div class="mg-why">${r.why} · best <b class="mono">${r.open}</b> when it opened</div>
+    side.innerHTML = `<div class="mg-pane" data-ph="0"><div class="mg-ph mono">${L("STALL DETECTOR", "停滞检测器")}</div><h4>${L("Watching the running best.", "盯住当前最优。")}</h4>
+        <p class="mg-p">${L("A guidance request fires when consecutive windows show no improvement and the newest outcome is not a new best. One request may be pending at a time.", "当连续多个窗口都没有改进、且最新结果也不是新最优时，就会发出 guidance 请求。同一时间最多只有一个待处理的请求。")}</p>
+        <div class="mg-stallbox"><span class="mono">${L("stalled outcomes", "停滞结果")}</span><b class="mg-stalln mono">0</b></div></div>` +
+      MG.rounds.map((r) => `<div class="mg-pane" data-ph="${r.n}"><div class="mg-ph mono" style="--c:${r.col}"><i></i>${L(`ROUND ${r.n}`, `第 ${r.n} 轮`)} · META-GUIDANCE</div>
+        <div class="mg-why">${L(`${r.why} · best <b class="mono">${r.open}</b> when it opened`, `${r.whyz} · 开启时最优为 <b class="mono">${r.open}</b>`)}</div>
         <div class="mg-deck">${r.ds.map((dd, j) => `<div class="dcard s-${dd.s}" style="--c:${r.col};animation-delay:${j * 120}ms" data-id="${dd.id}">
-          <div class="dc-h"><b class="mono">${dd.id}</b><span>${dd.t}</span></div><p>${dd.l}</p>
-          <div class="dc-u">${dd.u.map(([i, v]) => `<span class="use mono" data-it="${i}"><i></i>${v >= 0.99 ? v.toFixed(v > 1 ? 6 : 5) : v.toFixed(4)}</span>`).join("")}<em class="dc-out mono">${dd.out}</em></div></div>`).join("")}</div>
-        <p class="mg-foot">${r.foot}</p></div>`).join("");
+          <div class="dc-h"><b class="mono">${dd.id}</b><span>${L(dd.t, dd.tz)}</span></div><p>${L(dd.l, dd.lz)}</p>
+          <div class="dc-u">${dd.u.map(([i, v]) => `<span class="use mono" data-it="${i}"><i></i>${v >= 0.99 ? v.toFixed(v > 1 ? 6 : 5) : v.toFixed(4)}</span>`).join("")}<em class="dc-out mono">${L(dd.out, dd.oz)}</em></div></div>`).join("")}</div>
+        <p class="mg-foot">${L(r.foot, r.footz)}</p></div>`).join("");
     const panes = $$(".mg-pane", side), uses = $$(".use", side), dcards = $$(".dcard", side), stallN = $(".mg-stalln", side);
     const bestAt = (it) => { let b = 0; for (const p of pts) if (it >= p.i - 0.25) b = Math.max(b, p.v); return b; };
     let lastCur = -1, phase = -1;
@@ -410,7 +415,7 @@ const Cases = (() => {
         const xa = xs(s.from), xb = xs(Math.min(it, s.to)), y = s.y, tk = j ? -5 : 5;
         s.ln.setAttribute("d", `M ${xa} ${y + tk} V ${y} H ${xb} V ${y + tk}`);
         const n = clamp(Math.floor(Math.min(it, s.to)) - (j ? 20 : 9), 1, j ? 20 : 11);
-        s.t.setAttribute("x", (xa + xb) / 2); s.t.textContent = `stalled × ${n}`;
+        s.t.setAttribute("x", (xa + xb) / 2); s.t.textContent = L(`stalled × ${n}`, `停滞 × ${n}`);
         s.g.classList.toggle("full", it >= s.to);
       });
       const ph = it >= 40.5 ? 3 : it >= 31.5 ? 2 : it >= 19.5 ? 1 : 0;

@@ -212,9 +212,9 @@ const UI = (() => {
   // ------------------------------------------------------------ bibtex, placeholders, confetti
   function misc() {
     $(".bib-copy").addEventListener("click", () => {
-      navigator.clipboard?.writeText($("#bibtex").textContent).then(() => toast("BibTeX copied"), () => toast("Copy failed — select the text manually"));
+      navigator.clipboard?.writeText($("#bibtex").textContent).then(() => toast(L("BibTeX copied", "BibTeX 已复制")), () => toast(L("Copy failed — select the text manually", "复制失败，请手动选中文本")));
     });
-    $$("[data-soon]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); toast(a.dataset.soon || "Coming soon"); }));
+    $$("[data-soon]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); toast(a.dataset.soon || L("Coming soon", "即将推出")); }));
     // confetti around the trophy dino
     const cf = $("#confetti");
     const cols = ["#4fd1e8", "#22a889", "#e0a24a", "#ff8a4c", "#9b8ad0", "#bff4ff"];

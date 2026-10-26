@@ -22,9 +22,10 @@
   /* hairline border that catches light at the top edge, used by the panels */
   --edge: linear-gradient(180deg, rgba(170, 235, 245, 0.24), rgba(170, 235, 245, 0.06) 38%, rgba(170, 235, 245, 0.1));
   --surface: linear-gradient(180deg, rgba(13, 23, 31, 0.8), rgba(6, 12, 18, 0.8));
-  --sans: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-  --disp: "Space Grotesk", "Segoe UI Variable Display", "Segoe UI", sans-serif;
-  --mono: "JetBrains Mono", Consolas, "Cascadia Mono", monospace;
+  --cjk: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", "Noto Sans CJK SC";
+  --sans: "Inter", "Segoe UI Variable Text", "Segoe UI", var(--cjk), system-ui, sans-serif;
+  --disp: "Space Grotesk", "Segoe UI Variable Display", "Segoe UI", var(--cjk), sans-serif;
+  --mono: "JetBrains Mono", Consolas, "Cascadia Mono", var(--cjk), monospace;
   --r: 20px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* content grid: nav, hero and sections share one left edge */
@@ -103,6 +104,12 @@ main { position: relative; z-index: 2; overflow-x: clip; }
 .nav-links a.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 2px; height: 2px; border-radius: 2px; background: var(--grad); box-shadow: 0 0 10px var(--cyan); }
 .nav-progress { position: absolute; left: 14px; right: 14px; bottom: -1px; height: 1px; overflow: hidden; }
 .nav-progress i { display: block; height: 100%; width: 100%; transform-origin: 0 50%; transform: scaleX(0); background: var(--grad); box-shadow: 0 0 10px var(--cyan); }
+/* language switcher: EN | 中, the current one lit */
+.lang { display: flex; padding: 3px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.02); font-size: 12px; flex: none; }
+.lang a { min-width: 30px; padding: 4px 7px; border-radius: 7px; text-align: center; line-height: 1.3; color: var(--faint); transition: color 0.25s, background 0.25s; }
+.lang a:hover { color: #fff; }
+.lang a.on { color: var(--ice); background: rgba(79, 209, 232, 0.14); box-shadow: inset 0 0 0 1px rgba(79, 209, 232, 0.35); }
+.lang a[data-l="zh"] { font-family: var(--sans); font-size: 12.5px; }
 .nav-burger { display: none; width: 40px; height: 36px; border-radius: 10px; border: 1px solid var(--line-2); position: relative; margin-left: auto; }
 .nav-burger i { position: absolute; left: 11px; right: 11px; height: 1.5px; background: var(--ice); border-radius: 2px; transition: transform 0.35s var(--ease), opacity 0.25s; }
 .nav-burger i:nth-child(1) { top: 12px; } .nav-burger i:nth-child(2) { top: 17px; } .nav-burger i:nth-child(3) { top: 22px; }
@@ -110,7 +117,8 @@ main { position: relative; z-index: 2; overflow-x: clip; }
 #nav.open .nav-burger i:nth-child(2) { opacity: 0; }
 #nav.open .nav-burger i:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
 @media (max-width: 900px) {
-  .nav-burger { display: block; }
+  .nav-burger { display: block; margin-left: 0; }
+  .lang { margin-left: auto; }
   .nav-links { position: absolute; left: 0; right: 0; top: calc(100% + 8px); margin: 0; flex-direction: column; gap: 2px; padding: 8px; border-radius: 16px;
     background: rgba(6, 12, 18, 0.96); border: 1px solid var(--line-2); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
     opacity: 0; transform: translateY(-8px) scale(0.98); transform-origin: 50% 0; pointer-events: none; transition: opacity 0.3s, transform 0.35s var(--ease); }
@@ -710,7 +718,7 @@ h3 { font-family: var(--disp); letter-spacing: -0.02em; font-weight: 600; }
   body { font-size: 16px; }
   #nav { top: 8px; width: calc(100% - 16px); padding: 7px 8px 7px 12px; gap: 8px; }
   #nav.scrolled { top: 6px; }
-  .brand { font-size: 18px; } .brand img { width: 26px; height: 26px; }
+  .brand { font-size: 18px; flex: none; } .brand img { width: 26px; height: 26px; }
   .section { padding: 92px 18px 20px; }
   .sec-head { margin-bottom: 30px; }
   .sec-idx { font-size: 11px; letter-spacing: 0.2em; margin-bottom: 10px; }
@@ -787,3 +795,33 @@ h3 { font-family: var(--disp); letter-spacing: -0.02em; font-weight: 600; }
 
 /* animations in sections that are off screen are paused (see UI.pauseOffscreen) */
 .offscreen *, .offscreen *::before, .offscreen *::after { animation-play-state: paused !important; }
+
+/* very narrow phones: brand, language switch, menu and Paper don't fit side by side, so Paper keeps only its icon */
+@media (max-width: 370px) {
+  #nav .btn-sm { padding: 8px 10px; } #nav .btn-sm .btn-t { display: none; }
+  .lang a { min-width: 26px; padding: 4px 5px; }
+}
+
+/* ---------------------------------------------------------------- Chinese
+   CJK runs set looser than Latin: no negative tracking, a touch more leading, the wide-tracked mono labels relaxed.
+   Rules key on the element's own language (X:lang(zh)), so the slogans kept in English (lang="en") keep their
+   English setting. Headings break only at spaces and punctuation, then balance, so a phrase never splits and no
+   single character is left on a line; body text avoids a lone character on its last line. */
+body:lang(zh) { line-height: 1.75; line-break: strict; }
+h2:lang(zh), h3:lang(zh) { word-break: keep-all; overflow-wrap: anywhere; }
+h2:lang(zh), h3:lang(zh), h4:lang(zh) { text-wrap: balance; letter-spacing: 0.01em; }
+.nw { white-space: nowrap; } /* keeps a set phrase (成语) on one line */
+h2:lang(zh) { line-height: 1.2; }
+.sub-head h3:lang(zh), .loop-copy h3:lang(zh) { line-height: 1.3; }
+.case-head h3:lang(zh), .panel-head h3:lang(zh) { line-height: 1.4; }
+p:lang(zh), li:lang(zh), .hook > div:lang(zh), .nc p:lang(zh) { text-wrap: pretty; }
+.ctr-l:lang(zh) { word-break: keep-all; overflow-wrap: anywhere; line-height: 1.6; }
+.sec-idx:lang(zh) { letter-spacing: 0.14em; }
+.eyebrow:lang(zh) { letter-spacing: 0.12em; }
+.scroll-cue:lang(zh) { letter-spacing: 0.2em; }
+.sec-sub:lang(zh), .hero-lede:lang(zh), .plane p:lang(zh), .loop-copy > p:lang(zh), .sub-head p:lang(zh) { line-height: 1.8; }
+.hook span:lang(zh), .nf-b:lang(zh), .dcard p:lang(zh), .mg-p:lang(zh), .mg-foot:lang(zh) { line-height: 1.6; }
+.mg-foot:lang(zh), .mg-br-t:lang(zh) { font-style: normal; }
+.cap-phase:lang(zh), .nf-k:lang(zh), .mg-ph:lang(zh), .mg-stallbox span:lang(zh), .po-k:lang(zh) { letter-spacing: 0.08em; }
+/* English slogans and names inside the Chinese page keep a Latin heading rhythm */
+:lang(zh) .plane h3 { line-height: 1.25; }

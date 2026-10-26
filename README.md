@@ -13,6 +13,7 @@ Static site, no build step, no external requests (fonts, video and figures are a
 |---|---|
 | `index.html` | All sections: hero · film · architecture · governance replay + Notes / Meta-guidance case replays · plugin · results · cite |
 | `css/main.css`, `css/fonts.css` | Styles (palette follows the promo film) and local web fonts |
+| `js/i18n.js` | English / Chinese switch (`EN | 中` in the nav; English by default, `?lang=zh` or the saved choice for Chinese). Chinese copy sits next to the English: `data-zh` (inner HTML) and `data-zh-<attr>` on elements in `index.html`, `L("English", "中文")` in the scripts |
 | `js/galaxy.js` | WebGL spiral galaxy behind the whole page + the Govern/Propose/Judge triad in the hero |
 | `js/loop.js` | Contract loop animation (Γt → xt → yt) |
 | `js/lineage.js` | Replay of the real Cloudcast lineage run with the per-task context capsule and note / meta-guidance feed |
@@ -28,4 +29,5 @@ Static site, no build step, no external requests (fonts, video and figures are a
 
 - Published at https://evotrias.github.io/ from the `main` branch of `EvoTrias/EvoTrias.github.io` (GitHub Pages).
 - `Paper` and `Code` buttons show "coming soon" — replace `href="#paper" data-soon=…` / `href="#code" data-soon=…` in `index.html` with the real links (drop `data-soon`).
+- Editing copy: change the English and its Chinese twin together (`data-zh…` attribute or the second argument of `L()`). Slogans and names kept in English carry `lang="en"` so they keep Latin typography on the Chinese page.
 - BibTeX uses anonymous authors / "Under review" — update after de-anonymization.
