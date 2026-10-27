@@ -248,6 +248,12 @@ const Galaxy = (() => {
     const c = camera();
     if (win.on && !win.shown) { drawTriad(c); return; } // porthole scrolled away: nothing to draw
     if (gl) {
+      // inside the porthole only the glass is ever seen: draw just that patch of the canvas
+      if (win.on) {
+        const x0 = Math.max(0, Math.floor((win.x - win.r - 2) * DPR)), y0 = Math.max(0, Math.floor((H - win.y - win.r - 2) * DPR));
+        gl.enable(gl.SCISSOR_TEST);
+        gl.scissor(x0, y0, Math.ceil((win.r * 2 + 4) * DPR), Math.ceil((win.r * 2 + 4) * DPR));
+      } else gl.disable(gl.SCISSOR_TEST);
       gl.clearColor(0.012, 0.024, 0.04, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(U.uTime, st.time);

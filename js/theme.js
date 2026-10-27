@@ -105,8 +105,11 @@ const Theme = (() => {
     const g = $(".pt-glass"), b = g && g.getBoundingClientRect();
     return b && b.width > 4 && b.bottom > 0 && b.top < innerHeight ? { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 } : null;
   };
-  // the browser animates the dino's layer on a straight line from its old box to its new one; replace that with a
-  // sampled arc (same end points and sizes) that bows upward, and lean the image a little through the middle
+  // The browser animates the dino's layer on a straight line from its old box to its new one, resizing it as it goes.
+  // Resizing runs on the main thread, which is busiest exactly now (the new theme is being styled and painted for the
+  // first time), so the dino would stall and then jump. Instead the layer keeps its final size and travels by
+  // transform alone — translate + scale, which the compositor runs on its own — along a finely sampled arc that bows
+  // upward, with a slight lean into the direction of travel.
   function drift(keep) {
     const pe = (n) => root.getAnimations({ subtree: true }).find((a) => a.effect?.pseudoElement === n);
     const grp = pe("::view-transition-group(dino)");
@@ -114,21 +117,31 @@ const Theme = (() => {
     const kf = grp.effect.getKeyframes(), a = kf[0], b = kf[kf.length - 1];
     if (!a?.transform || !b?.transform) return;
     const A = new DOMMatrix(a.transform), B = new DOMMatrix(b.transform);
-    const wA = parseFloat(a.width), wB = parseFloat(b.width), hA = parseFloat(a.height), hB = parseFloat(b.height);
+    const wA = parseFloat(a.width), wB = parseFloat(b.width);
+    if (!(wA > 0 && wB > 0)) return;
     const dist = Math.hypot(B.e - A.e, B.f - A.f);
-    if (!(dist > 4) || [wA, wB, hA, hB].some(isNaN)) return;
+    if (!(dist > 4)) return;
     const lift = Math.min(140, dist * 0.32); // the arc's control point sits this far above the midpoint
+    // the captured boxes carry the dino's bobbing tilt; keep it (interpolated) so the first and last frames match
+    const angA = Math.atan2(A.b, A.a), angB = Math.atan2(B.b, B.a), sA = Math.hypot(A.a, A.b), sB = Math.hypot(B.a, B.b);
     const cx = (A.e + B.e) / 2, cy = (A.f + B.f) / 2 - lift;
-    const frames = [];
-    for (let k = 0; k <= 12; k++) {
-      const t = k / 12, u = 1 - t;
-      const x = u * u * A.e + 2 * u * t * cx + t * t * B.e, y = u * u * A.f + 2 * u * t * cy + t * t * B.f;
-      frames.push({ ...(k === 0 ? a : k === 12 ? b : {}), transform: `matrix(${A.a}, 0, 0, ${A.d}, ${x}, ${y})`, width: `${wA + (wB - wA) * t}px`, height: `${hA + (hB - hA) * t}px`, offset: t });
+    // keyframes at equal distances along the arc, so the speed comes from the easing alone (slow, fast, slow)
+    const P = (t) => { const u = 1 - t; return [u * u * A.e + 2 * u * t * cx + t * t * B.e, u * u * A.f + 2 * u * t * cy + t * t * B.f]; };
+    const M = 240, len = [0];
+    for (let i = 1, p = P(0); i <= M; i++) { const q = P(i / M); len.push(len[i - 1] + Math.hypot(q[0] - p[0], q[1] - p[1])); p = q; }
+    const N = 48, frames = [];
+    for (let k = 0, i = 0; k <= N; k++) {
+      const t = k / N, want = t * len[M];
+      while (i < M && len[i + 1] < want) i++;
+      const f = i >= M ? 1 : (i + (want - len[i]) / Math.max(1e-6, len[i + 1] - len[i])) / M;
+      const [x, y] = P(Math.min(1, f));
+      const sc = ((wA + (wB - wA) * t) / wB) * (sA + (sB - sA) * t); // the box is always the final size; scale makes up the difference
+      const an = angA + (angB - angA) * t, c = Math.cos(an) * sc, sn = Math.sin(an) * sc;
+      frames.push({ transform: `matrix(${c}, ${sn}, ${-sn}, ${c}, ${x}, ${y})`, offset: t });
     }
-    const timing = { duration: DRIFT, delay: 0, easing: "cubic-bezier(0.55, 0, 0.3, 1)", fill: "both" };
     grp.effect.setKeyframes(frames);
-    grp.effect.updateTiming(timing);
-    const lean = B.e > A.e ? 7 : -7; // lean into the direction of travel
+    grp.effect.updateTiming({ duration: DRIFT, delay: 0, easing: "cubic-bezier(0.45, 0, 0.25, 1)", fill: "both" });
+    const lean = B.e > A.e ? 6 : -6; // lean into the direction of travel
     keep(root.animate([{ rotate: "0deg" }, { rotate: `${lean}deg`, offset: 0.45 }, { rotate: "0deg" }],
       { duration: DRIFT, easing: "ease-in-out", fill: "both", pseudoElement: "::view-transition-image-pair(dino)" }));
     ["::view-transition-old(dino)", "::view-transition-new(dino)"].forEach((n) => pe(n)?.effect.updateTiming({ duration: DRIFT * 0.8, delay: DRIFT * 0.1 }));

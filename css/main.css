@@ -848,7 +848,7 @@ html.vt-iris::view-transition-old(root), html.vt-iris::view-transition-new(root)
 html.vt-in::view-transition-old(root) { z-index: 2; }
 /* the dino's layer is timed and shaped from js/theme.js (an arc over the switch); its own bobbing is held for the
    length of the switch so it lands exactly where the live one continues */
-html.vt-dino::view-transition-group(dino) { animation-duration: 1.45s; animation-fill-mode: both; }
+html.vt-dino::view-transition-group(dino) { animation-duration: 1.45s; animation-fill-mode: both; transform-origin: 0 0; }
 html.vt-dino::view-transition-old(dino), html.vt-dino::view-transition-new(dino) { animation-duration: 1.16s; animation-delay: 0.145s; animation-fill-mode: both; height: 100%; }
 html.vt-dino .dino-float { animation-play-state: paused; }
 
