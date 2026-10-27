@@ -846,10 +846,10 @@ p:lang(zh), li:lang(zh), .hook > div:lang(zh), .nc p:lang(zh) { text-wrap: prett
    dark page sits on top and closes in */
 html.vt-iris::view-transition-old(root), html.vt-iris::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 html.vt-in::view-transition-old(root) { z-index: 2; }
-/* the dino waits while the aperture opens or closes (most of it), then glides to its new place; its own bobbing is
-   held for the length of the switch so it lands exactly where the live one continues */
-html.vt-dino::view-transition-group(dino) { animation-duration: 0.95s; animation-delay: 0.62s; animation-timing-function: cubic-bezier(0.5, 0, 0.15, 1); animation-fill-mode: both; }
-html.vt-dino::view-transition-old(dino), html.vt-dino::view-transition-new(dino) { animation-duration: 0.95s; animation-delay: 0.62s; animation-fill-mode: both; height: 100%; }
+/* the dino's layer is timed and shaped from js/theme.js (an arc over the switch); its own bobbing is held for the
+   length of the switch so it lands exactly where the live one continues */
+html.vt-dino::view-transition-group(dino) { animation-duration: 1.45s; animation-fill-mode: both; }
+html.vt-dino::view-transition-old(dino), html.vt-dino::view-transition-new(dino) { animation-duration: 1.16s; animation-delay: 0.145s; animation-fill-mode: both; height: 100%; }
 html.vt-dino .dino-float { animation-play-state: paused; }
 
 /* ---------------------------------------------------------------- light theme

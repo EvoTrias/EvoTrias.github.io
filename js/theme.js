@@ -93,50 +93,82 @@ const Theme = (() => {
     try { localStorage.setItem(KEY, mode); } catch (_) {}
     sync();
   }
-  // The switch is an aperture on the porthole: going light, the universe closes in around the window and recedes into
-  // it (you step back into the cabin); going dark, it opens out of the window and comes forward until it fills the
-  // screen. The dino is lifted out of the page and stays where it is while the world changes around it, then glides
-  // to its place in the new scene — one continuous character from start to end. With the porthole off screen the
-  // aperture is centred on the switch. The aperture waits for a rendered frame, so a page that is not painting
-  // (background tab) switches directly.
-  const APERTURE = 1000, DEPTH = 0.94;
+  // The switch is an aperture on the porthole: going light, the universe closes in around the window (you step back
+  // into the cabin); going dark, it opens out of the window until it fills the screen. The page itself never moves —
+  // only the aperture does. At the same time the dino, lifted out of the page as its own layer, drifts to its place in
+  // the new scene the way things float in zero-g: easing out of rest, sweeping along a gentle arc with a slight lean,
+  // and settling a moment after the aperture has finished. With the porthole off screen the aperture is centred on
+  // the switch. The aperture waits for a rendered frame, so a page that is not painting (background tab) switches
+  // directly.
+  const APERTURE = 1000, DRIFT = 1450;
   const glassCircle = () => {
     const g = $(".pt-glass"), b = g && g.getBoundingClientRect();
     return b && b.width > 4 && b.bottom > 0 && b.top < innerHeight ? { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 } : null;
   };
+  // the browser animates the dino's layer on a straight line from its old box to its new one; replace that with a
+  // sampled arc (same end points and sizes) that bows upward, and lean the image a little through the middle
+  function drift(keep) {
+    const pe = (n) => root.getAnimations({ subtree: true }).find((a) => a.effect?.pseudoElement === n);
+    const grp = pe("::view-transition-group(dino)");
+    if (!grp) return;
+    const kf = grp.effect.getKeyframes(), a = kf[0], b = kf[kf.length - 1];
+    if (!a?.transform || !b?.transform) return;
+    const A = new DOMMatrix(a.transform), B = new DOMMatrix(b.transform);
+    const wA = parseFloat(a.width), wB = parseFloat(b.width), hA = parseFloat(a.height), hB = parseFloat(b.height);
+    const dist = Math.hypot(B.e - A.e, B.f - A.f);
+    if (!(dist > 4) || [wA, wB, hA, hB].some(isNaN)) return;
+    const lift = Math.min(140, dist * 0.32); // the arc's control point sits this far above the midpoint
+    const cx = (A.e + B.e) / 2, cy = (A.f + B.f) / 2 - lift;
+    const frames = [];
+    for (let k = 0; k <= 12; k++) {
+      const t = k / 12, u = 1 - t;
+      const x = u * u * A.e + 2 * u * t * cx + t * t * B.e, y = u * u * A.f + 2 * u * t * cy + t * t * B.f;
+      frames.push({ ...(k === 0 ? a : k === 12 ? b : {}), transform: `matrix(${A.a}, 0, 0, ${A.d}, ${x}, ${y})`, width: `${wA + (wB - wA) * t}px`, height: `${hA + (hB - hA) * t}px`, offset: t });
+    }
+    const timing = { duration: DRIFT, delay: 0, easing: "cubic-bezier(0.55, 0, 0.3, 1)", fill: "both" };
+    grp.effect.setKeyframes(frames);
+    grp.effect.updateTiming(timing);
+    const lean = B.e > A.e ? 7 : -7; // lean into the direction of travel
+    keep(root.animate([{ rotate: "0deg" }, { rotate: `${lean}deg`, offset: 0.45 }, { rotate: "0deg" }],
+      { duration: DRIFT, easing: "ease-in-out", fill: "both", pseudoElement: "::view-transition-image-pair(dino)" }));
+    ["::view-transition-old(dino)", "::view-transition-new(dino)"].forEach((n) => pe(n)?.effect.updateTiming({ duration: DRIFT * 0.8, delay: DRIFT * 0.1 }));
+  }
+  let current = 0; // the latest switch; a switch started before it has finished hands over everything to it
+  // Animations made with element.animate() on the transition's pseudo-elements outlive the transition: a filled end
+  // state (the old page shrunk to the porthole, transparent) would be applied again to the next transition's layer of
+  // the same name and blank the outgoing page. Every one is kept here and cancelled when its switch ends.
+  let live = [];
+  const keep = (a) => (live.push(a), a);
+  const drop = () => { live.forEach((a) => a.cancel()); live = []; };
   function toggle(btn) {
     const next = isLight() ? "dark" : "light";
     if (!document.startViewTransition || REDUCED) { set(next); return; }
+    const id = ++current;
+    drop();
     const bb = btn.getBoundingClientRect();
     const at = (c) => c || { x: bb.left + bb.width / 2, y: bb.top + bb.height / 2, r: 0 };
-    const far = (c) => Math.hypot(Math.max(c.x, innerWidth - c.x), Math.max(c.y, innerHeight - c.y)) / DEPTH + 2;
+    const far = (c) => Math.hypot(Math.max(c.x, innerWidth - c.x), Math.max(c.y, innerHeight - c.y)) + 2;
     const leave = next === "dark" ? at(glassCircle()) : null; // the window we step out through (light layout)
     const dino = $(".dino-float"), db = dino.getBoundingClientRect();
     const lift = db.width > 0 && db.bottom > 0 && db.top < innerHeight; // only a dino on screen travels on its own
-    if (lift) dino.style.viewTransitionName = "dino";
+    dino.style.viewTransitionName = lift ? "dino" : "";
+    root.classList.remove("vt-in", "vt-out");
     root.classList.add("vt-iris", next === "light" ? "vt-in" : "vt-out");
     root.classList.toggle("vt-dino", lift);
     const vt = document.startViewTransition(() => set(next));
-    setTimeout(() => { if (isLight() !== (next === "light")) set(next); }, 300);
+    setTimeout(() => { if (id === current && isLight() !== (next === "light")) set(next); }, 300);
     vt.ready.then(() => {
       const c = leave || at(glassCircle()); // going light: the window we arrive at
       const o = `${c.x}px ${c.y}px`;
-      // the clip lives in the layer's own coordinates, so under the depth scale its radius is divided by it to stay
-      // exactly on the glass on screen
-      const big = `circle(${far(c)}px at ${o})`, small = `circle(${c.r / DEPTH}px at ${o})`;
+      const big = `circle(${far(c)}px at ${o})`, small = `circle(${c.r}px at ${o})`;
       const opt = { duration: APERTURE, easing: "cubic-bezier(0.65, 0, 0.25, 1)", fill: "forwards" };
-      if (next === "light") root.animate([
-        { clipPath: big, transform: "none", transformOrigin: o, opacity: 1 },
-        { clipPath: small, transform: `scale(${DEPTH})`, transformOrigin: o, opacity: 1, offset: 0.82 },
-        { clipPath: small, transform: `scale(${DEPTH})`, transformOrigin: o, opacity: 0 },
-      ], { ...opt, pseudoElement: "::view-transition-old(root)" });
-      else root.animate([
-        { clipPath: small, transform: `scale(${DEPTH})`, transformOrigin: o, opacity: 0.35 },
-        { opacity: 1, offset: 0.2 },
-        { clipPath: big, transform: "none", transformOrigin: o, opacity: 1 },
-      ], { ...opt, pseudoElement: "::view-transition-new(root)" });
+      if (next === "light") keep(root.animate([{ clipPath: big, opacity: 1 }, { clipPath: small, opacity: 1, offset: 0.82 }, { clipPath: small, opacity: 0 }], { ...opt, pseudoElement: "::view-transition-old(root)" }));
+      else keep(root.animate([{ clipPath: small, opacity: 0.35 }, { opacity: 1, offset: 0.2 }, { clipPath: big, opacity: 1 }], { ...opt, pseudoElement: "::view-transition-new(root)" }));
+      if (lift) drift(keep);
     }).catch(() => {});
     vt.finished.finally(() => {
+      if (id !== current) return; // a newer switch owns the classes, the animations and the dino's name now
+      drop();
       dino.style.viewTransitionName = "";
       root.classList.remove("vt-iris", "vt-in", "vt-out", "vt-dino");
     });
