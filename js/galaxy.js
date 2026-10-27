@@ -129,7 +129,9 @@ const Galaxy = (() => {
   const glass = $(".pt-glass");
   const win = { on: false, x: 0, y: 0, r: 0, shown: false };
   let clipKey = "";
-  const setClip = (v) => { if (v !== clipKey) { clipKey = v; cv.style.clipPath = ov.style.clipPath = v; } };
+  const labelLayer = $(".triad-labels");
+  // canvases and the triad's labels are all clipped to the glass: nothing of the outside shows past the frame
+  const setClip = (v) => { if (v !== clipKey) { clipKey = v; cv.style.clipPath = ov.style.clipPath = labelLayer.style.clipPath = v; } };
   function readWindow() {
     win.on = document.documentElement.dataset.theme === "light" && !!glass;
     if (!win.on) { setClip(""); return; }
@@ -185,8 +187,9 @@ const Galaxy = (() => {
       return;
     }
     triadClear = false;
-    // read layout before any style write this frame (labels step back while passing behind the dino or the hero copy)
-    const dr = dinoEl ? dinoEl.getBoundingClientRect() : null, cr = copyEl ? copyEl.getBoundingClientRect() : null;
+    // read layout before any style write this frame (on dark, labels step back while passing behind the dino or the
+    // hero copy; inside the porthole there is nothing to collide with, so they stay)
+    const dr = dinoEl && !win.on ? dinoEl.getBoundingClientRect() : null, cr = copyEl && !win.on ? copyEl.getBoundingClientRect() : null;
     octx.setTransform(ODPR, 0, 0, ODPR, 0, 0);
     octx.clearRect(0, 0, W, H);
     const R = win.on ? 0.66 : 1.02, t = st.time;

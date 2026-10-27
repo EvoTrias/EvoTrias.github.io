@@ -179,7 +179,8 @@ main { position: relative; z-index: 2; overflow-x: clip; }
 .orbit i { position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; border-radius: 50%; background: var(--ice); box-shadow: 0 0 16px var(--cyan), 0 0 40px var(--cyan); }
 .orbit.o2 i { background: var(--hex-ffe2a8, #ffe2a8); box-shadow: 0 0 16px var(--amber); }
 @keyframes orb { to { transform: rotateX(72deg) rotateZ(360deg); } }
-.triad-labels .tl { position: fixed; left: 0; top: 0; z-index: 1; pointer-events: none; transition: opacity 0.5s; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; opacity: 0; white-space: nowrap; transform: translate(-50%, -150%); text-shadow: 0 0 12px currentColor; }
+.triad-labels { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+.triad-labels .tl { position: absolute; left: 0; top: 0; pointer-events: none; transition: opacity 0.5s; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; opacity: 0; white-space: nowrap; transform: translate(-50%, -150%); text-shadow: 0 0 12px currentColor; }
 .tl small { display: block; font-size: 10.5px; font-weight: 400; letter-spacing: 0.08em; color: var(--dim); text-shadow: none; text-align: center; }
 .tl-gov { color: var(--gov); } .tl-prop { color: var(--prop); } .tl-judge { color: var(--judge); }
 .scroll-cue { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em; color: var(--dim); text-transform: uppercase; }
@@ -933,7 +934,8 @@ html.vt-dino .dino-float { animation-play-state: paused; }
 [data-theme="light"] .dino-float { filter: drop-shadow(16px 36px 26px rgba(20, 45, 55, 0.17)) drop-shadow(0 0 28px rgba(8, 152, 176, 0.12)); }
 /* the triad's labels sit inside the porthole: dark-theme colours on a smoked-glass tag */
 [data-theme="light"] .triad-labels { --gov: #2ed3a0; --prop: #ff8a4c; --judge: #6f8cff; --dim: #a9bab7; }
-[data-theme="light"] .triad-labels .tl { padding: 5px 9px 6px; border-radius: 8px; background: rgba(4, 10, 15, 0.5); }
+[data-theme="light"] .triad-labels .tl { padding: 4px 8px 5px; border-radius: 7px; background: rgba(4, 10, 15, 0.5); font-size: 10.5px; letter-spacing: 0.2em; }
+[data-theme="light"] .tl small { font-size: 9px; letter-spacing: 0.06em; }
 @media (min-width: 1001px) {
   /* wall panels: two engraved seams, each with a row of domed rivets */
   [data-theme="light"] .hero::before, [data-theme="light"] .hero::after { content: ""; position: absolute; left: 0; right: 0; top: 13%; z-index: 0; height: 30px; margin-top: -15px; pointer-events: none;
@@ -955,8 +957,7 @@ html.vt-dino .dino-float { animation-play-state: paused; }
   [data-theme="light"] .porthole { width: 155%; left: 22.5%; top: -82.5%; }
 }
 
-/* the porthole sits on a raised mounting plate with a screw in each corner, and a small tag with three status lights
-   (govern · propose · judge) that light in turn, like the contract loop */
+/* the porthole sits on a raised mounting plate with a screw in each corner */
 .pt-plate { position: absolute; z-index: -2; inset: -5.5%; border-radius: 24%;
   background: linear-gradient(160deg, #fdfefe, #e9eff1 70%, #e2e9ec);
   box-shadow: inset 0 1.5px 0 #ffffff, inset 0 -1px 0 rgba(20, 45, 55, 0.07), 0 0 0 1px rgba(20, 45, 55, 0.05), 0 2px 3px rgba(20, 45, 55, 0.06), 0 24px 50px rgba(20, 45, 55, 0.1);
@@ -967,35 +968,3 @@ html.vt-dino .dino-float { animation-play-state: paused; }
 .pt-plate i::after { content: ""; position: absolute; inset: 22%; background: linear-gradient(rgba(40, 60, 68, 0.55), rgba(40, 60, 68, 0.55)) 50% 50% / 100% 18% no-repeat, linear-gradient(rgba(40, 60, 68, 0.55), rgba(40, 60, 68, 0.55)) 50% 50% / 18% 100% no-repeat; transform: rotate(var(--a, 20deg)); }
 .pt-plate i:nth-child(1) { left: 11%; top: 11%; } .pt-plate i:nth-child(2) { left: 89%; top: 11%; --a: 62deg; }
 .pt-plate i:nth-child(3) { left: 89%; top: 89%; --a: -8deg; } .pt-plate i:nth-child(4) { left: 11%; top: 89%; --a: 41deg; }
-.pt-tag { position: absolute; right: 2%; bottom: -2.5%; display: flex; align-items: center; gap: 5px; padding: 4px 8px 4px 9px; border-radius: 6px;
-  font-size: 8.5px; letter-spacing: 0.22em; color: #7f8e94; background: linear-gradient(#f4f7f8, #e7edef); box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgba(20, 45, 55, 0.08), 0 1px 2px rgba(20, 45, 55, 0.08); white-space: nowrap; }
-.pt-tag span { margin-right: 3px; }
-.pt-tag b { width: 5px; height: 5px; border-radius: 50%; background: var(--c); opacity: 0.3; animation: ptLed 3.6s infinite; }
-.pt-tag b:nth-of-type(1) { --c: #1fbf8c; } .pt-tag b:nth-of-type(2) { --c: #f2793a; animation-delay: 1.2s; } .pt-tag b:nth-of-type(3) { --c: #5d78f0; animation-delay: 2.4s; }
-@keyframes ptLed { 0%, 100% { opacity: 0.3; box-shadow: none; } 8%, 26% { opacity: 1; box-shadow: 0 0 6px var(--c); } 36% { opacity: 0.3; box-shadow: none; } }
-
-/* zero-g: a few things drift in the cabin air with the dino, each on its own slow loop; they shift with the pointer
-   by depth (--hx / --hy, set by UI.cabin) */
-.cabin { display: none; }
-[data-theme="light"] .cabin { display: block; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.cb { position: absolute; overflow: visible; translate: calc(var(--hx, 0) * var(--z) * 1px) calc(var(--hy, 0) * var(--z) * 1px);
-  filter: drop-shadow(10px 22px 14px rgba(20, 45, 55, 0.14)); animation: cbDrift var(--t) ease-in-out infinite alternate; animation-delay: var(--dl, 0s); }
-@keyframes cbDrift {
-  0% { transform: translate(0, 0) rotate(var(--r)); }
-  50% { transform: translate(calc(var(--dx) * 0.6), var(--dy)) rotate(calc(var(--r) + var(--dr) * 0.5)); }
-  100% { transform: translate(var(--dx), calc(var(--dy) * 0.3)) rotate(calc(var(--r) + var(--dr))); }
-}
-.cb-paper { left: 157%; top: -66%; width: 21%; --r: 14deg; --dr: 9deg; --dx: -6px; --dy: 10px; --t: 9s; --z: 10; }
-.cb-wrench { left: 150%; top: 86%; width: 30%; --r: -26deg; --dr: -14deg; --dx: 8px; --dy: -9px; --t: 11s; --dl: -3s; --z: 14; }
-.cb-pouch { left: -6%; top: -34%; width: 15%; --r: -16deg; --dr: 12deg; --dx: 5px; --dy: 12px; --t: 10s; --dl: -6s; --z: 8; }
-.cabin-front .cb { filter: drop-shadow(4px 10px 6px rgba(20, 45, 55, 0.12)); }
-.cb-d1 { left: 86%; top: 6%; width: 6.4%; --r: 0deg; --dr: 0deg; --dx: 5px; --dy: -8px; --t: 7s; --z: 18; }
-.cb-d2 { left: 96%; top: -4%; width: 4%; --r: 0deg; --dr: 0deg; --dx: -4px; --dy: 6px; --t: 6s; --dl: -2s; --z: 20; }
-.cb-d3 { left: 22%; top: -12%; width: 4.6%; --r: 0deg; --dr: 0deg; --dx: 4px; --dy: 7px; --t: 8s; --dl: -4s; --z: 16; }
-@media (max-width: 1000px) {
-  .cb-paper { left: 146%; top: -58%; width: 22%; }
-  .cb-wrench { left: 132%; top: 66%; width: 32%; }
-  .cb-pouch { left: 2%; top: -52%; width: 18%; }
-  .pt-tag { font-size: 7.5px; padding: 3px 6px 3px 7px; gap: 4px; }
-}
-@media (prefers-reduced-motion: reduce) { .cb, .pt-tag b { animation: none; } }

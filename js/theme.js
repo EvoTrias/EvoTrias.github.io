@@ -4,12 +4,12 @@
 // the light theme defines those variables (css/main.css, "light theme"). Scripts draw SVG with literal colours too,
 // so this module maps them the same way: fill / stroke / stop-color attributes and colours in style attributes are
 // swapped to their light values (originals kept on the element), for what is on the page and for whatever the
-// charts draw later. The terminal, the film, the porthole and the cabin props (drawn for the light cabin) keep their own colours.
+// charts draw later. The terminal, the film and the porthole (drawn for the light cabin) keep their own colours.
 const Theme = (() => {
   const root = document.documentElement;
   const KEY = "theme";
   const ATTRS = ["fill", "stroke", "stop-color", "flood-color"];
-  const KEEP = ".term, .film-frame, .porthole, .cabin";
+  const KEEP = ".term, .film-frame, .porthole";
   const isLight = () => root.dataset.theme === "light";
 
   // light value of a literal colour, read from the stylesheet's variables (cached per theme switch)
