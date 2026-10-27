@@ -4,12 +4,12 @@
 // the light theme defines those variables (css/main.css, "light theme"). Scripts draw SVG with literal colours too,
 // so this module maps them the same way: fill / stroke / stop-color attributes and colours in style attributes are
 // swapped to their light values (originals kept on the element), for what is on the page and for whatever the
-// charts draw later. The terminal, the film and the porthole (drawn for the light cabin) keep their own colours.
+// charts draw later. The terminal, the film, the porthole and the cabin props (drawn for the light cabin) keep their own colours.
 const Theme = (() => {
   const root = document.documentElement;
   const KEY = "theme";
   const ATTRS = ["fill", "stroke", "stop-color", "flood-color"];
-  const KEEP = ".term, .film-frame, .porthole";
+  const KEEP = ".term, .film-frame, .porthole, .cabin";
   const isLight = () => root.dataset.theme === "light";
 
   // light value of a literal colour, read from the stylesheet's variables (cached per theme switch)
@@ -93,10 +93,13 @@ const Theme = (() => {
     try { localStorage.setItem(KEY, mode); } catch (_) {}
     sync();
   }
-  // The switch is an aperture on the porthole: going light, the universe closes in around the window (you step back
-  // into the cabin); going dark, it opens out of the window until it fills the screen. With the porthole off screen
-  // the aperture is centred on the switch. The aperture waits for a rendered frame, so a page that is not painting
+  // The switch is an aperture on the porthole: going light, the universe closes in around the window and recedes into
+  // it (you step back into the cabin); going dark, it opens out of the window and comes forward until it fills the
+  // screen. The dino is lifted out of the page and stays where it is while the world changes around it, then glides
+  // to its place in the new scene — one continuous character from start to end. With the porthole off screen the
+  // aperture is centred on the switch. The aperture waits for a rendered frame, so a page that is not painting
   // (background tab) switches directly.
+  const APERTURE = 1000, DEPTH = 0.94;
   const glassCircle = () => {
     const g = $(".pt-glass"), b = g && g.getBoundingClientRect();
     return b && b.width > 4 && b.bottom > 0 && b.top < innerHeight ? { x: b.left + b.width / 2, y: b.top + b.height / 2, r: b.width / 2 } : null;
@@ -106,19 +109,37 @@ const Theme = (() => {
     if (!document.startViewTransition || REDUCED) { set(next); return; }
     const bb = btn.getBoundingClientRect();
     const at = (c) => c || { x: bb.left + bb.width / 2, y: bb.top + bb.height / 2, r: 0 };
-    const far = (c) => Math.hypot(Math.max(c.x, innerWidth - c.x), Math.max(c.y, innerHeight - c.y)) + 2;
+    const far = (c) => Math.hypot(Math.max(c.x, innerWidth - c.x), Math.max(c.y, innerHeight - c.y)) / DEPTH + 2;
     const leave = next === "dark" ? at(glassCircle()) : null; // the window we step out through (light layout)
+    const dino = $(".dino-float"), db = dino.getBoundingClientRect();
+    const lift = db.width > 0 && db.bottom > 0 && db.top < innerHeight; // only a dino on screen travels on its own
+    if (lift) dino.style.viewTransitionName = "dino";
     root.classList.add("vt-iris", next === "light" ? "vt-in" : "vt-out");
+    root.classList.toggle("vt-dino", lift);
     const vt = document.startViewTransition(() => set(next));
     setTimeout(() => { if (isLight() !== (next === "light")) set(next); }, 300);
     vt.ready.then(() => {
       const c = leave || at(glassCircle()); // going light: the window we arrive at
-      const big = `circle(${far(c)}px at ${c.x}px ${c.y}px)`, small = `circle(${c.r}px at ${c.x}px ${c.y}px)`;
-      const opt = { duration: 1150, easing: "cubic-bezier(0.65, 0, 0.25, 1)", fill: "forwards" };
-      if (next === "light") root.animate([{ clipPath: big, opacity: 1 }, { clipPath: small, opacity: 1, offset: 0.8 }, { clipPath: small, opacity: 0 }], { ...opt, pseudoElement: "::view-transition-old(root)" });
-      else root.animate([{ clipPath: small, opacity: 0.35 }, { opacity: 1, offset: 0.2 }, { clipPath: big, opacity: 1 }], { ...opt, pseudoElement: "::view-transition-new(root)" });
+      const o = `${c.x}px ${c.y}px`;
+      // the clip lives in the layer's own coordinates, so under the depth scale its radius is divided by it to stay
+      // exactly on the glass on screen
+      const big = `circle(${far(c)}px at ${o})`, small = `circle(${c.r / DEPTH}px at ${o})`;
+      const opt = { duration: APERTURE, easing: "cubic-bezier(0.65, 0, 0.25, 1)", fill: "forwards" };
+      if (next === "light") root.animate([
+        { clipPath: big, transform: "none", transformOrigin: o, opacity: 1 },
+        { clipPath: small, transform: `scale(${DEPTH})`, transformOrigin: o, opacity: 1, offset: 0.82 },
+        { clipPath: small, transform: `scale(${DEPTH})`, transformOrigin: o, opacity: 0 },
+      ], { ...opt, pseudoElement: "::view-transition-old(root)" });
+      else root.animate([
+        { clipPath: small, transform: `scale(${DEPTH})`, transformOrigin: o, opacity: 0.35 },
+        { opacity: 1, offset: 0.2 },
+        { clipPath: big, transform: "none", transformOrigin: o, opacity: 1 },
+      ], { ...opt, pseudoElement: "::view-transition-new(root)" });
     }).catch(() => {});
-    vt.finished.finally(() => root.classList.remove("vt-iris", "vt-in", "vt-out"));
+    vt.finished.finally(() => {
+      dino.style.viewTransitionName = "";
+      root.classList.remove("vt-iris", "vt-in", "vt-out", "vt-dino");
+    });
   }
   $$(".theme-btn").forEach((b) => b.addEventListener("click", () => toggle(b)));
   sync();

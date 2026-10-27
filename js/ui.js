@@ -343,11 +343,28 @@ const UI = (() => {
     }));
   }
 
+  // ------------------------------------------------------------ cabin props: drift a little with the pointer, by depth
+  function cabin() {
+    const hero = $(".hero");
+    if (TOUCH || REDUCED || !hero) return;
+    let tx = 0, ty = 0, x = 0, y = 0, raf = 0;
+    const step = () => {
+      x = lerp(x, tx, 0.06); y = lerp(y, ty, 0.06);
+      hero.style.setProperty("--hx", x.toFixed(3)); hero.style.setProperty("--hy", y.toFixed(3));
+      raf = Math.abs(x - tx) + Math.abs(y - ty) > 0.002 ? requestAnimationFrame(step) : 0;
+    };
+    addEventListener("pointermove", (e) => {
+      if (document.documentElement.dataset.theme !== "light" || scrollY > innerHeight) return;
+      tx = (e.clientX / innerWidth) * 2 - 1; ty = (e.clientY / innerHeight) * 2 - 1;
+      if (!raf) raf = requestAnimationFrame(step);
+    }, { passive: true });
+  }
+
   // pause CSS animations of sections that are not on screen
   function pauseOffscreen() {
     const io = new IntersectionObserver((es) => es.forEach((e) => e.target.classList.toggle("offscreen", !e.isIntersecting)), { rootMargin: "200px 0px" });
     $$("main > section").forEach((s) => io.observe(s));
   }
 
-  return { seg, loader, wordmark, reveals, magnetic, tilt, nav, navInk, counters, film, misc, footLight, filmSnap, pauseOffscreen };
+  return { seg, loader, wordmark, reveals, magnetic, tilt, nav, navInk, counters, film, misc, footLight, filmSnap, pauseOffscreen, cabin };
 })();

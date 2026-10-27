@@ -15,9 +15,9 @@
   /* theme, same rule: ?theme= wins, then the saved choice, else dark */
   var tq = new URLSearchParams(location.search).get("theme"), ts = null; try { ts = localStorage.getItem("theme"); } catch (e) {}
   if ((tq || ts) === "light") document.documentElement.dataset.theme = "light"; })();</script>
-<link rel="icon" type="image/svg+xml" href="assets/img/dino/dino_plain.svg" />
+<link rel="icon" type="image/svg+xml" href="assets/img/dino/dino_plain.svg?v=eye1" />
 <link rel="stylesheet" href="css/fonts.css?v=20261013a" />
-<link rel="stylesheet" href="css/main.css?v=20261027f" />
+<link rel="stylesheet" href="css/main.css?v=20261027l" />
 </head>
 <body class="is-loading">
 
@@ -25,7 +25,7 @@
 <div id="loader" aria-hidden="true">
   <div class="ld-core">
     <div class="ld-ring"><i></i><i></i><i></i></div>
-    <img class="ld-dino" src="assets/img/dino/dino_astronaut.svg" alt="" />
+    <img class="ld-dino" src="assets/img/dino/dino_astronaut.svg?v=eye1" alt="" />
   </div>
   <div class="ld-word" data-scramble="EvoTrias">EvoTrias</div>
   <div class="ld-bar"><i></i></div>
@@ -39,7 +39,7 @@
 <!-- ================= nav ================= -->
 <header id="nav">
   <a class="brand" href="#top" data-magnetic>
-    <img src="assets/img/dino/dino_plain.svg" alt="" />
+    <img src="assets/img/dino/dino_plain.svg?v=eye1" alt="" />
     <span>Evo<b>Trias</b></span>
   </a>
   <nav class="nav-links" id="nav-links">
@@ -90,6 +90,7 @@
 
   <div class="hero-dino" data-parallax="0.04">
     <div class="porthole" aria-hidden="true">
+      <div class="pt-plate"><i></i><i></i><i></i><i></i></div>
       <svg class="pt-frame" viewBox="0 0 100 100">
         <defs>
           <linearGradient id="pt-metal" x1="0.15" y1="0.05" x2="0.85" y2="0.95"><stop offset="0" stop-color="#ffffff" /><stop offset="0.45" stop-color="#eef2f4" /><stop offset="1" stop-color="#cdd7db" /></linearGradient>
@@ -113,11 +114,14 @@
         <circle cx="92.42" cy="36.57" r="1.35" fill="url(#pt-bs)" /><circle cx="92.42" cy="36.22" r="1.2" fill="url(#pt-bolt)" />
       </svg>
       <div class="pt-glass"></div>
+      <div class="pt-tag mono"><span>VIEWPORT · 01</span><b></b><b></b><b></b></div>
     </div>
+    <div class="cabin"><svg class="cb cb-paper" viewBox="0 0 90 110"><path d="M12 8H58L78 28V99Q78 104 73 104H17Q12 104 12 99Z" fill="#fcfcfa" stroke="#06161c" stroke-width="5" stroke-linejoin="round" /><path d="M58 8V28H78" fill="#dfe7ec" stroke="#06161c" stroke-width="5" stroke-linejoin="round" /><path d="M22 40H50" stroke="#41a4bc" stroke-width="6" stroke-linecap="round" /><path d="M22 53H66M22 62H66M22 71H56" stroke="#b9c4c9" stroke-width="4" stroke-linecap="round" /><path d="M23 93L33 87L41 89L52 79L65 76" fill="none" stroke="#e0a24a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg><svg class="cb cb-wrench" viewBox="0 0 150 46"><g fill="none" stroke="#06161c" stroke-width="10"><circle cx="23" cy="23" r="17" /><rect x="34" y="16" width="92" height="14" rx="7" /><circle cx="128" cy="23" r="12" /></g><g fill="#c3ccd2" fill-rule="evenodd"><path d="M6 23a17 17 0 1 0 34 0a17 17 0 1 0 -34 0zM23 15.5l6.5 3.75v7.5l-6.5 3.75l-6.5-3.75v-7.5z" /><rect x="34" y="16" width="92" height="14" rx="7" /><path d="M116 23a12 12 0 1 0 24 0a12 12 0 1 0 -24 0zM128 18a5 5 0 1 0 0.01 0z" /></g><path d="M23 15.5l6.5 3.75v7.5l-6.5 3.75l-6.5-3.75v-7.5z" fill="none" stroke="#06161c" stroke-width="4.5" stroke-linejoin="round" /><circle cx="128" cy="23" r="5" fill="none" stroke="#06161c" stroke-width="4" /><path d="M44 20.5H118" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" opacity="0.75" /></svg><svg class="cb cb-pouch" viewBox="0 0 80 112"><path d="M33 22V11Q33 6 38 6H47" fill="none" stroke="#06161c" stroke-width="5" stroke-linecap="round" /><rect x="25" y="13" width="17" height="10" rx="3" fill="#e0a24a" stroke="#06161c" stroke-width="4.5" /><path d="M14 31Q14 23 22 23H58Q66 23 66 31V97Q66 105 58 105H22Q14 105 14 97Z" fill="#e9eef1" stroke="#06161c" stroke-width="5" stroke-linejoin="round" /><path d="M16.5 55H63.5V79H16.5Z" fill="#41a4bc" /><path d="M14 55H66M14 79H66" stroke="#06161c" stroke-width="4" /><path d="M24 64H44" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.85" /><path d="M23 33V47" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.9" /></svg></div>
     <div class="orbit o1"><i></i></div>
     <div class="orbit o2"><i></i></div>
-    <img class="dino-float" src="assets/img/dino/dino_astronaut.svg" alt="EvoTrias mascot: a small dinosaur in a space helmet" data-zh-alt="EvoTrias 吉祥物：戴着太空头盔的小恐龙" />
+    <img class="dino-float" src="assets/img/dino/dino_astronaut.svg?v=eye1" alt="EvoTrias mascot: a small dinosaur in a space helmet" data-zh-alt="EvoTrias 吉祥物：戴着太空头盔的小恐龙" />
     <div class="dino-shadow"></div>
+    <div class="cabin cabin-front"><svg class="cb cb-d1" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#bfe9f5" fill-opacity="0.85" stroke="#06161c" stroke-width="3.5" /><circle cx="14" cy="13.5" r="4.2" fill="#ffffff" opacity="0.9" /></svg><svg class="cb cb-d2" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#bfe9f5" fill-opacity="0.85" stroke="#06161c" stroke-width="3.5" /><circle cx="14" cy="13.5" r="4.2" fill="#ffffff" opacity="0.9" /></svg><svg class="cb cb-d3" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#bfe9f5" fill-opacity="0.85" stroke="#06161c" stroke-width="3.5" /><circle cx="14" cy="13.5" r="4.2" fill="#ffffff" opacity="0.9" /></svg></div>
   </div>
 
   <div class="triad-labels" aria-hidden="true" lang="en">
@@ -317,7 +321,7 @@
 
   <div class="plug-grid">
     <div class="term reveal" data-d="1" data-tilt="3">
-      <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-name mono" id="term-host">Claude Code — ~/evolve/benchmarks</span><span class="term-badge"><img src="assets/img/dino/dino_plain.svg" alt="" />EvoTrias</span></div>
+      <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-name mono" id="term-host">Claude Code — ~/evolve/benchmarks</span><span class="term-badge"><img src="assets/img/dino/dino_plain.svg?v=eye1" alt="" />EvoTrias</span></div>
       <div class="term-body mono" id="term-body"></div>
     </div>
     <div class="hosts reveal" data-d="2">
@@ -493,14 +497,14 @@
 <script src="js/data.js?v=20261013a"></script>
 <script src="js/lib.js?v=20261026a"></script>
 <script src="js/i18n.js?v=20261026b"></script>
-<script src="js/theme.js?v=20261027b"></script>
+<script src="js/theme.js?v=20261027l"></script>
 <script src="js/galaxy.js?v=20261027c"></script>
-<script src="js/ui.js?v=20261027a"></script>
+<script src="js/ui.js?v=20261027g"></script>
 <script src="js/loop.js?v=20261026a"></script>
 <script src="js/lineage.js?v=20261026a"></script>
 <script src="js/terminal.js?v=20261026a"></script>
 <script src="js/charts.js?v=20261026b"></script>
 <script src="js/cases.js?v=20261026b"></script>
-<script src="js/main.js?v=20261013a"></script>
+<script src="js/main.js?v=20261027g"></script>
 </body>
 </html>
