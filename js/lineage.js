@@ -69,10 +69,10 @@ const Lineage = (() => {
   const tip = $("#tip");
   function showTip(n, e) {
     if (+n.g.getAttribute("opacity") < 0.5) return;
-    tip.innerHTML = `<div class="th">${n.id} · ${L("lineage", "谱系")} ${n.lineage + 1} · G${n.gen}</div>
-      <div class="tr"><span>${L("transfer cost", "传输成本")}</span><b>${n.cost.toFixed(2)}</b></div>
-      <div class="tr"><span>${L("parent", "父代")}</span><b>${n.parent || L("root", "根")}</b></div>
-      ${n.notes ? `<div class="tr"><span>notes</span><b>${n.notes.map(kindName).join(", ")}</b></div>` : ""}
+    tip.innerHTML = `<div class="th">${n.id} · lineage ${n.lineage + 1} · G${n.gen}</div>
+      <div class="tr"><span>transfer cost</span><b>${n.cost.toFixed(2)}</b></div>
+      <div class="tr"><span>parent</span><b>${n.parent || "root"}</b></div>
+      ${n.notes ? `<div class="tr"><span>notes</span><b>${n.notes.join(", ")}</b></div>` : ""}
       ${n.guidance ? `<div class="tr"><span>guidance</span><b>${n.guidance}</b></div>` : ""}`;
     tip.classList.add("on");
     moveTip(e);
@@ -95,15 +95,7 @@ const Lineage = (() => {
   const EX = {};
   window.PAPER.notes_examples.forEach((x) => { const m = x.source.match(/note_(task_\d+)/); if (m) EX[m[1]] = x; });
   const KC = { error: "#ff7a59", positive: "#2ed3a0", negative: "#ff8fc0", guidance: "#b39cff" };
-  // Chinese texts of the run's recorded notes and guidance ideas
-  const KZ = { error: "错误", positive: "正向", negative: "负向" };
-  const kindName = (k) => L(k, KZ[k] || k);
-  const EXZ = {
-    task_012: ["运行验证器之前先校验种子字面量", "种子字面量里的一个笔误（0xC10UD，U 不是十六进制数字）在验证器运行算法之前就引发了 SyntaxError。种子只使用十进制整数或合法的十六进制（0-9、A-F）字面量，不要在十六进制字面量里嵌入助记字母。"],
-    task_023: ["Dreyfus-Wagner Steiner DP 在 cloudcast 上不如 Prim 贪心局部搜索", "用于有向 Steiner 树的精确 Dreyfus-Wagner 位掩码 DP，在每个配置上都得到了一棵通过验证、但比父代 Prim 贪心局部搜索更贵的树。这说明问题出在 DP 的重建或松弛方向上，而不是策略本身更差。"],
-    task_024: ["精确的 Dreyfus-Wagner 有向 Steiner DP 在 cloudcast 上胜过 Prim 贪心", "把 Prim 贪心 + 重路由 / 重挂父节点 / 捷径，替换为基于 Dreyfus-Wagner 位掩码 DP 的精确有向 Steiner 树后，五个基准配置（终端数均 ≤ 7）上的总成本从 660.70 降到 618.10（适应度 +6.88%）。"],
-  };
-  const IDEAZ = { mg_0001: "通过 Dreyfus-Wagner 位掩码 DP 求精确的有向 Steiner 树", mg_0002: "在树的边交换邻域上做带 Metropolis 准则的模拟退火", mg_0003: "以信息素加权选边的蚁群优化" };
+
   function card(kind, title, body, meta) {
     feed.querySelector(".nf-empty")?.remove();
     const c = document.createElement("div");
@@ -113,12 +105,12 @@ const Lineage = (() => {
     feed.prepend(c);
     while (feed.children.length > 5) feed.lastChild.remove();
   }
-  function emptyFeed() { feed.innerHTML = `<div class="nf-empty">${L("notes and meta-guidance appear here as the run distills them", "运行提炼出的 notes 与 meta-guidance 会出现在这里")}</div>`; }
+  function emptyFeed() { feed.innerHTML = `<div class="nf-empty">notes and meta-guidance appear here as the run distills them</div>`; }
 
   // ---- state
   const cnt = $("#rp-count"), bestEl = $("#rp-best"), fill = $(".rp-fill"), knob = $(".rp-knob");
   const cap = { task: $("#cap-task"), parent: $("#cap-parent"), insp: $("#cap-insp"), notes: $("#cap-notes"), mg: $("#cap-mg"), cost: $("#cap-cost"), phase: $("#cap-phase") };
-  const setCap = (el, v) => { if (el.textContent !== v) { el.textContent = v; el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); } };
+  const setCap = (el, v) => { if (el.textContent !== v) el.textContent = v; };
   let shown = 0; // number of settled tasks currently displayed
   function render(k, animate) {
     k = clamp(Math.round(k), 0, nodes.length);
@@ -142,13 +134,13 @@ const Lineage = (() => {
     const n = nodes[k - 1];
     if (n) {
       setCap(cap.task, n.id);
-      setCap(cap.parent, n.parent || L("— (root)", "—（根）"));
-      setCap(cap.insp, n.insp ? n.insp.map((s) => s.replace("task_", "#")).join(" ") : L("— closed", "— 关闭"));
-      setCap(cap.notes, n.notes ? n.notes.map(kindName).join(" · ") : "—");
+      setCap(cap.parent, n.parent || "— (root)");
+      setCap(cap.insp, n.insp ? n.insp.map((s) => s.replace("task_", "#")).join(" ") : "— closed");
+      setCap(cap.notes, n.notes ? n.notes.join(" · ") : "—");
       setCap(cap.mg, n.guidance || "—");
       setCap(cap.cost, n.cost.toFixed(2));
       const rootsDone = nodes.slice(0, k).filter((x) => !x.parent).length === 4;
-      cap.phase.textContent = !rootsDone ? L("root phase · 4 directions", "根阶段 · 4 个方向") : n.guidance ? L("guidance anchoring", "guidance 锚定") : k > 36 ? L("annealing · broad → deep", "退火 · 由广到深") : L("evolution phase", "进化阶段");
+      cap.phase.textContent = !rootsDone ? "root phase · 4 directions" : n.guidance ? "guidance anchoring" : k > 36 ? "annealing · broad → deep" : "evolution phase";
     }
     if (n && scroller.scrollWidth > scroller.clientWidth + 4) {
       const target = (n.x / VW) * scroller.scrollWidth - scroller.clientWidth * 0.62;
@@ -163,14 +155,14 @@ const Lineage = (() => {
       beams(n);
       if (n.guidance) {
         const gi = D.guidance_ideas[n.guidance];
-        const res = n.is_new_best ? L("new best", "新最优") : n.cost > byId[n.parent].cost + 1e-6 ? L("regression", "退化") : L("no gain", "无提升");
-        card("guidance", L(gi.idea, IDEAZ[n.guidance] || gi.idea), L(`anchored at the then-best ${n.parent} · ${n.id}: ${res}`, `锚定于当时的最优 ${n.parent} · ${n.id}：${res}`), `meta-guidance ${n.guidance} → ${n.id}`);
+        const res = n.is_new_best ? "new best" : n.cost > byId[n.parent].cost + 1e-6 ? "regression" : "no gain";
+        card("guidance", gi.idea, `anchored at the then-best ${n.parent} · ${n.id}: ${res}`, `meta-guidance ${n.guidance} → ${n.id}`);
       }
       (n.notes || []).forEach((kind) => {
         const ex = EX[n.id];
-        const meta = `${kindName(kind)} note · ${n.id}`;
-        if (ex && ex.type === kind) card(kind, L(ex.title, EXZ[n.id]?.[0] || ex.title), L(ex.text, EXZ[n.id]?.[1] || ex.text), meta);
-        else card(kind, L(`${kind[0].toUpperCase() + kind.slice(1)} note committed`, `${kindName(kind)} note 已提交`), L("validated by Governance and written to the notes pool; later tasks load it by relevance.", "经 Governance 验证后写入 notes 池；后续任务按相关性加载。"), meta);
+        const meta = `${kind} note · ${n.id}`;
+        if (ex && ex.type === kind) card(kind, ex.title, ex.text, meta);
+        else card(kind, `${kind[0].toUpperCase() + kind.slice(1)} note committed`, "validated by Governance and written to the notes pool; later tasks load it by relevance.", meta);
       });
     }
     if (k === 0) emptyFeed();
@@ -180,21 +172,24 @@ const Lineage = (() => {
   // ---- playback: play / pause / replay in the middle, single steps either side (stepping pauses)
   const btn = $(".rp-play");
   const END = nodes.length;
-  let playing = false, pos = 0, last = 0, userPaused = false;
+  let playing = false, pos = 0, last = 0, userPaused = false, raf = 0;
   const SPEED = 1.9; // tasks per second
   const mark = () => { btn.classList.toggle("playing", playing); btn.classList.toggle("ended", !playing && pos >= END); };
   function loop(now) {
+    raf = 0;
     if (!playing) return;
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     pos = Math.min(END, pos + dt * SPEED);
     render(Math.floor(pos), true);
     if (pos >= END) { play(false); return; } // stop on the last task and offer a replay
-    requestAnimationFrame(loop);
+    raf = requestAnimationFrame(loop);
   }
   function play(on) {
+    // Keep one playback clock, including when pause/resume happens between frames.
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
     playing = on;
-    if (on) { if (pos >= END) { pos = 0; render(0, false); } last = performance.now(); requestAnimationFrame(loop); }
+    if (on) { if (pos >= END) { pos = 0; render(0, false); } last = performance.now(); raf = requestAnimationFrame(loop); }
     mark();
   }
   btn.addEventListener("click", () => { userPaused = playing; play(!playing); });

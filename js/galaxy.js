@@ -6,11 +6,13 @@ const Galaxy = (() => {
   const cv = $("#galaxy");
   const ov = $("#triad");
   const octx = ov.getContext("2d");
-  const gl = cv.getContext("webgl", { antialias: false, premultipliedAlpha: true, alpha: false, powerPreference: "high-performance" });
+  // opaque: the canvas paints the dark of space itself, so nothing has to be blended under it
+  const gl = cv.getContext("webgl", { antialias: false, alpha: false, powerPreference: "high-performance" });
+  if (!gl) cv.style.background = "#03060a";
   // soft glows don't need retina resolution: cap the GL buffer (fill-rate is the cost) and the 2D overlay separately
   const DPR = Math.min(1.25, window.devicePixelRatio || 1);
   const ODPR = Math.min(1.5, window.devicePixelRatio || 1);
-  const st = { time: 0, scroll: 0, mx: 0, my: 0, tmx: 0, tmy: 0, ok: !!gl, intro: 0 };
+  const st = { time: 0, scroll: 0, ok: !!gl, intro: 0 };
   let W = 0, H = 0;
 
   // ------------------------------------------------------------ particles
@@ -52,14 +54,13 @@ const Galaxy = (() => {
   const VS = `
   attribute vec4 aPos; attribute vec4 aCol; attribute vec2 aExt;
   uniform float uTime, uAspect, uDpr, uTilt, uYaw, uDist, uFocal, uSpin, uFade, uPx, uIntro;
-  uniform vec2 uCenter, uMouse;
+  uniform vec2 uCenter;
   varying vec4 vCol; varying float vKind;
   void main() {
     vKind = aPos.w;
     float tw = 0.72 + 0.28 * sin(uTime * (1.5 + aExt.y * 3.0) + aExt.y * 40.0);
     if (aPos.w > 1.5) {
-      vec2 p = aPos.xy + uMouse * (0.02 + aPos.z * 0.05) * vec2(-1.0, 1.0);
-      gl_Position = vec4(p, 0.0, 1.0);
+      gl_Position = vec4(aPos.xy, 0.0, 1.0);
       gl_PointSize = aExt.x * uDpr * (0.8 + 0.4 * aPos.z);
       vCol = vec4(aCol.rgb, aCol.a * tw * (0.55 + 0.45 * uFade));
       return;
@@ -112,7 +113,7 @@ const Galaxy = (() => {
       gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0);
     };
     buf(pos, "aPos", 4); buf(col, "aCol", 4); buf(ext, "aExt", 2);
-    ["uTime", "uAspect", "uDpr", "uTilt", "uYaw", "uDist", "uFocal", "uSpin", "uFade", "uPx", "uCenter", "uMouse", "uIntro"].forEach((n) => (U[n] = gl.getUniformLocation(program, n)));
+    ["uTime", "uAspect", "uDpr", "uTilt", "uYaw", "uDist", "uFocal", "uSpin", "uFade", "uPx", "uCenter", "uIntro"].forEach((n) => (U[n] = gl.getUniformLocation(program, n)));
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE);
     gl.disable(gl.DEPTH_TEST);
@@ -127,42 +128,95 @@ const Galaxy = (() => {
 
   // ------------------------------------------------------------ porthole (light theme)
   const glass = $(".pt-glass");
+  const wall = $("#cabin-wall");
+  const universe = $("#universe");
   const win = { on: false, x: 0, y: 0, r: 0, shown: false };
-  let clipKey = "";
+  let clipKey = null, wallScroll = -1, lightKey = "";
   const labelLayer = $(".triad-labels");
-  // canvases and the triad's labels are all clipped to the glass: nothing of the outside shows past the frame
-  const setClip = (v) => { if (v !== clipKey) { clipKey = v; cv.style.clipPath = ov.style.clipPath = labelLayer.style.clipPath = v; } };
+  // space, both canvases and the triad's labels are one layer, clipped to the glass as a whole: nothing of the outside
+  // shows past the frame
+  const setClip = (v) => { if (v !== clipKey) { clipKey = v; universe.style.clipPath = v; } };
   function readWindow() {
     win.on = document.documentElement.dataset.theme === "light" && !!glass;
-    if (!win.on) { setClip(""); return; }
+    if (!win.on) return;
     const b = glass.getBoundingClientRect();
     win.r = b.width / 2; win.x = b.left + win.r; win.y = b.top + win.r;
     win.shown = win.r > 2 && b.bottom > 0 && b.top < H;
-    setClip(win.shown ? `circle(${win.r.toFixed(1)}px at ${win.x.toFixed(1)}px ${win.y.toFixed(1)}px)` : "circle(0px at 0px 0px)");
   }
   // the galaxy fills the glass with its arms running past the rim; it is centred when the window is mid-screen and
   // lags the window as it moves away (a far-away object moves less than the wall it is seen through)
-  function windowCamera() {
-    const k = (1.32 * win.r) / (1.15 * H * 0.5);
-    const gy = win.y - (win.y - H / 2) * 0.22;
+  function windowCamera(w) {
+    const k = (1.32 * Math.max(2, w.r)) / (1.15 * H * 0.5);
+    const gy = w.y - (w.y - H / 2) * 0.22;
     return {
-      cx: (win.x / W) * 2 - 1, cy: 1 - (gy / H) * 2,
-      tilt: 0.98 + st.my * 0.1, yaw: -0.35 + st.mx * 0.12 + st.scroll * 0.08,
+      cx: (w.x / W) * 2 - 1, cy: 1 - (gy / H) * 2,
+      tilt: 0.98, yaw: -0.35 + st.scroll * 0.08,
       dist: 1.6 / k, focal: 1.6, fade: 1,
     };
   }
 
   // Camera as a function of scroll: hero → galaxy sits right of the title; later it drifts to the centre, tips over and recedes.
-  function camera() {
-    if (win.on) return windowCamera();
+  function darkCamera() {
     const p = st.scroll, hero = E.smooth(prog(p, 0, 1.1));
     const narrow = W < 1000;
-    const mx = st.mx, my = st.my;
     return {
       cx: lerp(narrow ? 0 : 0.36, 0, hero), cy: lerp(narrow ? -0.42 : -0.02, 0, hero),
-      tilt: lerp(0.98, 0.62, hero) + my * 0.1, yaw: -0.35 + mx * 0.12 + p * 0.08,
+      tilt: lerp(0.98, 0.62, hero), yaw: -0.35 + p * 0.08,
       dist: lerp(2.0, 1.75, hero), focal: 1.6, fade: lerp(1, 0.32, E.smooth(prog(p, 0.25, 1.3))),
     };
+  }
+  // One particle buffer, clock and camera for both themes. Only its framing and aperture interpolate.
+  // (Writes only: the frame has read the window before.)
+  let morph = null;
+  function scene(now) {
+    if (wallScroll !== scrollY) { wallScroll = scrollY; wall.style.backgroundPositionY = `${-wallScroll}px`; }
+    const m = morph, t = m ? clamp((now - m.start) / m.duration) : 1;
+    const ease = (u) => (1 - Math.cos(Math.PI * u)) / 2;
+    const light = m ? lerp(m.from, m.to, ease(t)) : +win.on;
+    // the circle between the themes runs on its own, shorter clock: the page turns light or dark quickly while the
+    // galaxy takes its time to re-frame
+    const open = m ? lerp(m.from, m.to, ease(clamp((now - m.start) / m.iris))) : light;
+    // during a switch the window is the porthole's place, carried along if the page scrolls
+    const w = m ? { ...m.window, y: m.window.y - (scrollY - m.scroll) } : win;
+    const dark = darkCamera(), cabin = windowCamera(w), c = {};
+    for (const key of Object.keys(dark)) c[key] = lerp(dark[key], cabin[key], light);
+    // Interpolate magnification, not distance, for an even-feeling optical zoom.
+    c.dist = 1 / lerp(1 / dark.dist, 1 / cabin.dist, light);
+    // The cabin opens at the glass, not at the moving galaxy's centre. Keep this anchor fixed throughout.
+    const x = w.x, y = w.y;
+    const far = Math.hypot(Math.max(Math.abs(x), Math.abs(W - x)), Math.max(Math.abs(y), Math.abs(H - y))) + 3;
+    const r = lerp(far, w.r, open), shown = w.r > 2 && w.y + w.r > 0 && w.y - w.r < H;
+    // (while switching, the theme's round window does the cutting)
+    if (!m) setClip(light === 0 ? "" : !shown ? "circle(0px at 0px 0px)" : `circle(${r.toFixed(2)}px at ${x.toFixed(2)}px ${y.toFixed(2)}px)`);
+    // Opaque space expands out of the window (or closes back into it); the wall never cross-fades.
+    const lighting = light.toFixed(4);
+    if (lighting !== lightKey) { lightKey = lighting; labelLayer.style.setProperty("--space-light", lighting); }
+    if (m) {
+      m.aperture({ x, y, r });
+      if (t >= 1 && !m.reached) { m.reached = true; m.resolve(); }
+    }
+    return { c, light, open, shown, window: w, circle: { x, y, r } };
+  }
+  // A switch between framings: from / to are the light amounts (0 dark, 1 the porthole), glass the porthole's box;
+  // the galaxy re-frames over duration, the circle opens or closes over iris. It holds its first frame until startAt()
+  // (the caller starts everything together) and its last one until finishTheme(), so the page can change underneath
+  // before the galaxy goes back to following it.
+  function morphTheme(from, to, glass, duration, aperture, iris = duration) {
+    finishTheme();
+    let resolve;
+    const reached = new Promise((done) => (resolve = done));
+    const r = glass.width / 2, pane = { x: glass.left + r, y: glass.top + r, r };
+    const flight = morph = { from, to, window: pane, scroll: scrollY, start: Infinity, duration, iris, resolve, aperture, reached: false };
+    setClip("");
+    return { reached, startAt: (time) => { if (morph === flight) flight.start = time; } };
+  }
+  // (the frame being finished has drawn the galaxy already: only the window has to follow the page at once)
+  function finishTheme() {
+    if (!morph) return;
+    const m = morph; morph = null;
+    if (!m.reached) m.resolve();
+    readWindow();
+    scene(performance.now());
   }
   function project(x, y, z, c) {
     const ct = Math.cos(c.tilt), stt = Math.sin(c.tilt), cyw = Math.cos(c.yaw), syw = Math.sin(c.yaw);
@@ -180,19 +234,16 @@ const Galaxy = (() => {
   let triadClear = false;
   const labelOp = [-1, -1, -1];
   const setLabel = (i, op) => { const v = Math.round(op * 100) / 100; if (v !== labelOp[i]) { labels[i].style.opacity = String(v); labelOp[i] = v; } };
-  function drawTriad(c) {
-    const vis = W < 1000 ? 0 : (win.on ? (win.shown ? 1 : 0) : 1 - E.smooth(prog(st.scroll, 0.15, 0.7))) * E.smooth(prog(st.intro, 0.35, 1));
+  function drawTriad(c, view, dr, cr) {
+    const vis = W < 1000 ? 0 : lerp(1 - E.smooth(prog(st.scroll, 0.15, 0.7)), +view.shown, view.light) * E.smooth(prog(st.intro, 0.35, 1));
     if (vis <= 0.01) {
       if (!triadClear) { octx.setTransform(ODPR, 0, 0, ODPR, 0, 0); octx.clearRect(0, 0, W, H); labels.forEach((_, i) => setLabel(i, 0)); triadClear = true; }
       return;
     }
     triadClear = false;
-    // read layout before any style write this frame (on dark, labels step back while passing behind the dino or the
-    // hero copy; inside the porthole there is nothing to collide with, so they stay)
-    const dr = dinoEl && !win.on ? dinoEl.getBoundingClientRect() : null, cr = copyEl && !win.on ? copyEl.getBoundingClientRect() : null;
     octx.setTransform(ODPR, 0, 0, ODPR, 0, 0);
     octx.clearRect(0, 0, W, H);
-    const R = win.on ? 0.66 : 1.02, t = st.time;
+    const R = lerp(1.02, 0.66, view.light), t = st.time;
     const inside = (b, x, y) => b && x > b.left - 20 && x < b.right + 20 && y > b.top - 10 && y < b.bottom + 10;
     const pts = [0, 1, 2].map((i) => {
       const a = -t * 0.065 + (i * Math.PI * 2) / 3 + 0.4; // orbits with the galaxy (clockwise)
@@ -224,37 +275,45 @@ const Galaxy = (() => {
       octx.beginPath(); octx.arc(p.x, p.y, 14 * s * pul, 0, Math.PI * 2); octx.stroke();
       octx.beginPath(); octx.arc(p.x, p.y, 22 * s, t * 1.5 + i, t * 1.5 + i + 1.2); octx.stroke();
       const l = labels[i];
-      const behind = inside(dr, p.x, p.y) || inside(cr, p.x, p.y - 40 * s);
-      setLabel(i, vis * (behind ? 0.08 : 1));
-      l.style.transform = `translate(${p.x}px, ${p.y - 30 * s}px) translate(-50%, -100%)`;
+      // on dark, labels step back while passing behind the dino or the hero copy; inside the porthole there is nothing
+      // to collide with, so they stay
+      const behind = view.light < 1 && (inside(dr, p.x, p.y) || inside(cr, p.x, p.y - 40 * s));
+      setLabel(i, vis * (behind ? lerp(0.08, 1, view.light) : 1));
+      l.style.transform = `translate(${p.x}px, ${p.y - 30 * s}px) translate(-50%, -100%) scale(${lerp(1, 0.875, view.light)})`;
     });
     octx.globalCompositeOperation = "source-over";
   }
 
   // deep in the page the galaxy is a dim backdrop: while nothing moves, 30 fps is indistinguishable
-  let lastScroll = -1, stillFor = 0, odd = false, lastMove = 0;
-  addEventListener("pointermove", () => (lastMove = performance.now()), { passive: true });
+  let lastScroll = -1, stillFor = 0, odd = false;
   function frame(now) {
     requestAnimationFrame(frame);
     const sy = scrollY;
     stillFor = sy === lastScroll ? stillFor + 1 : 0;
     lastScroll = sy;
     odd = !odd;
-    if (sy > H * 1.3 && stillFor > 10 && now - lastMove > 300 && odd) return;
+    if (!morph && sy > H * 1.3 && stillFor > 10 && odd) return;
+    draw(now);
+  }
+  function draw(now) {
     st.time = now / 1000;
-    st.mx = lerp(st.mx, st.tmx, 0.04); st.my = lerp(st.my, st.tmy, 0.04);
     st.scroll = scrollY / Math.max(1, H);
+    // every layout read of the frame comes first; from here on the frame only writes, so nothing forces a layout
     readWindow();
-    const c = camera();
-    if (win.on && !win.shown) { drawTriad(c); return; } // porthole scrolled away: nothing to draw
+    const side = W >= 1000 && !(win.on && !morph);
+    const dr = side && dinoEl ? dinoEl.getBoundingClientRect() : null, cr = side && copyEl ? copyEl.getBoundingClientRect() : null;
+    const view = scene(now), c = view.c;
+    if (view.light === 1 && !view.shown) { drawTriad(c, view, dr, cr); return; } // porthole scrolled away: nothing to draw
     if (gl) {
-      // inside the porthole only the glass is ever seen: draw just that patch of the canvas
-      if (win.on) {
-        const x0 = Math.max(0, Math.floor((win.x - win.r - 2) * DPR)), y0 = Math.max(0, Math.floor((H - win.y - win.r - 2) * DPR));
+      // inside a circle (the glass, or the opening aperture) only that patch of the canvas is ever seen: draw just it
+      if (view.open > 0) {
+        const { x, y, r } = view.circle;
+        const x0 = Math.max(0, Math.floor((x - r - 2) * DPR)), x1 = Math.min(cv.width, Math.ceil((x + r + 2) * DPR));
+        const y0 = Math.max(0, Math.floor((H - y - r - 2) * DPR)), y1 = Math.min(cv.height, Math.ceil((H - y + r + 2) * DPR));
         gl.enable(gl.SCISSOR_TEST);
-        gl.scissor(x0, y0, Math.ceil((win.r * 2 + 4) * DPR), Math.ceil((win.r * 2 + 4) * DPR));
+        gl.scissor(x0, y0, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
       } else gl.disable(gl.SCISSOR_TEST);
-      gl.clearColor(0.012, 0.024, 0.04, 1);
+      gl.clearColor(3 / 255, 6 / 255, 10 / 255, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(U.uTime, st.time);
       gl.uniform1f(U.uAspect, W / H);
@@ -269,10 +328,9 @@ const Galaxy = (() => {
       gl.uniform1f(U.uPx, Math.min(W, 1800) / 1400);
       gl.uniform1f(U.uIntro, E.smooth(st.intro));
       gl.uniform2f(U.uCenter, c.cx, c.cy);
-      gl.uniform2f(U.uMouse, st.mx, st.my);
       gl.drawArrays(gl.POINTS, 0, COUNT);
     }
-    drawTriad(c);
+    drawTriad(c, view, dr, cr);
   }
 
   // big-bang intro: the galaxy unwinds from a compact core when the loader lifts
@@ -284,8 +342,7 @@ const Galaxy = (() => {
   init();
   resize();
   addEventListener("resize", resize);
-  addEventListener("pointermove", (e) => { st.tmx = (e.clientX / W) * 2 - 1; st.tmy = (e.clientY / H) * 2 - 1; }, { passive: true });
   if (REDUCED) st.intro = 1;
   requestAnimationFrame(frame);
-  return { start, st };
+  return { start, st, morphTheme, finishTheme };
 })();

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,16 +8,16 @@
 <meta property="og:title" content="EvoTrias — Where Autonomy Belongs" />
 <meta property="og:description" content="A Separation of Powers for Agentic Program Evolution." />
 <meta property="og:image" content="assets/video/poster.jpg" />
-<meta name="theme-color" content="#03060a" />
-<script>/* language before first paint: ?lang= wins, then the saved choice, else English */
-(function () { var q = new URLSearchParams(location.search).get("lang"), s = null; try { s = localStorage.getItem("lang"); } catch (e) {}
-  var l = q === "zh" || q === "en" ? q : s === "zh" ? "zh" : "en"; window.LANG = l; document.documentElement.lang = l === "zh" ? "zh-CN" : "en";
-  /* theme, same rule: ?theme= wins, then the saved choice, else dark */
-  var tq = new URLSearchParams(location.search).get("theme"), ts = null; try { ts = localStorage.getItem("theme"); } catch (e) {}
-  if ((tq || ts) === "light") document.documentElement.dataset.theme = "light"; })();</script>
+<meta name="theme-color" content="#fbfcfc" />
+<script>/* Theme before first paint: a valid ?theme= wins, then the saved choice, otherwise light. */
+(function () { var q = new URLSearchParams(location.search).get("theme"), s = null; try { s = localStorage.getItem("theme"); } catch (e) {}
+  var mode = q === "light" || q === "dark" ? q : s === "dark" ? "dark" : "light";
+  if (mode === "dark") delete document.documentElement.dataset.theme;
+  document.querySelector('meta[name="theme-color"]').content = mode === "light" ? "#fbfcfc" : "#03060a";
+})();</script>
 <link rel="icon" type="image/svg+xml" href="assets/img/dino/dino_plain.svg?v=eye1" />
 <link rel="stylesheet" href="css/fonts.css?v=20261013a" />
-<link rel="stylesheet" href="css/main.css?v=20261028a" />
+<link rel="stylesheet" href="css/main.css?v=20261029-iris7" />
 </head>
 <body class="is-loading">
 
@@ -32,8 +32,18 @@
   <div class="ld-pct mono">000</div>
 </div>
 
-<canvas id="galaxy" aria-hidden="true"></canvas>
-<canvas id="triad" aria-hidden="true"></canvas>
+<div id="cabin-wall" aria-hidden="true"></div>
+<div id="universe" aria-hidden="true">
+  <div class="universe-view">
+    <canvas id="galaxy"></canvas>
+    <canvas id="triad"></canvas>
+    <div class="triad-labels" lang="en">
+      <span class="tl tl-gov" data-k="0">GOVERN<small>Structured Governance</small></span>
+      <span class="tl tl-prop" data-k="1">PROPOSE<small>Open Proposal</small></span>
+      <span class="tl tl-judge" data-k="2">JUDGE<small>Protected Judgment</small></span>
+    </div>
+  </div>
+</div>
 <div id="grain" aria-hidden="true"></div>
 
 <!-- ================= nav ================= -->
@@ -43,20 +53,19 @@
     <span>Evo<b>Trias</b></span>
   </a>
   <nav class="nav-links" id="nav-links">
-    <a href="#film" data-zh="影片">Film</a>
-    <a href="#architecture" data-zh="架构">Architecture</a>
-    <a href="#governance" data-zh="治理">Governance</a>
-    <a href="#plugin" data-zh="插件">Plugin</a>
-    <a href="#results" data-zh="结果">Results</a>
-    <a href="#cite" data-zh="引用">Cite</a>
+    <a href="#film">Film</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#governance">Governance</a>
+    <a href="#plugin">Plugin</a>
+    <a href="#results">Results</a>
+    <a href="#cite">Cite</a>
   </nav>
-  <div class="lang mono" role="group" aria-label="Language / 语言"><a href="./" data-l="en" lang="en">EN</a><a href="?lang=zh" data-l="zh" lang="zh-CN">中</a></div>
-  <button class="theme-btn" type="button" aria-label="Switch to light theme" data-zh-aria-label="切换到浅色主题">
+  <button class="theme-btn" type="button" aria-label="Switch to dark theme">
     <svg class="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4" /></svg>
     <svg class="i-moon" viewBox="0 0 24 24"><path d="M20.5 13.4A8.5 8.5 0 1 1 10.6 3.5a6.6 6.6 0 0 0 9.9 9.9z" /></svg>
   </button>
-  <button class="nav-burger" aria-label="Menu" aria-controls="nav-links" aria-expanded="false" data-zh-aria-label="菜单"><i></i><i></i><i></i></button>
-  <a class="btn btn-sm btn-glow" href="#paper" data-soon="Paper coming soon" data-magnetic data-zh="&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 2h8l5 5v15H6z M14 2v5h5&quot; /&gt;&lt;/svg&gt;&lt;span class=&quot;btn-t&quot;&gt;论文&lt;/span&gt;" data-zh-data-soon="论文即将发布">
+  <button class="nav-burger" aria-label="Menu" aria-controls="nav-links" aria-expanded="false"><i></i><i></i><i></i></button>
+  <a class="btn btn-sm btn-glow" href="#paper" data-soon="Paper coming soon" data-magnetic>
     <svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6z M14 2v5h5" /></svg><span class="btn-t">Paper</span>
   </a>
   <div class="nav-progress"><i></i></div>
@@ -66,22 +75,22 @@
 <!-- ================= hero ================= -->
 <section id="top" class="hero">
   <div class="hero-copy">
-    <div class="eyebrow reveal" data-zh="&lt;span class=&quot;live-dot&quot;&gt;&lt;/span&gt;智能体程序进化 · 论文与插件"><span class="live-dot"></span>Agentic program evolution · paper &amp; plugin</div>
+    <div class="eyebrow reveal"><span class="live-dot"></span>Agentic program evolution · paper &amp; plugin</div>
     <h1 class="wordmark" aria-label="EvoTrias">
       <span class="wm-evo">Evo</span><span class="wm-trias">Trias</span>
     </h1>
     <p class="hero-claim reveal" data-d="1" lang="en">Where autonomy <span class="grad">belongs</span>.</p>
     <p class="hero-title reveal" data-d="2" lang="en">A Separation of Powers for Agentic Program Evolution</p>
-    <p class="hero-lede reveal" data-d="3" data-zh="&lt;b class=&quot;c-gov&quot;&gt;Govern&lt;/b&gt;、&lt;b class=&quot;c-prop&quot;&gt;propose&lt;/b&gt;、&lt;b class=&quot;c-judge&quot;&gt;judge&lt;/b&gt;：&lt;span class=&quot;nw&quot;&gt;三项决策，各归其主。&lt;/span&gt;EvoTrias 把你正在用的编程智能体变成一个进化系统。">
+    <p class="hero-lede reveal" data-d="3">
       <b class="c-gov">Govern</b>, <b class="c-prop">propose</b>, <b class="c-judge">judge</b> — three decisions, one owner each.
       EvoTrias turns the coding agent you already use into an evolution system.
     </p>
     <div class="cta reveal" data-d="4">
-      <a class="btn btn-primary" href="#paper" data-soon="Paper coming soon" data-magnetic data-zh="&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M6 2h8l5 5v15H6z M14 2v5h5 M9 13h6 M9 17h6&quot; /&gt;&lt;/svg&gt;阅读论文" data-zh-data-soon="论文即将发布">
+      <a class="btn btn-primary" href="#paper" data-soon="Paper coming soon" data-magnetic>
         <svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v15H6z M14 2v5h5 M9 13h6 M9 17h6" /></svg>Read the paper</a>
-      <a class="btn btn-ghost" href="#film" data-magnetic data-zh="&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M8 5v14l11-7z&quot; /&gt;&lt;/svg&gt;观看影片">
+      <a class="btn btn-ghost" href="#film" data-magnetic>
         <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>Watch the film</a>
-      <a class="btn btn-ghost" href="#code" data-soon="Code release coming soon" data-magnetic data-zh="&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M9 18l-6-6 6-6 M15 6l6 6-6 6&quot; /&gt;&lt;/svg&gt;代码" data-zh-data-soon="代码即将开源">
+      <a class="btn btn-ghost" href="#code" data-soon="Code release coming soon" data-magnetic>
         <svg viewBox="0 0 24 24"><path d="M9 18l-6-6 6-6 M15 6l6 6-6 6" /></svg>Code</a>
       <a class="btn btn-ghost" href="#cite" data-magnetic>
         <svg viewBox="0 0 24 24"><path d="M7 7h4v4H8c0 3 1 4 3 5 M14 7h4v4h-3c0 3 1 4 3 5" /></svg>BibTeX</a>
@@ -117,26 +126,22 @@
     </div>
     <div class="orbit o1"><i></i></div>
     <div class="orbit o2"><i></i></div>
-    <img class="dino-float" src="assets/img/dino/dino_astronaut.svg?v=eye1" alt="EvoTrias mascot: a small dinosaur in a space helmet" data-zh-alt="EvoTrias 吉祥物：戴着太空头盔的小恐龙" />
+    <div class="dino-travel">
+      <img class="dino-float" src="assets/img/dino/dino_astronaut.webp?v=eye1" width="1040" height="1093" alt="EvoTrias mascot: a small dinosaur in a space helmet" />
+    </div>
     <div class="dino-shadow"></div>
   </div>
 
-  <div class="triad-labels" aria-hidden="true" lang="en">
-    <span class="tl tl-gov" data-k="0">GOVERN<small>Structured Governance</small></span>
-    <span class="tl tl-prop" data-k="1">PROPOSE<small>Open Proposal</small></span>
-    <span class="tl tl-judge" data-k="2">JUDGE<small>Protected Judgment</small></span>
-  </div>
-
-  <a class="scroll-cue" href="#film" aria-label="Scroll" data-zh="&lt;span&gt;向下滚动&lt;/span&gt;&lt;i&gt;&lt;/i&gt;" data-zh-aria-label="向下滚动"><span>scroll</span><i></i></a>
+  <a class="scroll-cue" href="#film" aria-label="Scroll"><span>scroll</span><i></i></a>
 
 </section>
 
 <!-- ================= film ================= -->
 <section id="film" class="section">
   <div class="sec-head">
-    <div class="sec-idx mono reveal" data-zh="00 / 影片">00 / THE FILM</div>
-    <h2 class="reveal" data-scramble data-zh="让你的智能体成为进化系统。">Make your agent an evolution system.</h2>
-    <p class="sec-sub reveal" data-d="1" data-zh="一条 &lt;code&gt;/evolve&lt;/code&gt;，就把一次运行化作一片进化星系；整套系统还能接入任何智能体。">One <code>/evolve</code> turns a single run into a galaxy of evolutions — then the whole system plugs into any agent.</p>
+    <div class="sec-idx mono reveal">00 / THE FILM</div>
+    <h2 class="reveal" data-scramble>Make your agent an evolution system.</h2>
+    <p class="sec-sub reveal" data-d="1">One <code>/evolve</code> turns a single run into a galaxy of evolutions — then the whole system plugs into any agent.</p>
   </div>
   <div class="film-wrap reveal" data-d="2">
     <div class="film-frame">
@@ -144,11 +149,11 @@
       <video id="film-video" preload="metadata" poster="assets/video/poster.jpg?v=2k" playsinline controls controlslist="nodownload">
         <source src="assets/video/evotrias_film.mp4?v=1080p5" type="video/mp4" />
       </video>
-      <button class="film-play" aria-label="Play film" data-zh-aria-label="播放影片">
+      <button class="film-play" aria-label="Play film">
         <span class="fp-ring"></span><span class="fp-ring r2"></span>
         <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
       </button>
-      <div class="film-meta mono" data-zh="&lt;span&gt;EvoTrias · 宣传片&lt;/span&gt;&lt;span&gt;1080p&lt;/span&gt;"><span>EvoTrias · promo film</span><span>1080p</span></div>
+      <div class="film-meta mono"><span>EvoTrias · promo film</span><span>1080p</span></div>
     </div>
   </div>
 </section>
@@ -157,55 +162,55 @@
 <!-- ================= architecture ================= -->
 <section id="architecture" class="section">
   <div class="sec-head">
-    <div class="sec-idx mono reveal" data-zh="01 / 架构">01 / ARCHITECTURE</div>
-    <h2 class="reveal" data-scramble data-zh="三权分立。">A separation of powers.</h2>
-    <p class="sec-sub reveal" data-d="1" data-zh="程序进化取决于三项决策：&lt;b class=&quot;c-gov&quot;&gt;治理&lt;/b&gt;、&lt;b class=&quot;c-prop&quot;&gt;提议&lt;/b&gt;、&lt;b class=&quot;c-judge&quot;&gt;评判&lt;/b&gt;。现有系统往往让一方吞并另一方的职责，而且没有一个把评判保持私有。EvoTrias 为每项决策设立独立的&lt;em&gt;平面&lt;/em&gt;：平面之间只交换类型化契约，再由一层 hook 确保任何平面都无法侵蚀另一个。">Program evolution rests on three decisions — <b class="c-gov">govern</b>, <b class="c-prop">propose</b>, <b class="c-judge">judge</b>. Existing systems let one owner absorb another, and none keeps the judge private. EvoTrias gives each decision its own <em>plane</em>. Planes exchange typed contracts only — and a hook layer makes sure no plane can erode another.</p>
+    <div class="sec-idx mono reveal">01 / ARCHITECTURE</div>
+    <h2 class="reveal" data-scramble>A separation of powers.</h2>
+    <p class="sec-sub reveal" data-d="1">Program evolution rests on three decisions — <b class="c-gov">govern</b>, <b class="c-prop">propose</b>, <b class="c-judge">judge</b>. Existing systems let one owner absorb another, and none keeps the judge private. EvoTrias gives each decision its own <em>plane</em>. Planes exchange typed contracts only — and a hook layer makes sure no plane can erode another.</p>
   </div>
 
   <div class="planes">
     <article class="plane reveal" data-d="1" data-tilt="5" style="--c: var(--gov); --c2: var(--rgb-2ed3a0, 46,211,160)">
-      <div class="pl-top"><span class="pl-num mono">01</span><span class="pl-chip mono" data-zh="Skill + MCP 控制平面">Skill + MCP control plane</span></div>
-      <div class="pl-dino"><img src="assets/img/dino/dino_commander.svg" alt="Dino in an officer's cap holding a plan on a clipboard" data-zh-alt="戴军官帽、拿着写字板上计划的恐龙" /></div>
+      <div class="pl-top"><span class="pl-num mono">01</span><span class="pl-chip mono">Skill + MCP control plane</span></div>
+      <div class="pl-dino"><img src="assets/img/dino/dino_commander.svg" alt="Dino in an officer's cap holding a plan on a clipboard" /></div>
       <h3 lang="en">Structured Governance</h3>
-      <p class="pl-own mono" data-zh="掌管 &lt;b&gt;govern&lt;/b&gt; · 跨轮次事务">owns <b>govern</b> · what spans rounds</p>
-      <p data-zh="把已结算的结果提炼为后验证据，自适应调整选择策略，持久化经过验证的经验，并为每个新任务绑定上下文胶囊。">Distills settled outcomes into posterior evidence, adapts the selection policy, persists validated experience, and binds each new task's context capsule.</p>
-      <ul class="pl-list" data-zh="&lt;li&gt;产物 · 谱系 · 全局三级后验证据&lt;/li&gt;&lt;li&gt;自适应的谱系 / 父代 / 灵感选择策略&lt;/li&gt;&lt;li&gt;Notes 与 Meta-guidance，先验证、后提交&lt;/li&gt;"><li>Posterior evidence at artifact · lineage · global scope</li><li>Adaptive lineage / parent / inspiration policy</li><li>Notes &amp; Meta-guidance, validated before commit</li></ul>
+      <p class="pl-own mono">owns <b>govern</b> · what spans rounds</p>
+      <p>Distills settled outcomes into posterior evidence, adapts the selection policy, persists validated experience, and binds each new task's context capsule.</p>
+      <ul class="pl-list"><li>Posterior evidence at artifact · lineage · global scope</li><li>Adaptive lineage / parent / inspiration policy</li><li>Notes &amp; Meta-guidance, validated before commit</li></ul>
     </article>
     <article class="plane reveal" data-d="2" data-tilt="5" style="--c: var(--prop); --c2: var(--rgb-ff8a4c, 255,138,76)">
-      <div class="pl-top"><span class="pl-num mono">02</span><span class="pl-chip mono" data-zh="你的编程智能体">your coding agent</span></div>
-      <div class="pl-dino"><img src="assets/img/dino/dino_builder.svg" alt="Dino in a hard hat holding a wrench" data-zh-alt="戴安全帽、拿着扳手的恐龙" /></div>
+      <div class="pl-top"><span class="pl-num mono">02</span><span class="pl-chip mono">your coding agent</span></div>
+      <div class="pl-dino"><img src="assets/img/dino/dino_builder.svg" alt="Dino in a hard hat holding a wrench" /></div>
       <h3 lang="en">Open Proposal</h3>
-      <p class="pl-own mono" data-zh="掌管 &lt;b&gt;propose&lt;/b&gt; · 任务内事务">owns <b>propose</b> · what happens inside a task</p>
-      <p data-zh="通用编程智能体（Claude Code、OpenCode、Codex）通过 MCP 拉取自己的胶囊，随后自主推理、调用工具，直到产出一个产物。">A general-purpose coding agent — Claude Code, OpenCode, Codex — pulls its capsule over MCP, then reasons and calls tools on its own until an artifact exists.</p>
-      <ul class="pl-list" data-zh="&lt;li&gt;滚动队列中的并行任务执行器&lt;/li&gt;&lt;li&gt;没有变异模板：实现、构建、测试、修复&lt;/li&gt;&lt;li&gt;提炼类型化 notes，并提出新方向&lt;/li&gt;"><li>Parallel task executors in a rolling queue</li><li>No mutation template: implement, build, test, repair</li><li>Distills typed notes and proposes new directions</li></ul>
+      <p class="pl-own mono">owns <b>propose</b> · what happens inside a task</p>
+      <p>A general-purpose coding agent — Claude Code, OpenCode, Codex — pulls its capsule over MCP, then reasons and calls tools on its own until an artifact exists.</p>
+      <ul class="pl-list"><li>Parallel task executors in a rolling queue</li><li>No mutation template: implement, build, test, repair</li><li>Distills typed notes and proposes new directions</li></ul>
     </article>
     <article class="plane reveal" data-d="3" data-tilt="5" style="--c: var(--judge); --c2: var(--rgb-6f8cff, 111,140,255)">
-      <div class="pl-top"><span class="pl-num mono">03</span><span class="pl-chip mono" data-zh="隔离的评测器">isolated evaluator</span></div>
-      <div class="pl-dino"><img src="assets/img/dino/dino_judge.svg" alt="Dino in a judge's wig holding a gavel" data-zh-alt="戴法官假发、拿着法槌的恐龙" /></div>
+      <div class="pl-top"><span class="pl-num mono">03</span><span class="pl-chip mono">isolated evaluator</span></div>
+      <div class="pl-dino"><img src="assets/img/dino/dino_judge.svg" alt="Dino in a judge's wig holding a gavel" /></div>
       <h3 lang="en">Protected Judgment</h3>
-      <p class="pl-own mono" data-zh="掌管 &lt;b&gt;judge&lt;/b&gt; · 什么才算数">owns <b>judge</b> · what counts</p>
-      <p data-zh="契约可见，证据私有。产物经由一个窄接口进入，返回的只有归一化结果：有效性、适应度与各项指标。">Contract-visible, evidence-private. The artifact enters through a narrow interface; only a normalized outcome — validity, fitness, metrics — comes back.</p>
-      <ul class="pl-list" data-zh="&lt;li&gt;指令：每条提示词都写明禁令&lt;/li&gt;&lt;li&gt;隔离：评测器位于请求接口之后&lt;/li&gt;&lt;li&gt;强制：hooks 拒绝一切对评测器的读取&lt;/li&gt;"><li>Instruction: every prompt states the prohibition</li><li>Isolation: evaluator behind a request interface</li><li>Enforcement: hooks deny evaluator reads</li></ul>
+      <p class="pl-own mono">owns <b>judge</b> · what counts</p>
+      <p>Contract-visible, evidence-private. The artifact enters through a narrow interface; only a normalized outcome — validity, fitness, metrics — comes back.</p>
+      <ul class="pl-list"><li>Instruction: every prompt states the prohibition</li><li>Isolation: evaluator behind a request interface</li><li>Enforcement: hooks deny evaluator reads</li></ul>
     </article>
   </div>
 
   <!-- contract loop -->
   <div class="loop reveal" data-d="1">
     <div class="loop-vis">
-      <svg id="loop-svg" viewBox="0 0 560 590" aria-label="Contract loop between the three planes" data-zh-aria-label="三个平面之间的契约循环"></svg>
+      <svg id="loop-svg" viewBox="0 0 560 590" aria-label="Contract loop between the three planes"></svg>
     </div>
     <div class="loop-copy">
-      <div class="sec-idx mono" data-zh="契约循环">THE CONTRACT LOOP</div>
-      <h3 data-zh="三个平面，三份类型化契约。">Three planes. Three typed contracts.</h3>
+      <div class="sec-idx mono">THE CONTRACT LOOP</div>
+      <h3>Three planes. Three typed contracts.</h3>
       <div class="eq">
-        <div class="eq-row" data-k="0"><span class="eq-l">Γ<sub>t</sub></span><span class="eq-op">=</span><span class="eq-r">G(ℋ<sub>t</sub>)</span><span class="eq-note mono" data-zh="治理平面绑定上下文胶囊">Governance binds a context capsule</span></div>
-        <div class="eq-row" data-k="1"><span class="eq-l">x<sub>t</sub></span><span class="eq-op">=</span><span class="eq-r">P(R<sub>𝒬</sub>, C<sub>𝒬</sub>, Γ<sub>t</sub>)</span><span class="eq-note mono" data-zh="提议平面提交候选产物">Proposal submits a candidate artifact</span></div>
-        <div class="eq-row" data-k="2"><span class="eq-l">y<sub>t</sub></span><span class="eq-op">=</span><span class="eq-r">J<sub>𝒬</sub>(x<sub>t</sub>)</span><span class="eq-note mono" data-zh="评判平面返回归一化结果">Judgment returns a normalized outcome</span></div>
+        <div class="eq-row" data-k="0"><span class="eq-l">Γ<sub>t</sub></span><span class="eq-op">=</span><span class="eq-r">G(ℋ<sub>t</sub>)</span><span class="eq-note mono">Governance binds a context capsule</span></div>
+        <div class="eq-row" data-k="1"><span class="eq-l">x<sub>t</sub></span><span class="eq-op">=</span><span class="eq-r">P(R<sub>𝒬</sub>, C<sub>𝒬</sub>, Γ<sub>t</sub>)</span><span class="eq-note mono">Proposal submits a candidate artifact</span></div>
+        <div class="eq-row" data-k="2"><span class="eq-l">y<sub>t</sub></span><span class="eq-op">=</span><span class="eq-r">J<sub>𝒬</sub>(x<sub>t</sub>)</span><span class="eq-note mono">Judgment returns a normalized outcome</span></div>
       </div>
-      <p data-zh="每个已结算的结果都会并入历史 ℋ，且只影响&lt;em&gt;之后&lt;/em&gt;的绑定。契约独立于 P 的实现方式，固定了 G 与 J 的语义；因此任何满足契约的宿主，都能承担候选的构造。">Each settled outcome merges into the history ℋ and shapes only <em>later</em> bindings. The contracts fix the semantics of G and J independently of how P is implemented — so any host that meets them can supply candidate construction.</p>
+      <p>Each settled outcome merges into the history ℋ and shapes only <em>later</em> bindings. The contracts fix the semantics of G and J independently of how P is implemented — so any host that meets them can supply candidate construction.</p>
       <div class="hooks">
-        <div class="hook"><span class="hk-ico">⟲</span><div data-zh="&lt;b&gt;调度 hooks&lt;/b&gt;&lt;span&gt;任务池的唯一写入者。调度依据实际发生的事，而不是智能体的自述。&lt;/span&gt;"><b>Scheduler hooks</b><span>Sole writer of the task pool. Scheduling follows what happened, not what an agent reports.</span></div></div>
-        <div class="hook"><span class="hk-ico">⛨</span><div data-zh="&lt;b&gt;权限 hooks&lt;/b&gt;&lt;span&gt;每次工具调用前把关：不许读取评测器，不许偷看其他任务的结果。&lt;/span&gt;"><b>Permission hooks</b><span>Before every tool call: no evaluator reads, no peeking at other tasks' results.</span></div></div>
+        <div class="hook"><span class="hk-ico">⟲</span><div><b>Scheduler hooks</b><span>Sole writer of the task pool. Scheduling follows what happened, not what an agent reports.</span></div></div>
+        <div class="hook"><span class="hk-ico">⛨</span><div><b>Permission hooks</b><span>Before every tool call: no evaluator reads, no peeking at other tasks' results.</span></div></div>
       </div>
     </div>
   </div>
@@ -215,9 +220,9 @@
 <!-- ================= governance replay ================= -->
 <section id="governance" class="section">
   <div class="sec-head">
-    <div class="sec-idx mono reveal" data-zh="02 / 治理，实况回放">02 / GOVERNANCE, LIVE</div>
-    <h2 class="reveal" data-scramble data-zh="看一次运行如何进化。">Watch a run evolve.</h2>
-    <p class="sec-sub reveal" data-d="1" data-zh="一次真实的 Cloudcast 运行，逐个任务回放：4 个初始方向、50 个已结算候选、3 个 meta-guidance 方向。每个任务都会收到一个胶囊 Γ&lt;sub&gt;t&lt;/sub&gt; = (父代, 灵感, notes, guidance)。">A real Cloudcast run, replayed task by task: 4 initial directions, 50 settled candidates, 3 meta-guidance directions. Every task receives a capsule Γ<sub>t</sub> = (parent, inspirations, notes, guidance).</p>
+    <div class="sec-idx mono reveal">02 / GOVERNANCE, LIVE</div>
+    <h2 class="reveal" data-scramble>Watch a run evolve.</h2>
+    <p class="sec-sub reveal" data-d="1">A real Cloudcast run, replayed task by task: 4 initial directions, 50 settled candidates, 3 meta-guidance directions. Every task receives a capsule Γ<sub>t</sub> = (parent, inspirations, notes, guidance).</p>
   </div>
 
   <div class="replay reveal" data-d="1">
@@ -225,37 +230,37 @@
       <div class="rp-head">
         <div class="rp-title mono"><span class="live-dot"></span>cloudcast_20260724155152 · GLM-5.2 on Claude Code</div>
         <div class="rp-stats mono">
-          <span data-zh="任务 &lt;b id=&quot;rp-count&quot;&gt;0&lt;/b&gt;/50">task <b id="rp-count">0</b>/50</span>
-          <span data-zh="最优成本 &lt;b id=&quot;rp-best&quot;&gt;—&lt;/b&gt;">best cost <b id="rp-best">—</b></span>
+          <span>task <b id="rp-count">0</b>/50</span>
+          <span>best cost <b id="rp-best">—</b></span>
         </div>
       </div>
-      <div class="rp-scroll"><svg id="lineage-svg" viewBox="0 0 980 680" aria-label="Lineage tree replay" data-zh-aria-label="谱系树回放"></svg></div>
+      <div class="rp-scroll"><svg id="lineage-svg" viewBox="0 0 980 680" aria-label="Lineage tree replay"></svg></div>
       <div class="rp-ctrl">
         <div class="rp-btns">
-        <button class="cs-step rp-prev" aria-label="Previous task" data-zh-aria-label="上一个任务"><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
-        <button class="rp-play" aria-label="Play, pause or replay" data-zh-aria-label="播放、暂停或重播"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-replay" d="M12 5V1.5L7 6.5l5 5V7.5c3.04 0 5.5 2.46 5.5 5.5S15.04 18.5 12 18.5 6.5 16.04 6.5 13H4.5c0 4.14 3.36 7.5 7.5 7.5s7.5-3.36 7.5-7.5S16.14 5 12 5z"/></svg></button>
-        <button class="cs-step rp-next" aria-label="Next task" data-zh-aria-label="下一个任务"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
+        <button class="cs-step rp-prev" aria-label="Previous task"><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
+        <button class="rp-play" aria-label="Play, pause or replay"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-replay" d="M12 5V1.5L7 6.5l5 5V7.5c3.04 0 5.5 2.46 5.5 5.5S15.04 18.5 12 18.5 6.5 16.04 6.5 13H4.5c0 4.14 3.36 7.5 7.5 7.5s7.5-3.36 7.5-7.5S16.14 5 12 5z"/></svg></button>
+        <button class="cs-step rp-next" aria-label="Next task"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
         </div>
         <div class="rp-track"><i class="rp-fill"></i><i class="rp-knob"></i></div>
         <div class="rp-legend mono">
-          <span data-zh="&lt;i class=&quot;lg-root&quot;&gt;&lt;/i&gt;根方向"><i class="lg-root"></i>root direction</span>
-          <span data-zh="&lt;i class=&quot;lg-best&quot;&gt;&lt;/i&gt;新最优"><i class="lg-best"></i>new best</span>
+          <span><i class="lg-root"></i>root direction</span>
+          <span><i class="lg-best"></i>new best</span>
           <span><i class="lg-note"></i>note</span>
           <span><i class="lg-mg"></i>meta-guidance</span>
-          <span data-zh="&lt;i class=&quot;lg-size&quot;&gt;&lt;/i&gt;越大 = 成本越低"><i class="lg-size"></i>larger = lower cost</span>
+          <span><i class="lg-size"></i>larger = lower cost</span>
         </div>
       </div>
     </div>
     <aside class="rp-side">
       <div class="capsule">
-        <div class="cap-h mono" data-zh="上下文胶囊 &lt;span&gt;Γ&lt;sub&gt;t&lt;/sub&gt;&lt;/span&gt;">CONTEXT CAPSULE <span>Γ<sub>t</sub></span></div>
+        <div class="cap-h mono">CONTEXT CAPSULE <span>Γ<sub>t</sub></span></div>
         <div class="cap-task" id="cap-task">task_—</div>
-        <div class="cap-row"><span class="mono" data-zh="p&lt;sub&gt;t&lt;/sub&gt; 父代">p<sub>t</sub> parent</span><b id="cap-parent">—</b></div>
-        <div class="cap-row"><span class="mono" data-zh="I&lt;sub&gt;t&lt;/sub&gt; 灵感">I<sub>t</sub> inspirations</span><b id="cap-insp">—</b></div>
+        <div class="cap-row"><span class="mono">p<sub>t</sub> parent</span><b id="cap-parent">—</b></div>
+        <div class="cap-row"><span class="mono">I<sub>t</sub> inspirations</span><b id="cap-insp">—</b></div>
         <div class="cap-row"><span class="mono">note → 𝒩</span><b id="cap-notes">—</b></div>
         <div class="cap-row"><span class="mono">m<sub>t</sub> guidance</span><b id="cap-mg">—</b></div>
-        <div class="cap-row"><span class="mono" data-zh="y&lt;sub&gt;t&lt;/sub&gt; 成本 ↓">y<sub>t</sub> cost ↓</span><b id="cap-cost">—</b></div>
-        <div class="cap-phase mono" id="cap-phase" data-zh="根阶段">root phase</div>
+        <div class="cap-row"><span class="mono">y<sub>t</sub> cost ↓</span><b id="cap-cost">—</b></div>
+        <div class="cap-phase mono" id="cap-phase">root phase</div>
       </div>
       <div class="note-feed" id="note-feed"></div>
     </aside>
@@ -263,46 +268,46 @@
 
 
   <!-- experience: notes + meta-guidance case replays -->
-  <div class="sub-head reveal" data-zh="&lt;span class=&quot;sec-idx mono&quot;&gt;GOVERNANCE 记住了什么&lt;/span&gt;&lt;h3&gt;经验是挣来的，不是记下来的。&lt;/h3&gt;&lt;p&gt;两条通道把已结算的结果转化为可复用的上下文，而且都设有门槛：只有当一次尝试出乎父代的意料时，才会写入一条 &lt;b class=&quot;c-gov&quot;&gt;Note&lt;/b&gt;；只有当最优适应度停滞不前时，才会请求 &lt;b class=&quot;c-violet&quot;&gt;Meta-guidance&lt;/b&gt;。&lt;/p&gt;"><span class="sec-idx mono">WHAT GOVERNANCE REMEMBERS</span><h3>Experience is earned, not logged.</h3><p>Two channels turn settled outcomes into reusable context — and both are gated. A <b class="c-gov">Note</b> is written only when an attempt surprises its parent; <b class="c-violet">Meta-guidance</b> is requested only when the best fitness stops moving.</p></div>
+  <div class="sub-head reveal"><span class="sec-idx mono">WHAT GOVERNANCE REMEMBERS</span><h3>Experience is earned, not logged.</h3><p>Two channels turn settled outcomes into reusable context — and both are gated. A <b class="c-gov">Note</b> is written only when an attempt surprises its parent; <b class="c-violet">Meta-guidance</b> is requested only when the best fitness stops moving.</p></div>
 
   <article class="case reveal" id="case-notes">
     <header class="case-head">
-      <div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;NOTES · SIGNAL PROCESSING · OPUS-5 · 一次 50 轮迭代的运行&lt;/div&gt;&lt;h3&gt;只有当子代落在父代的区间之外，才会写入 Note。&lt;/h3&gt;"><div class="sec-idx mono">NOTES · SIGNAL PROCESSING · OPUS-5 · ONE 50-ITERATION RUN</div><h3>A Note is written only when the child lands outside its parent's band.</h3></div>
+      <div><div class="sec-idx mono">NOTES · SIGNAL PROCESSING · OPUS-5 · ONE 50-ITERATION RUN</div><h3>A Note is written only when the child lands outside its parent's band.</h3></div>
       <div class="cs-ctrl">
-        <button class="cs-step cs-prev" aria-label="Previous iteration" data-zh-aria-label="上一轮迭代"><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
-        <button class="cs-play" aria-label="Play, pause or replay" data-zh-aria-label="播放、暂停或重播"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-replay" d="M12 5V1.5L7 6.5l5 5V7.5c3.04 0 5.5 2.46 5.5 5.5S15.04 18.5 12 18.5 6.5 16.04 6.5 13H4.5c0 4.14 3.36 7.5 7.5 7.5s7.5-3.36 7.5-7.5S16.14 5 12 5z"/></svg></button>
-        <button class="cs-step cs-next" aria-label="Next iteration" data-zh-aria-label="下一轮迭代"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
+        <button class="cs-step cs-prev" aria-label="Previous iteration"><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
+        <button class="cs-play" aria-label="Play, pause or replay"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-replay" d="M12 5V1.5L7 6.5l5 5V7.5c3.04 0 5.5 2.46 5.5 5.5S15.04 18.5 12 18.5 6.5 16.04 6.5 13H4.5c0 4.14 3.36 7.5 7.5 7.5s7.5-3.36 7.5-7.5S16.14 5 12 5z"/></svg></button>
+        <button class="cs-step cs-next" aria-label="Next iteration"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
         <div class="cs-track"><i class="cs-fill"></i><i class="cs-knob"></i></div>
         <span class="cs-it mono">00 / 50</span>
       </div>
     </header>
     <div class="case-body">
-      <div class="case-vis"><svg id="nt-svg" viewBox="0 0 820 420" aria-label="Replay: each attempt is a segment from its parent's fitness to its own; Notes fire only outside the band" data-zh-aria-label="回放：每次尝试是一条从父代适应度指向自身适应度的线段；只有落在区间之外才会触发 Note"></svg>
-        <div class="cs-leg mono" data-zh="&lt;span&gt;&lt;i class=&quot;lk-band&quot;&gt;&lt;/i&gt;区间：变化太小，不足以写 Note&lt;/span&gt;&lt;span&gt;&lt;i class=&quot;lk-seg&quot;&gt;&lt;/i&gt;父代 → 子代&lt;/span&gt;&lt;span&gt;&lt;i class=&quot;lk-pos&quot;&gt;&lt;/i&gt;正向 Note&lt;/span&gt;&lt;span&gt;&lt;i class=&quot;lk-neg&quot;&gt;&lt;/i&gt;负向 Note&lt;/span&gt;&lt;span&gt;&lt;i class=&quot;lk-best&quot;&gt;&lt;/i&gt;迄今最优适应度&lt;/span&gt;&lt;span&gt;&lt;i class=&quot;lk-root&quot;&gt;&lt;/i&gt;初始方向&lt;/span&gt;"><span><i class="lk-band"></i>band: change too small for a Note</span><span><i class="lk-seg"></i>parent → child</span><span><i class="lk-pos"></i>positive Note</span><span><i class="lk-neg"></i>negative Note</span><span><i class="lk-best"></i>best fitness so far</span><span><i class="lk-root"></i>initial direction</span></div></div>
+      <div class="case-vis"><svg id="nt-svg" viewBox="0 0 820 420" aria-label="Replay: each attempt is a segment from its parent's fitness to its own; Notes fire only outside the band"></svg>
+        <div class="cs-leg mono"><span><i class="lk-band"></i>band: change too small for a Note</span><span><i class="lk-seg"></i>parent → child</span><span><i class="lk-pos"></i>positive Note</span><span><i class="lk-neg"></i>negative Note</span><span><i class="lk-best"></i>best fitness so far</span><span><i class="lk-root"></i>initial direction</span></div></div>
       <aside class="case-side">
         <div class="nt-gate"></div>
         <div class="nt-card empty"></div>
       </aside>
     </div>
-    <div class="nt-ledger-h"><span class="sec-idx mono" data-zh="已提交的 Notes 台账">LEDGER OF COMMITTED NOTES</span><span class="nt-count mono" data-zh="0 条正向 · 0 条负向">0 positive · 0 negative</span></div>
+    <div class="nt-ledger-h"><span class="sec-idx mono">LEDGER OF COMMITTED NOTES</span><span class="nt-count mono">0 positive · 0 negative</span></div>
     <div class="nt-ledger"></div>
   </article>
 
   <article class="case reveal" id="case-mg">
     <header class="case-head">
-      <div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;META-GUIDANCE · MINMAX-DIST-3 · 一次 50 轮迭代的运行&lt;/div&gt;&lt;h3&gt;两次停滞，三轮指导，九个方向：最终越过 f = 1。&lt;/h3&gt;"><div class="sec-idx mono">META-GUIDANCE · MINMAX-DIST-3 · ONE 50-ITERATION RUN</div><h3>Two stalls, three rounds, nine directions — and the run crosses f = 1.</h3></div>
+      <div><div class="sec-idx mono">META-GUIDANCE · MINMAX-DIST-3 · ONE 50-ITERATION RUN</div><h3>Two stalls, three rounds, nine directions — and the run crosses f = 1.</h3></div>
       <div class="cs-ctrl">
-        <span class="mg-bestl mono" data-zh="最优 &lt;b class=&quot;mg-bestv&quot;&gt;—&lt;/b&gt;">best <b class="mg-bestv">—</b></span>
-        <button class="cs-step cs-prev" aria-label="Previous iteration" data-zh-aria-label="上一轮迭代"><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
-        <button class="cs-play" aria-label="Play, pause or replay" data-zh-aria-label="播放、暂停或重播"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-replay" d="M12 5V1.5L7 6.5l5 5V7.5c3.04 0 5.5 2.46 5.5 5.5S15.04 18.5 12 18.5 6.5 16.04 6.5 13H4.5c0 4.14 3.36 7.5 7.5 7.5s7.5-3.36 7.5-7.5S16.14 5 12 5z"/></svg></button>
-        <button class="cs-step cs-next" aria-label="Next iteration" data-zh-aria-label="下一轮迭代"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
+        <span class="mg-bestl mono">best <b class="mg-bestv">—</b></span>
+        <button class="cs-step cs-prev" aria-label="Previous iteration"><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
+        <button class="cs-play" aria-label="Play, pause or replay"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/><path class="i-replay" d="M12 5V1.5L7 6.5l5 5V7.5c3.04 0 5.5 2.46 5.5 5.5S15.04 18.5 12 18.5 6.5 16.04 6.5 13H4.5c0 4.14 3.36 7.5 7.5 7.5s7.5-3.36 7.5-7.5S16.14 5 12 5z"/></svg></button>
+        <button class="cs-step cs-next" aria-label="Next iteration"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
         <div class="cs-track"><i class="cs-fill"></i><i class="cs-knob"></i></div>
         <span class="cs-it mono">00 / 50</span>
       </div>
     </header>
     <div class="case-body">
-      <div class="case-vis"><svg id="mg-svg" viewBox="0 0 820 430" aria-label="Replay of the meta-guidance lifecycle: stalls trigger guidance rounds whose directions set new bests" data-zh-aria-label="meta-guidance 生命周期回放：停滞触发 guidance 轮次，其中的方向刷新了最优"></svg>
-        <div class="cs-leg mono" data-zh="&lt;span&gt;&lt;i class=&quot;lk-att&quot;&gt;&lt;/i&gt;无指导的尝试&lt;/span&gt;&lt;span&gt;&lt;i class=&quot;lk-dot&quot; style=&quot;--c:#2ed3a0&quot;&gt;&lt;/i&gt;第 1 轮指导&lt;/span&gt;&lt;span&gt;&lt;i class=&quot;lk-dot&quot; style=&quot;--c:#e0a24a&quot;&gt;&lt;/i&gt;第 2 轮指导&lt;/span&gt;&lt;span&gt;&lt;i class=&quot;lk-dot&quot; style=&quot;--c:#b49cff&quot;&gt;&lt;/i&gt;第 3 轮指导&lt;/span&gt;&lt;span&gt;&lt;i class=&quot;lk-nb&quot;&gt;&lt;/i&gt;指导带来的新最优&lt;/span&gt;&lt;span&gt;&lt;i class=&quot;lk-run&quot;&gt;&lt;/i&gt;当前最优&lt;/span&gt;"><span><i class="lk-att"></i>unguided attempt</span><span><i class="lk-dot" style="--c:#2ed3a0"></i>guided r1</span><span><i class="lk-dot" style="--c:#e0a24a"></i>guided r2</span><span><i class="lk-dot" style="--c:#b49cff"></i>guided r3</span><span><i class="lk-nb"></i>guided new best</span><span><i class="lk-run"></i>running best</span></div></div>
+      <div class="case-vis"><svg id="mg-svg" viewBox="0 0 820 430" aria-label="Replay of the meta-guidance lifecycle: stalls trigger guidance rounds whose directions set new bests"></svg>
+        <div class="cs-leg mono"><span><i class="lk-att"></i>unguided attempt</span><span><i class="lk-dot" style="--c:#2ed3a0"></i>guided r1</span><span><i class="lk-dot" style="--c:#e0a24a"></i>guided r2</span><span><i class="lk-dot" style="--c:#b49cff"></i>guided r3</span><span><i class="lk-nb"></i>guided new best</span><span><i class="lk-run"></i>running best</span></div></div>
       <aside class="case-side mg-side"></aside>
     </div>
   </article>
@@ -311,9 +316,9 @@
 <!-- ================= plugin ================= -->
 <section id="plugin" class="section">
   <div class="sec-head">
-    <div class="sec-idx mono reveal" data-zh="03 / 插件">03 / THE PLUGIN</div>
-    <h2 class="reveal" data-scramble data-zh="接入任何智能体。">Plug it into any agent.</h2>
-    <p class="sec-sub reveal" data-d="1" data-zh="契约与 hooks 都位于编程智能体之外，所以 EvoTrias 不会改动智能体本身。只需在你正在用的会话里输入一条命令。">Contracts and hooks live outside the coding agent, so EvoTrias leaves the agent unchanged. Type one command in the session you already use.</p>
+    <div class="sec-idx mono reveal">03 / THE PLUGIN</div>
+    <h2 class="reveal" data-scramble>Plug it into any agent.</h2>
+    <p class="sec-sub reveal" data-d="1">Contracts and hooks live outside the coding agent, so EvoTrias leaves the agent unchanged. Type one command in the session you already use.</p>
   </div>
 
   <div class="plug-grid">
@@ -324,113 +329,107 @@
     <div class="hosts reveal" data-d="2">
       <div class="host-orbit">
         <div class="ho-ring"></div><div class="ho-ring r2"></div>
-        <img class="ho-dino" src="assets/img/dino/dino_cool.svg" alt="Dino wearing sunglasses" data-zh-alt="戴墨镜的恐龙" />
+        <img class="ho-dino" src="assets/img/dino/dino_cool.svg" alt="Dino wearing sunglasses" />
         <button class="host" data-host="Claude Code" style="--a:0deg"><img src="assets/agents/claude.svg" alt="" /><span>Claude Code</span></button>
-        <button class="host" data-host="Codex" style="--a:90deg"><img src="assets/agents/codex.svg" alt="" /><span>Codex<sup class="soon-mark" title="planned" data-zh-title="计划中">*</sup></span></button>
+        <button class="host" data-host="Codex" style="--a:90deg"><img src="assets/agents/codex.svg" alt="" /><span>Codex<sup class="soon-mark" title="planned">*</sup></span></button>
         <button class="host" data-host="OpenCode" style="--a:180deg"><img src="assets/agents/opencode.svg" alt="" /><span>OpenCode</span></button>
-        <button class="host" data-host="JiuwenSwarm" style="--a:270deg"><img src="assets/agents/jiuwenswarm.svg" alt="" /><span>JiuwenSwarm<sup class="soon-mark" title="planned" data-zh-title="计划中">*</sup></span></button>
+        <button class="host" data-host="JiuwenSwarm" style="--a:270deg"><img src="assets/agents/jiuwenswarm.svg" alt="" /><span>JiuwenSwarm<sup class="soon-mark" title="planned">*</sup></span></button>
       </div>
       <div class="kit">
-        <span class="kit-chip">Skills</span><span class="kit-chip">MCP</span><span class="kit-chip">Hooks</span><span class="kit-chip" data-zh="原生 subagents">Native subagents</span>
+        <span class="kit-chip">Skills</span><span class="kit-chip">MCP</span><span class="kit-chip">Hooks</span><span class="kit-chip">Native subagents</span>
       </div>
-      <p class="hosts-note mono" data-zh="* 计划中 · 将在后续版本支持">* planned · support in a future release</p>
+      <p class="hosts-note mono">* planned · support in a future release</p>
     </div>
   </div>
 
 
   <div class="porta reveal" data-d="1">
-    <div class="po-k mono" data-zh="宿主可移植性 · Signal Processing，GLM-5.2">HOST PORTABILITY · Signal Processing, GLM-5.2</div>
+    <div class="po-k mono">HOST PORTABILITY · Signal Processing, GLM-5.2</div>
     <div class="po-row"><span class="po-n">Claude Code</span><div class="po-bar"><i style="--w:0.7329"></i></div><b>0.7329</b></div>
     <div class="po-row"><span class="po-n">OpenCode</span><div class="po-bar"><i style="--w:0.7383"></i></div><b>0.7383</b></div>
-    <p class="po-note" data-zh="换宿主，不换结果：在两个消融任务上，Claude Code 与 OpenCode 的差距都在 &lt;b&gt;0.8%&lt;/b&gt; 以内。构造质量仍取决于模型：在 OpenCode 下换用 Opus-5，Signal Processing 提升了 10%。">Swap the host, keep the result: Claude Code and OpenCode land within <b>0.8%</b> of each other on both ablation tasks. Construction quality still follows the model — Opus-5 under OpenCode lifts Signal Processing by 10%.</p>
+    <p class="po-note">Swap the host, keep the result: Claude Code and OpenCode land within <b>0.8%</b> of each other on both ablation tasks. Construction quality still follows the model — Opus-5 under OpenCode lifts Signal Processing by 10%.</p>
   </div>
 </section>
 
 <!-- ================= results ================= -->
 <section id="results" class="section">
   <div class="sec-head">
-    <div class="sec-idx mono reveal" data-zh="04 / 结果">04 / RESULTS</div>
-    <h2 class="reveal" data-scramble data-zh="刷新 SOTA。">A new state of the art.</h2>
-    <p class="sec-sub reveal" data-d="1" data-zh="在 Math、ADRS 与 Frontier-CS 上，对比 OpenEvolve、EvoX、AdaEvolve，以及单智能体与四智能体的 CORAL（下文记作 &lt;span class=&quot;mono c-cyan&quot;&gt;CORAL-1&lt;/span&gt; 和 &lt;span class=&quot;mono c-cyan&quot;&gt;CORAL-4&lt;/span&gt;）。">Math, ADRS and Frontier-CS — against OpenEvolve, EvoX, AdaEvolve, and one- and four-agent CORAL (<span class="mono c-cyan">CORAL-1</span> and <span class="mono c-cyan">CORAL-4</span> below).</p>
+    <div class="sec-idx mono reveal">04 / RESULTS</div>
+    <h2 class="reveal" data-scramble>A new state of the art.</h2>
+    <p class="sec-sub reveal" data-d="1">Math, ADRS and Frontier-CS — against OpenEvolve, EvoX, AdaEvolve, and one- and four-agent CORAL (<span class="mono c-cyan">CORAL-1</span> and <span class="mono c-cyan">CORAL-4</span> below).</p>
   </div>
 
   <div class="counters">
-    <div class="ctr reveal" data-d="1"><div class="ctr-v"><span data-count="9">0</span><small class="frac"><i class="sl">/</i>12</small></div><div class="ctr-l" data-zh="任务排名第一，&lt;em&gt;每个&lt;/em&gt;骨干模型下皆然">tasks ranked first, under <em>each</em> backbone</div></div>
-    <div class="ctr reveal" data-d="2"><div class="ctr-v"><span data-count="80.67" data-dec="2">0</span></div><div class="ctr-l" data-zh="Frontier-CS 中位数得分 &lt;span class=&quot;dim&quot;&gt;CORAL-4 为 67.14&lt;/span&gt;">Frontier-CS median <span class="dim">vs 67.14 for CORAL-4</span></div></div>
-    <div class="ctr reveal" data-d="3"><div class="ctr-v"><span data-count="64" data-prefix="−">0</span><small>%</small></div><div class="ctr-l" data-zh="相比 CORAL-4 的 token 成本 &lt;span class=&quot;dim&quot;&gt;$41.37 vs $115.10&lt;/span&gt;">token cost vs CORAL-4 <span class="dim">$41.37 vs $115.10</span></div></div>
-    <div class="ctr reveal" data-d="4"><div class="ctr-v"><span data-count="16.9" data-dec="1" data-prefix="+">0</span><small>%</small></div><div class="ctr-l" data-zh="68 万行代码库上，求解器质量的提升">solver quality on a 680K-line repo</div></div>
+    <div class="ctr reveal" data-d="1"><div class="ctr-v"><span data-count="9">0</span><small class="frac"><i class="sl">/</i>12</small></div><div class="ctr-l">tasks ranked first, under <em>each</em> backbone</div></div>
+    <div class="ctr reveal" data-d="2"><div class="ctr-v"><span data-count="80.67" data-dec="2">0</span></div><div class="ctr-l">Frontier-CS median <span class="dim">vs 67.14 for CORAL-4</span></div></div>
+    <div class="ctr reveal" data-d="3"><div class="ctr-v"><span data-count="64" data-prefix="−">0</span><small>%</small></div><div class="ctr-l">token cost vs CORAL-4 <span class="dim">$41.37 vs $115.10</span></div></div>
+    <div class="ctr reveal" data-d="4"><div class="ctr-v"><span data-count="16.9" data-dec="1" data-prefix="+">0</span><small>%</small></div><div class="ctr-l">solver quality on a 680K-line repo</div></div>
   </div>
 
   <!-- main table -->
   <div class="panel reveal" id="main-table-panel">
     <div class="panel-head">
-      <div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;MATH &amp;amp; ADRS · 3 次运行均值&lt;/div&gt;&lt;h3&gt;12 个任务中 9 个第一，两个骨干模型下皆然。&lt;/h3&gt;"><div class="sec-idx mono">MATH &amp; ADRS · MEAN OF 3 RUNS</div><h3>First on 9 of 12 tasks — under both backbones.</h3></div>
+      <div><div class="sec-idx mono">MATH &amp; ADRS · MEAN OF 3 RUNS</div><h3>First on 9 of 12 tasks — under both backbones.</h3></div>
       <div class="seg" id="bb-seg"><button class="on" data-bb="GLM-5.2">GLM-5.2</button><button data-bb="Opus-5">Opus-5</button><i></i></div>
     </div>
-    <div class="table-hint mono" data-zh="左滑查看全部方法 →">swipe for all methods →</div>
+    <div class="table-hint mono">swipe for all methods →</div>
     <div class="table-wrap"><table id="main-table"></table></div>
-    <p class="panel-foot" data-zh="任务级配对分析：在全部 12 个任务上，EvoTrias 均优于 OpenEvolve、EvoX、AdaEvolve 和 CORAL-1（所有置信区间均为正，Holm 校正后 &lt;i&gt;p&lt;/i&gt; = 0.0024）。↓ 表示越低越好。&lt;span class=&quot;k-first&quot;&gt;第一&lt;/span&gt; &lt;span class=&quot;k-second&quot;&gt;第二&lt;/span&gt;">Paired task-level analysis: EvoTrias improves on OpenEvolve, EvoX, AdaEvolve and CORAL-1 on all 12 tasks (every CI positive, Holm-corrected <i>p</i> = 0.0024). ↓ lower is better. <span class="k-first">first</span> <span class="k-second">second</span></p>
+    <p class="panel-foot">Paired task-level analysis: EvoTrias improves on OpenEvolve, EvoX, AdaEvolve and CORAL-1 on all 12 tasks (every CI positive, Holm-corrected <i>p</i> = 0.0024). ↓ lower is better. <span class="k-first">first</span> <span class="k-second">second</span></p>
   </div>
 
-  <div class="duo">
+  <div class="duo results-pair">
     <div class="panel reveal" data-d="1">
-      <div class="panel-head"><div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;FRONTIER-CS · 30 道题&lt;/div&gt;&lt;h3&gt;从中段到 95 分上下，全面高于所有基线。&lt;/h3&gt;"><div class="sec-idx mono">FRONTIER-CS · 30 PROBLEMS</div><h3>Above every baseline, mid-range to the mid-90s.</h3></div></div>
-      <div class="chart" id="ch-frontier"></div>
-      <div class="legend" id="lg-frontier"></div>
-    </div>
-    <div class="panel reveal" data-d="2">
-      <div class="panel-head"><div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;FRONTIER-CS · 中位数得分&lt;/div&gt;&lt;h3&gt;80.67 vs 67.14。&lt;/h3&gt;"><div class="sec-idx mono">FRONTIER-CS · MEDIAN SCORE</div><h3>80.67 vs 67.14.</h3></div></div>
+      <div class="panel-head"><div><div class="sec-idx mono">FRONTIER-CS · MEDIAN SCORE</div><h3>80.67 vs 67.14.</h3></div></div>
       <div class="chart" id="ch-median"></div>
     </div>
-  </div>
-
-  <div class="panel reveal">
-    <div class="panel-head">
-      <div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;迄今最优 vs 迭代 · GLM-5.2&lt;/div&gt;&lt;h3&gt;进化曲线。&lt;/h3&gt;"><div class="sec-idx mono">BEST-SO-FAR vs ITERATION · GLM-5.2</div><h3>Evolution curves.</h3></div>
+    <div class="panel iter-panel reveal" data-d="2">
+      <div class="panel-head">
+        <div><div class="sec-idx mono">BEST-SO-FAR vs ITERATION · GLM-5.2</div><h3>Evolution curves.</h3></div>
+      </div>
       <div class="seg" id="it-seg">
         <button class="on" data-task="signal_processing">Signal Proc.</button><button data-task="circle_packing">Circle Pack.</button><button data-task="llm_sql">LLM-SQL</button><button data-task="cloudcast">Cloudcast ↓</button><i></i>
       </div>
+      <div class="chart" id="ch-iter"></div>
+      <div class="legend" id="lg-iter"></div>
     </div>
-    <div class="chart tall" id="ch-iter"></div>
-    <div class="legend" id="lg-iter"></div>
   </div>
 
   <!-- efficiency -->
-  <div class="sub-head reveal" data-zh="&lt;span class=&quot;sec-idx mono&quot;&gt;GOVERNANCE 带来了什么&lt;/span&gt;&lt;h3&gt;更强的解，三分之一的账单。&lt;/h3&gt;&lt;p&gt;Structured Governance 把历史解读与搜索路由移出昂贵的智能体轨迹，让智能体的算力集中在构建候选上。&lt;/p&gt;"><span class="sec-idx mono">WHAT GOVERNANCE BUYS</span><h3>Stronger solutions, a third of the bill.</h3><p>Structured Governance keeps history interpretation and search routing out of the expensive agent trajectory — agent compute concentrates on building candidates.</p></div>
+  <div class="sub-head reveal"><span class="sec-idx mono">WHAT GOVERNANCE BUYS</span><h3>Stronger solutions, a third of the bill.</h3><p>Structured Governance keeps history interpretation and search routing out of the expensive agent trajectory — agent compute concentrates on building candidates.</p></div>
   <div class="duo">
     <div class="panel reveal" data-d="1">
-      <div class="panel-head"><div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;SIGNAL PROCESSING · 墙钟时间&lt;/div&gt;&lt;h3&gt;约 15 分钟起始终领先。&lt;/h3&gt;"><div class="sec-idx mono">SIGNAL PROCESSING · WALL CLOCK</div><h3>Best from ~15 minutes onward.</h3></div></div>
+      <div class="panel-head"><div><div class="sec-idx mono">SIGNAL PROCESSING · WALL CLOCK</div><h3>Best from ~15 minutes onward.</h3></div></div>
       <div class="chart" id="ch-wall"></div>
       <div class="legend" id="lg-wall"></div>
     </div>
     <div class="panel reveal" data-d="2">
-      <div class="panel-head"><div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;平均 TOKEN 成本 · 完整运行 · 7 个 MATH 任务&lt;/div&gt;&lt;h3&gt;$41.37 vs $115.10。&lt;/h3&gt;"><div class="sec-idx mono">MEAN TOKEN COST · FULL RUN · 7 MATH TASKS</div><h3>$41.37 vs $115.10.</h3></div></div>
+      <div class="panel-head"><div><div class="sec-idx mono">MEAN TOKEN COST · FULL RUN · 7 MATH TASKS</div><h3>$41.37 vs $115.10.</h3></div></div>
       <div class="chart" id="ch-token"></div>
     </div>
   </div>
 
   <!-- repo scale -->
-  <div class="sub-head reveal" data-zh="&lt;span class=&quot;sec-idx mono&quot;&gt;OPEN PROPOSAL 带来了什么&lt;/span&gt;&lt;h3&gt;从单个文件到 68 万行 C++。&lt;/h3&gt;&lt;p&gt;OR-Tools 的 CP-SAT 局部搜索，没有标出可进化的区域。智能体自己阅读代码库、选择修改位置、维持跨函数的不变式，最后导出一个 Git 补丁，并在 MiniZinc Challenge 实例上端到端评分。&lt;/p&gt;"><span class="sec-idx mono">WHAT OPEN PROPOSAL BUYS</span><h3>From one file to 680K lines of C++.</h3><p>OR-Tools CP-SAT local search, no marked region to evolve. The agent reads the repository, picks its change sites, keeps cross-function invariants intact and exports a Git patch — scored end-to-end on MiniZinc Challenge instances.</p></div>
+  <div class="sub-head reveal"><span class="sec-idx mono">WHAT OPEN PROPOSAL BUYS</span><h3>From one file to 680K lines of C++.</h3><p>OR-Tools CP-SAT local search, no marked region to evolve. The agent reads the repository, picks its change sites, keeps cross-function invariants intact and exports a Git patch — scored end-to-end on MiniZinc Challenge instances.</p></div>
   <div class="repo">
-    <div class="repo-code reveal" data-d="1" aria-hidden="true"><div class="rc-scroll mono" id="repo-code"></div><div class="rc-count"><b id="loc">0</b><span data-zh="行 C++ 代码">lines of C++</span></div></div>
+    <div class="repo-code reveal" data-d="1" aria-hidden="true"><div class="rc-scroll mono" id="repo-code"></div><div class="rc-count"><b id="loc">0</b><span>lines of C++</span></div></div>
     <div class="panel reveal" data-d="2">
-      <div class="panel-head"><div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;相对未打补丁求解器的增益 · BORDA 计分&lt;/div&gt;&lt;h3&gt;全部 300 个实例 +13.2% · 子集 +16.9%。&lt;/h3&gt;"><div class="sec-idx mono">GAIN OVER UNPATCHED SOLVER · BORDA COUNT</div><h3>+13.2% on 300 · +16.9% on the subset.</h3></div></div>
+      <div class="panel-head"><div><div class="sec-idx mono">GAIN OVER UNPATCHED SOLVER · BORDA COUNT</div><h3>+13.2% on 300 · +16.9% on the subset.</h3></div></div>
       <div class="chart" id="ch-ortools"></div>
       <div class="legend" id="lg-ortools"></div>
-      <p class="panel-foot" data-zh="点线：同一智能体只运行一次的结果（−0.1% / +1.3%）。增益来自进化循环，而不只是编程智能体本身。">Dotted: a single pass of the same agent (−0.1% / +1.3%). The gain comes from the evolution loop, not from the coding agent alone.</p>
+      <p class="panel-foot">Dotted: a single pass of the same agent (−0.1% / +1.3%). The gain comes from the evolution loop, not from the coding agent alone.</p>
     </div>
   </div>
 
   <!-- judgment -->
-  <div class="sub-head reveal" id="judgment" data-zh="&lt;span class=&quot;sec-idx mono&quot;&gt;PROTECTED JUDGMENT 带来了什么&lt;/span&gt;&lt;h3&gt;分数可信，而且能迁移。&lt;/h3&gt;&lt;p&gt;暴露评测器平均会把基准分数抬高 &lt;b&gt;0.093&lt;/b&gt;，但在分布外（OOD）实例上，这一优势缩小到 &lt;b&gt;0.009&lt;/b&gt;。受保护的程序在 OOD 上得分持平甚至更高。&lt;/p&gt;"><span class="sec-idx mono">WHAT PROTECTED JUDGMENT BUYS</span><h3>Scores you can trust to transfer.</h3><p>Exposing the evaluator inflates the benchmark score by <b>0.093</b> on average — but the advantage contracts to <b>0.009</b> on out-of-distribution instances. Protected programs score as well or better OOD.</p></div>
+  <div class="sub-head reveal" id="judgment"><span class="sec-idx mono">WHAT PROTECTED JUDGMENT BUYS</span><h3>Scores you can trust to transfer.</h3><p>Exposing the evaluator inflates the benchmark score by <b>0.093</b> on average — but the advantage contracts to <b>0.009</b> on out-of-distribution instances. Protected programs score as well or better OOD.</p></div>
   <div class="duo">
     <div class="panel reveal" data-d="1">
-      <div class="panel-head"><div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;泛化偏移 · 受保护 → 暴露&lt;/div&gt;&lt;h3&gt;暴露评测器，会把点推过对角线。&lt;/h3&gt;"><div class="sec-idx mono">GENERALIZATION SHIFT · PROTECTED → EXPOSED</div><h3>Exposure pushes across the diagonal.</h3></div></div>
+      <div class="panel-head"><div><div class="sec-idx mono">GENERALIZATION SHIFT · PROTECTED → EXPOSED</div><h3>Exposure pushes across the diagonal.</h3></div></div>
       <div class="chart square" id="ch-shift"></div>
     </div>
     <div class="panel reveal" data-d="2">
-      <div class="panel-head"><div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;SIGNAL PROCESSING · 差距 = OOD − 原始&lt;/div&gt;&lt;h3&gt;原始、IID 与 OOD。&lt;/h3&gt;"><div class="sec-idx mono">SIGNAL PROCESSING · GAP = OOD − ORIGINAL</div><h3>Original, IID and OOD.</h3></div>
-        <div class="seg" id="ex-seg"><button class="on" data-ex="protected" data-zh="受保护">Protected</button><button data-ex="exposed" data-zh="暴露">Exposed</button><i></i></div></div>
+      <div class="panel-head"><div><div class="sec-idx mono">SIGNAL PROCESSING · GAP = OOD − ORIGINAL</div><h3>Original, IID and OOD.</h3></div>
+        <div class="seg" id="ex-seg"><button class="on" data-ex="protected">Protected</button><button data-ex="exposed">Exposed</button><i></i></div></div>
       <div class="chart" id="ch-exposure"></div>
     </div>
   </div>
@@ -438,7 +437,7 @@
   <!-- concurrency + ablation -->
   <div class="duo">
     <div class="panel reveal" data-d="1">
-      <div class="panel-head"><div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;并发权衡 · SIGNAL PROCESSING&lt;/div&gt;&lt;h3&gt;拐点在 c = 4。&lt;/h3&gt;"><div class="sec-idx mono">CONCURRENCY TRADE-OFF · SIGNAL PROCESSING</div><h3>The knee sits at c = 4.</h3></div></div>
+      <div class="panel-head"><div><div class="sec-idx mono">CONCURRENCY TRADE-OFF · SIGNAL PROCESSING</div><h3>The knee sits at c = 4.</h3></div></div>
       <div class="conc">
         <div class="conc-pick" id="conc-pick"></div>
         <div class="conc-read" id="conc-read"></div>
@@ -446,7 +445,7 @@
       <div class="chart" id="ch-conc"></div>
     </div>
     <div class="panel reveal" data-d="2">
-      <div class="panel-head"><div data-zh="&lt;div class=&quot;sec-idx mono&quot;&gt;消融实验 · 3 次运行均值&lt;/div&gt;&lt;h3&gt;每个组件都不可或缺。&lt;/h3&gt;"><div class="sec-idx mono">ABLATION · MEAN OF 3 RUNS</div><h3>Every piece pulls its weight.</h3></div>
+      <div class="panel-head"><div><div class="sec-idx mono">ABLATION · MEAN OF 3 RUNS</div><h3>Every piece pulls its weight.</h3></div>
         <div class="seg" id="ab-seg"><button class="on" data-ab="signal">Signal Proc.</button><button data-ab="circle_packing">Circle Pack.</button><i></i></div></div>
       <div class="chart tall" id="ch-ablation"></div>
     </div>
@@ -457,13 +456,13 @@
 <!-- ================= cite ================= -->
 <section id="cite" class="section">
   <div class="cite-grid">
-    <div class="cite-dino reveal"><img src="assets/img/dino/dino_trophy.svg" width="790" height="830" alt="Dino holding a trophy" data-zh-alt="举着奖杯的恐龙" /><div class="confetti" id="confetti"></div></div>
+    <div class="cite-dino reveal"><img src="assets/img/dino/dino_trophy.svg" width="790" height="830" alt="Dino holding a trophy" /><div class="confetti" id="confetti"></div></div>
     <div class="cite-copy">
-      <div class="sec-idx mono reveal" data-zh="05 / 引用">05 / CITE</div>
+      <div class="sec-idx mono reveal">05 / CITE</div>
       <h2 class="reveal" data-scramble lang="en">Where autonomy belongs.</h2>
-      <p class="sec-sub reveal" data-d="1" data-zh="如果 EvoTrias 对你的工作有帮助，请引用我们的论文。">If EvoTrias is useful in your work, please cite the paper.</p>
+      <p class="sec-sub reveal" data-d="1">If EvoTrias is useful in your work, please cite the paper.</p>
       <div class="bib reveal" data-d="2">
-        <button class="bib-copy mono" data-magnetic data-zh="复制">copy</button>
+        <button class="bib-copy mono" data-magnetic>copy</button>
 <pre class="mono" id="bibtex">@inproceedings{evotrias2027,
   title     = {Where Autonomy Belongs: A Separation of Powers
                for Agentic Program Evolution},
@@ -473,8 +472,8 @@
 }</pre>
       </div>
       <div class="cta reveal" data-d="3">
-        <a class="btn btn-primary" href="#paper" data-soon="Paper coming soon" data-magnetic data-zh="阅读论文" data-zh-data-soon="论文即将发布">Read the paper</a>
-        <a class="btn btn-ghost" href="#top" data-magnetic data-zh="回到顶部 ↑">Back to top ↑</a>
+        <a class="btn btn-primary" href="#paper" data-soon="Paper coming soon" data-magnetic>Read the paper</a>
+        <a class="btn btn-ghost" href="#top" data-magnetic>Back to top ↑</a>
       </div>
     </div>
   </div>
@@ -492,16 +491,15 @@
 <div id="toast" class="mono" aria-live="polite"></div>
 
 <script src="js/data.js?v=20261013a"></script>
-<script src="js/lib.js?v=20261026a"></script>
-<script src="js/i18n.js?v=20261026b"></script>
-<script src="js/theme.js?v=20261028c"></script>
-<script src="js/galaxy.js?v=20261028a"></script>
-<script src="js/ui.js?v=20261027m"></script>
-<script src="js/loop.js?v=20261026a"></script>
-<script src="js/lineage.js?v=20261026a"></script>
-<script src="js/terminal.js?v=20261026a"></script>
-<script src="js/charts.js?v=20261026b"></script>
-<script src="js/cases.js?v=20261026b"></script>
+<script src="js/lib.js?v=20261028-light1"></script>
+<script src="js/theme.js?v=20261029-iris7"></script>
+<script src="js/galaxy.js?v=20261029-iris7"></script>
+<script src="js/ui.js?v=20261028-light1"></script>
+<script src="js/loop.js?v=20261028-light1"></script>
+<script src="js/lineage.js?v=20261028-replay1"></script>
+<script src="js/terminal.js?v=20261028-light1"></script>
+<script src="js/charts.js?v=20261028-light1"></script>
+<script src="js/cases.js?v=20261028-light1"></script>
 <script src="js/main.js?v=20261027m"></script>
 </body>
 </html>

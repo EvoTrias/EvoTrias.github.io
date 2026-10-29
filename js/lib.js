@@ -14,10 +14,9 @@ function rng(seed) {
   let s = seed >>> 0 || 1;
   return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
 }
-// SVG font stacks (attributes can't use the CSS variables); the CJK faces catch Chinese labels
-const CJK = `"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC"`;
-const MONO = `"JetBrains Mono", Consolas, ${CJK}, monospace`;
-const DISP = `"Space Grotesk", ${CJK}, sans-serif`;
+// SVG font stacks (attributes can't use the CSS variables).
+const MONO = '"JetBrains Mono", Consolas, monospace';
+const DISP = '"Space Grotesk", "Segoe UI", sans-serif';
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const TOUCH = matchMedia("(hover: none), (pointer: coarse)").matches;
 

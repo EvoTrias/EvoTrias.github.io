@@ -24,11 +24,11 @@ const Charts = (() => {
     host.classList.remove("in");
     const svg = S("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "xMidYMid meet" }, host);
     const defs = S("defs", {}, svg);
-    // EvoTrias bars use the page's signature cyan → teal → amber gradient (same as the host-portability bars)
+    // Semantic gradient stops let the light theme use a clean blue / aqua / jade ramp independently of text ink.
     const stops = `<stop offset="0" stop-color="#4fd1e8"/><stop offset="0.55" stop-color="#22a889"/><stop offset="1" stop-color="#e0a24a"/>`;
     defs.innerHTML = `<filter id="glow-${host.id}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-      <linearGradient id="evoh-${host.id}" x1="0" y1="0" x2="1" y2="0">${stops}</linearGradient>
-      <linearGradient id="evov-${host.id}" x1="0" y1="1" x2="0" y2="0">${stops}</linearGradient>`;
+      <linearGradient class="evo-gradient" id="evoh-${host.id}" x1="0" y1="0" x2="1" y2="0">${stops}</linearGradient>
+      <linearGradient class="evo-gradient" id="evov-${host.id}" x1="0" y1="1" x2="0" y2="0">${stops}</linearGradient>`;
     return { svg, defs, W, H, m, narrow, x0: m[3], x1: W - m[1], y0: H - m[2], y1: m[0], glow: `url(#glow-${host.id})`, evoH: `url(#evoh-${host.id})`, evoV: `url(#evov-${host.id})` };
   }
   function axes(f, xs, ys, xt, yt, { xfmt = (v) => v, yfmt = (v) => v, xlab, ylab, grid = true } = {}) {
@@ -107,26 +107,26 @@ const Charts = (() => {
     // full task names as in the paper's task table (Appendix B); the hover note says which benchmark variant it is
     // (checked against the reference constants in the benchmark evaluators)
     const TASKS = {
-      "Circle-Pack. (Sq.)": ["Circle Packing (square)", L("26 circles in a unit square · maximize the sum of radii", "单位正方形内放 26 个圆 · 最大化半径之和")],
-      "Circle-Pack. (Rect.)": ["Circle Packing (rectangle)", L("21 circles in a rectangle of perimeter 4 · maximize the sum of radii", "周长为 4 的矩形内放 21 个圆 · 最大化半径之和")],
-      "Heilbronn-Tri.": ["Heilbronn Triangles", L("11 points in a triangle · maximize the smallest triangle area", "三角形内 11 个点 · 最大化最小三角形面积")],
-      "Heilbronn-Conv.": ["Heilbronn Convex", L("13 points · maximize the smallest triangle area relative to the convex hull", "13 个点 · 最大化最小三角形面积与凸包面积之比")],
-      "MinMax-Dist.": ["MinMax Distance", L("14 points in 3D · maximize the squared min/max pairwise-distance ratio", "三维空间 14 个点 · 最大化最小与最大两两距离之比的平方")],
-      "Signal-Proc.": ["Signal Processing", L("real-time adaptive filtering · composite filtering score", "实时自适应滤波 · 综合滤波得分")],
-      "Third-Autocorr.": ["Third Autocorrelation", L("third autocorrelation inequality · minimize the constant", "第三自相关不等式 · 最小化常数")],
-      Cloudcast: ["Cloudcast", L("multi-cloud broadcast routing · minimize total transfer cost", "多云广播路由 · 最小化总传输成本")],
-      EPLB: ["EPLB", L("Expert Parallelism Load Balancer for MoE inference", "MoE 推理的专家并行负载均衡")],
-      "LLM-SQL": ["LLM-SQL", L("column reordering for LLM prefix caching", "为 LLM 前缀缓存重排数据列")],
-      Prism: ["Prism", L("GPU model placement · inverse KV-cache pressure", "GPU 模型放置 · KV 缓存压力的倒数")],
-      TXN: ["TXN", L("transaction scheduling · minimize database makespan", "事务调度 · 最小化数据库完工时间")],
+      "Circle-Pack. (Sq.)": ["Circle Packing (square)", "26 circles in a unit square · maximize the sum of radii"],
+      "Circle-Pack. (Rect.)": ["Circle Packing (rectangle)", "21 circles in a rectangle of perimeter 4 · maximize the sum of radii"],
+      "Heilbronn-Tri.": ["Heilbronn Triangles", "11 points in a triangle · maximize the smallest triangle area"],
+      "Heilbronn-Conv.": ["Heilbronn Convex", "13 points · maximize the smallest triangle area relative to the convex hull"],
+      "MinMax-Dist.": ["MinMax Distance", "14 points in 3D · maximize the squared min/max pairwise-distance ratio"],
+      "Signal-Proc.": ["Signal Processing", "real-time adaptive filtering · composite filtering score"],
+      "Third-Autocorr.": ["Third Autocorrelation", "third autocorrelation inequality · minimize the constant"],
+      Cloudcast: ["Cloudcast", "multi-cloud broadcast routing · minimize total transfer cost"],
+      EPLB: ["EPLB", "Expert Parallelism Load Balancer for MoE inference"],
+      "LLM-SQL": ["LLM-SQL", "column reordering for LLM prefix caching"],
+      Prism: ["Prism", "GPU model placement · inverse KV-cache pressure"],
+      TXN: ["TXN", "transaction scheduling · minimize database makespan"],
     };
     function render(bb) {
       const D = T[bb];
       const phone = innerWidth < 700;
       const order = phone ? [5, 0, 1, 2, 3, 4] : [0, 1, 2, 3, 4, 5];
-      const dHead = `<th title="${L("EvoTrias vs best baseline", "EvoTrias 对比最佳基线")}">${phone ? L("Δ best", "Δ 最佳") : L("Δ vs best baseline", "Δ 对比最佳基线")}</th>`;
+      const dHead = `<th title="EvoTrias vs best baseline">${phone ? "Δ best" : "Δ vs best baseline"}</th>`;
       const heads = order.map((i) => { const m = D.methods[i]; return `<th class="${m === "EvoTrias" ? "ours" : ""}">${short[m] || m}</th>` + (phone && i === 5 ? dHead : ""); }).join("");
-      let html = `<thead><tr><th>${L("Task", "任务")}</th>${heads}${phone ? "" : dHead}</tr></thead><tbody>`;
+      let html = `<thead><tr><th>Task</th>${heads}${phone ? "" : dHead}</tr></thead><tbody>`;
       let grp = null, ri = 0;
       D.rows.forEach((r) => {
         if (r.group !== grp) { grp = r.group; html += `<tr class="grp"><td colspan="${D.methods.length + 2}"><span>${grp.toUpperCase()}</span></td></tr>`; }
@@ -147,41 +147,7 @@ const Charts = (() => {
     render("GLM-5.2");
   }
 
-  // ------------------------------------------------------------ Frontier-CS survival curves
-  function frontier() {
-    const host = $("#ch-frontier");
-    const F = P.frontier;
-    const hidden = new Set();
-    const order = F.ecdf_legend_order || METHODS;
-    const surv = (m, x) => F.scores[m].filter((v) => v >= x - 1e-9).length / F.scores[m].length;
-    function draw() {
-      const f = frame(host, 640, 380, [18, 16, 44, 46]);
-      const xs = scale(0, 100, f.x0, f.x1), ys = scale(0, 1, f.y0, f.y1);
-      axes(f, xs, ys, [0, 20, 40, 60, 80, 100], [0, 0.25, 0.5, 0.75, 1], { yfmt: (v) => `${v * 100}%`, xlab: L("score s", "得分 s"), ylab: L("problems with score ≥ s", "得分 ≥ s 的题目占比") });
-      const ms = METHODS.filter((m) => !hidden.has(m)).sort((a) => (a === "EvoTrias" ? 1 : -1));
-      ms.forEach((m, k) => {
-        const vals = [...new Set(F.scores[m])].sort((a, b) => a - b);
-        const pts = [[0, surv(m, 0)]];
-        vals.forEach((v) => { pts.push([v, surv(m, v)]); pts.push([v, surv(m, v + 1e-6)]); });
-        pts.push([100, surv(m, 100.0001)]);
-        const d = pts.map((p, i) => `${i ? "L" : "M"} ${xs(p[0]).toFixed(1)} ${ys(p[1]).toFixed(1)}`).join(" ");
-        const path = S("path", { d, ...lineStyle(m), filter: m === "EvoTrias" ? f.glow : null }, f.svg);
-        drawable(path, k * 0.12);
-      });
-      // mid-range band where EvoTrias leads
-      const band = S("rect", { x: xs(50), y: f.y1, width: xs(95) - xs(50), height: f.y0 - f.y1, fill: "rgba(79,209,232,0.05)", class: "pop", style: "--dl:1.4s" }, f.svg);
-      f.svg.insertBefore(band, f.svg.children[1]);
-      const t = S("text", { x: xs(72.5), y: f.y1 + 14, "text-anchor": "middle", class: "ann pop", style: "--dl:1.6s" }, f.svg); t.textContent = f.narrow ? L("EvoTrias leads", "EvoTrias 领先") : L("EvoTrias above every baseline", "EvoTrias 高于所有基线");
-      hover(f, xs, (x, e) => {
-        x = clamp(Math.round(x), 0, 100);
-        tipShow(`<div class="th">${L("score", "得分")} ≥ ${x}</div>` + METHODS.filter((m) => !hidden.has(m)).map((m) => tr(m, `${Math.round(surv(m, x) * 100)}%`)).join(""), e);
-        return x;
-      });
-      host.classList.add("in");
-    }
-    legend($("#lg-frontier"), order, hidden, draw);
-    mount(host, draw);
-  }
+  // ------------------------------------------------------------ Frontier-CS median scores
 
   function medians() {
     const host = $("#ch-median");
@@ -197,17 +163,17 @@ const Charts = (() => {
       const lt = S("text", { x: f.x0 - 10, y: y + h / 2 + 4, "text-anchor": "end", fill: ours ? "#fff" : "#a9bab7", "font-family": FONT, "font-size": 12.5, "font-weight": ours ? 700 : 400 }, f.svg); lt.textContent = m;
       S("rect", { x: f.x0, y, width: xs(90) - f.x0, height: h, rx: h / 2, fill: "rgba(255,255,255,0.03)" }, f.svg);
       const bar = S("rect", { x: f.x0, y, width: xs(F.median[m]) - f.x0, height: h, rx: h / 2, fill: ours ? f.evoH : METHOD_COLORS[m], opacity: ours ? 1 : 0.7, class: "grow", style: `--dl:${i * 0.08}s`, filter: ours ? f.glow : null }, f.svg);
-      const mk = S("line", { x1: xs(F.mean[m]), x2: xs(F.mean[m]), y1: y - 4, y2: y + h + 4, stroke: "#fff", "stroke-width": 2, opacity: 0.7, class: "pop", style: `--dl:${0.8 + i * 0.08}s` }, f.svg);
+      const mk = S("line", { x1: xs(F.mean[m]), x2: xs(F.mean[m]), y1: y - 4, y2: y + h + 4, stroke: "#fff", "stroke-width": 2, opacity: 0.7, class: "median-mean pop", style: `--dl:${0.8 + i * 0.08}s` }, f.svg);
       const vt = S("text", { x: xs(F.median[m]) + 10, y: y + h / 2 + 5, fill: ours ? "#4fd1e8" : "#c3d2cf", "font-family": FONT, "font-size": 14, "font-weight": 700, class: "pop", style: `--dl:${0.6 + i * 0.08}s` }, f.svg);
       vt.textContent = F.median[m].toFixed(2);
       [bar, mk].forEach((el) => {
-        el.addEventListener("pointermove", (e) => tipShow(`<div class="th">${m}</div><div class="tr"><span>${L("median", "中位数")}</span><b>${F.median[m].toFixed(2)}</b></div><div class="tr"><span>${L("mean", "均值")}</span><b>${F.mean[m].toFixed(2)}</b></div>`, e));
+        el.addEventListener("pointermove", (e) => tipShow(`<div class="th">${m}</div><div class="tr"><span>median</span><b>${F.median[m].toFixed(2)}</b></div><div class="tr"><span>mean</span><b>${F.mean[m].toFixed(2)}</b></div>`, e));
         el.addEventListener("pointerleave", tipHide);
       });
     });
     // key sits on its own row under the tick labels (on the tick row it collided with "80")
     const k = f.narrow ? S("text", { x: f.x0, y: f.y0 + 38, "text-anchor": "start", class: "lab" }, f.svg) : S("text", { x: f.x1 + 64, y: f.y0 + 38, "text-anchor": "end", class: "lab" }, f.svg);
-    k.textContent = L("bar = median · tick = mean", "条 = 中位数 · 刻线 = 均值");
+    k.textContent = "bar = median · tick = mean";
     });
   }
 
@@ -220,7 +186,7 @@ const Charts = (() => {
     const order = IC.legend_order;
     function draw() {
       const C = IC.curves[task], lower = IC.lower_is_better[task];
-      const f = frame(host, 640, 320, [16, 16, 40, 58]);
+      const f = frame(host, 640, 272, [22, 16, 40, 58], [24, 10, 40, 48]);
       const all = Object.values(C).flat();
       const at5 = Object.values(C).map((c) => c[Math.min(4, c.length - 1)][1]);
       let lo = lower ? Math.min(...all.map((p) => p[1])) : Math.min(...at5);
@@ -229,7 +195,7 @@ const Charts = (() => {
       const xs = scale(1, 50, f.x0, f.x1);
       const ys = lower ? scale(hi, lo, f.y0, f.y1) : scale(lo, hi, f.y0, f.y1);
       const dec = hi - lo < 0.1 ? 3 : hi - lo < 2 ? 2 : 0;
-      axes(f, xs, ys, [1, 10, 20, 30, 40, 50], niceTicks(lo, hi, 5), { yfmt: (v) => v.toFixed(dec), xlab: L("iteration", "迭代"), ylab: lower ? L("best transfer cost (↓ better, axis flipped)", "最优传输成本（越低越好，纵轴已翻转）") : L("best-so-far score", "迄今最优得分") });
+      axes(f, xs, ys, [1, 10, 20, 30, 40, 50], niceTicks(lo, hi, 5), { yfmt: (v) => v.toFixed(dec), xlab: "iteration", ylab: lower ? (f.narrow ? "transfer cost (↓ better)" : "best transfer cost (↓ better, axis flipped)") : "best-so-far score" });
       const clip = S("clipPath", { id: `cl-${host.id}` }, f.defs);
       S("rect", { x: f.x0, y: f.y1 - 6, width: f.x1 - f.x0 + 6, height: f.y0 - f.y1 + 6 }, clip);
       const g = S("g", { "clip-path": `url(#cl-${host.id})` }, f.svg);
@@ -240,7 +206,7 @@ const Charts = (() => {
       const endDot = S("circle", { cx: xs(50), cy: ys(ev[1]), r: 5, fill: "#4fd1e8", class: "pop", style: "--dl:2s", filter: f.glow }, f.svg);
       hover(f, xs, (x, e) => {
         const it = clamp(Math.round(x), 1, 50);
-        tipShow(`<div class="th">${L("iteration", "迭代")} ${it}</div>` + METHODS.filter((m) => !hidden.has(m) && C[m]).map((m) => {
+        tipShow(`<div class="th">iteration ${it}</div>` + METHODS.filter((m) => !hidden.has(m) && C[m]).map((m) => {
           const p = C[m].filter((q) => q[0] <= it).pop();
           return tr(m, p ? p[1].toFixed(dec + 2) : "—");
         }).join(""), e);
@@ -262,7 +228,7 @@ const Charts = (() => {
       const f = frame(host, 640, 380, [18, 20, 44, 50]);
       const cut = Wd.cutoff_min;
       const xs = scale(0, cut, f.x0, f.x1), ys = scale(0.49, 0.75, f.y0, f.y1);
-      axes(f, xs, ys, [0, 30, 60, 90, 120], [0.5, 0.55, 0.6, 0.65, 0.7, 0.75], { yfmt: (v) => v.toFixed(2), xlab: L("wall-clock (min)", "墙钟时间（分钟）"), ylab: L("best-so-far fitness", "迄今最优适应度") });
+      axes(f, xs, ys, [0, 30, 60, 90, 120], [0.5, 0.55, 0.6, 0.65, 0.7, 0.75], { yfmt: (v) => v.toFixed(2), xlab: "wall-clock (min)", ylab: "best-so-far fitness" });
       METHODS.filter((m) => !hidden.has(m)).sort((a) => (a === "EvoTrias" ? 1 : -1)).forEach((m, k) => {
         const pts = Wd.curves[m].slice();
         const last = pts[pts.length - 1];
@@ -271,16 +237,16 @@ const Charts = (() => {
         drawable(S("path", { d: stepPath(pts, xs, ys), ...lineStyle(m), filter: m === "EvoTrias" ? f.glow : null }, f.svg), k * 0.1);
         if (m === "OpenEvolve" && end < cut) {
           const c = S("circle", { cx: xs(end), cy: ys(last[1]), r: 3.5, fill: METHOD_COLORS[m], class: "pop", style: "--dl:1.8s" }, f.svg);
-          const t = S("text", { x: xs(end) + 8, y: ys(last[1]) + 4, class: "lab pop", style: "--dl:1.9s" }, f.svg); t.textContent = f.narrow ? "" : L("50 iterations done", "50 次迭代完成");
+          const t = S("text", { x: xs(end) + 8, y: ys(last[1]) + 4, class: "lab pop", style: "--dl:1.9s" }, f.svg); t.textContent = f.narrow ? "" : "50 iterations done";
         }
       });
       S("line", { x1: xs(15), x2: xs(15), y1: f.y1, y2: f.y0, stroke: "rgba(79,209,232,0.35)", "stroke-dasharray": "3 4" }, f.svg);
-      const a = S("text", { x: xs(15) + 6, y: f.y1 + 12, class: "ann pop", style: "--dl:1.5s" }, f.svg); a.textContent = L("EvoTrias leads from ~15 min", "EvoTrias 约 15 分钟起领先");
+      const a = S("text", { x: xs(15) + 6, y: f.y1 + 12, class: "ann pop", style: "--dl:1.5s" }, f.svg); a.textContent = "EvoTrias leads from ~15 min";
       const e = S("text", { x: f.x1, y: ys(Wd.final_best.EvoTrias) - 10, "text-anchor": "end", class: "ann pop", style: "--dl:2.2s", "font-weight": 700 }, f.svg);
       e.textContent = `0.737`;
       hover(f, xs, (x, ev) => {
         x = clamp(x, 0, cut);
-        tipShow(`<div class="th">${x.toFixed(0)} ${L("min", "分钟")}</div>` + METHODS.filter((m) => !hidden.has(m)).map((m) => {
+        tipShow(`<div class="th">${x.toFixed(0)} min</div>` + METHODS.filter((m) => !hidden.has(m)).map((m) => {
           const p = Wd.curves[m].filter((q) => q[0] <= x).pop();
           return tr(m, p ? p[1].toFixed(4) : "—");
         }).join(""), ev);
@@ -315,8 +281,8 @@ const Charts = (() => {
         bt.textContent = f.narrow ? "−64%" : "−64% vs CORAL-4";
       }
     });
-    const n1 = S("text", { x: f.x0, y: f.y0 + 36, class: "lab" }, f.svg); n1.textContent = L("CORAL 1 → 4 agents: ×3.9 cost", "CORAL 从 1 个增至 4 个智能体：成本 ×3.9");
-    const n2 = S("text", { x: f.x0, y: f.y0 + 52, class: "lab" }, f.svg); n2.textContent = L("EvoTrias c = 1 → 8: < 5% change", "EvoTrias 并发 c 从 1 增至 8：变化 < 5%");
+    const n1 = S("text", { x: f.x0, y: f.y0 + 36, class: "lab" }, f.svg); n1.textContent = "CORAL 1 → 4 agents: ×3.9 cost";
+    const n2 = S("text", { x: f.x0, y: f.y0 + 52, class: "lab" }, f.svg); n2.textContent = "EvoTrias c = 1 → 8: < 5% change";
     });
   }
 
@@ -324,12 +290,12 @@ const Charts = (() => {
   function ortools() {
     const host = $("#ch-ortools");
     const O = P.ortools;
-    const SER = [["all300", "#4fd1e8", L("all 300 instances", "全部 300 个实例")], ["subset60", "#e0a24a", L("60-instance subset", "60 个实例的子集")]];
+    const SER = [["all300", "#4fd1e8", "all 300 instances"], ["subset60", "#e0a24a", "60-instance subset"]];
     mount(host, () => {
     const f = frame(host, 640, 380, [18, 60, 44, 46]);
     const LO = -12, HI = 20;
     const xs = scale(1, 50, f.x0, f.x1), ys = scale(LO, HI, f.y0, f.y1);
-    axes(f, xs, ys, [1, 10, 20, 30, 40, 50], [-10, -5, 0, 5, 10, 15, 20], { yfmt: (v) => `${v > 0 ? "+" : ""}${v}%`, xlab: L("iteration", "迭代"), ylab: L("gain over unpatched CP-SAT", "相对未打补丁 CP-SAT 的增益") });
+    axes(f, xs, ys, [1, 10, 20, 30, 40, 50], [-10, -5, 0, 5, 10, 15, 20], { yfmt: (v) => `${v > 0 ? "+" : ""}${v}%`, xlab: "iteration", ylab: "gain over unpatched CP-SAT" });
     S("line", { x1: f.x0, x2: f.x1, y1: ys(0), y2: ys(0), stroke: "rgba(255,255,255,0.25)" }, f.svg);
     SER.forEach(([k, c], si) => {
       O[k].per_iteration.forEach((v, i) => {
@@ -345,12 +311,12 @@ const Charts = (() => {
     });
     hover(f, xs, (x, e) => {
       const it = clamp(Math.round(x), 1, 50);
-      tipShow(`<div class="th">${L("iteration", "迭代")} ${it}</div>` + SER.map(([k, c, lab]) => `<div class="tr"><span><i style="background:${c}"></i>${lab}</span><b>${O[k].best_so_far[it - 1] > 0 ? "+" : ""}${O[k].best_so_far[it - 1].toFixed(1)}%</b></div>`).join(""), e);
+      tipShow(`<div class="th">iteration ${it}</div>` + SER.map(([k, c, lab]) => `<div class="tr"><span><i style="background:${c}"></i>${lab}</span><b>${O[k].best_so_far[it - 1] > 0 ? "+" : ""}${O[k].best_so_far[it - 1].toFixed(1)}%</b></div>`).join(""), e);
       return it;
     });
     });
     const lg = $("#lg-ortools");
-    lg.innerHTML = SER.map(([k, c, lab]) => `<button><i style="background:${c}"></i>${lab} · ${L("best-so-far", "迄今最优")}</button>`).join("") + `<button><i style="background:repeating-linear-gradient(90deg,#aaa 0 3px,transparent 3px 6px)"></i>${L("one-shot agent", "单次运行的智能体")}</button>`;
+    lg.innerHTML = SER.map(([k, c, lab]) => `<button><i style="background:${c}"></i>${lab} · best-so-far</button>`).join("") + `<button><i style="background:repeating-linear-gradient(90deg,#aaa 0 3px,transparent 3px 6px)"></i>one-shot agent</button>`;
     // code wall (decorative, CP-SAT-style local-search C++) + line counter
     const code = $("#repo-code");
     const SNIP = `namespace operations_research::sat {
@@ -525,14 +491,14 @@ std::function<void()> FeasibilityJumpSolver::GenerateTask(int64_t /*id*/) {
     mount(host, () => {
     const f = frame(host, 520, 447, [16, 20, 46, 52]);
     const xs = scale(0.62, 0.82, f.x0, f.x1), ys = scale(0.62, 0.76, f.y0, f.y1);
-    axes(f, xs, ys, [0.64, 0.68, 0.72, 0.76, 0.8], [0.62, 0.66, 0.7, 0.74], { xfmt: (v) => v.toFixed(2), yfmt: (v) => v.toFixed(2), xlab: L("Original score", "原始得分"), ylab: L("OOD held-out score", "OOD 留出集得分") });
+    axes(f, xs, ys, [0.64, 0.68, 0.72, 0.76, 0.8], [0.62, 0.66, 0.7, 0.74], { xfmt: (v) => v.toFixed(2), yfmt: (v) => v.toFixed(2), xlab: "Original score", ylab: "OOD held-out score" });
     // y = x: zero OOD gap
     const dg = S("line", { x1: xs(0.62), y1: ys(0.62), x2: xs(0.76), y2: ys(0.76), stroke: "rgba(255,255,255,0.35)", "stroke-dasharray": "5 5" }, f.svg);
     const ang = (-Math.atan2(ys(0.62) - ys(0.76), xs(0.76) - xs(0.62)) * 180) / Math.PI;
     const dl = S("text", { x: xs(0.655), y: ys(0.655) + 16, "text-anchor": "start", class: "lab", transform: `rotate(${ang} ${xs(0.655)} ${ys(0.655) + 16})` }, f.svg);
-    dl.textContent = L("zero gap (OOD = Original)", "零差距（OOD = 原始）");
+    dl.textContent = "zero gap (OOD = Original)";
     S("polygon", { points: `${xs(0.62)},${ys(0.62)} ${xs(0.76)},${ys(0.76)} ${xs(0.62)},${ys(0.76)}`, fill: "rgba(46,211,160,0.05)" }, f.svg);
-    const up = S("text", { x: xs(0.63), y: ys(0.755), class: "lab", fill: "#2ed3a0" }, f.svg); up.textContent = L("transfers ↑", "可迁移 ↑"); up.setAttribute("fill", "#2ed3a0");
+    const up = S("text", { x: xs(0.63), y: ys(0.755), class: "lab", fill: "#2ed3a0" }, f.svg); up.textContent = "transfers ↑"; up.setAttribute("fill", "#2ed3a0");
     const arrows = [];
     Object.entries(SM).forEach(([m, v], i) => {
       const c = METHOD_COLORS[m];
@@ -548,14 +514,14 @@ std::function<void()> FeasibilityJumpSolver::GenerateTask(int64_t /*id*/) {
       const t = S("text", { x: px - 12, y: py + (m === "CORAL-1" ? 20 : -12), "text-anchor": "end", fill: c, "font-family": FONT, "font-size": 12, "font-weight": 700, class: "pop", style: `--dl:${0.4 + i * 0.2}s` }, f.svg);
       t.textContent = m;
       const hit = S("circle", { cx: (px + ex) / 2, cy: (py + ey) / 2, r: 40, fill: "transparent" }, f.svg);
-      hit.addEventListener("pointermove", (e) => tipShow(`<div class="th">${m}</div><div class="tr"><span>${L("protected (orig → OOD)", "受保护（原始 → OOD）")}</span><b>${v.protected[0].toFixed(3)} → ${v.protected[1].toFixed(3)}</b></div><div class="tr"><span>${L("exposed (orig → OOD)", "暴露（原始 → OOD）")}</span><b>${v.exposed[0].toFixed(3)} → ${v.exposed[1].toFixed(3)}</b></div>`, e));
+      hit.addEventListener("pointermove", (e) => tipShow(`<div class="th">${m}</div><div class="tr"><span>protected (orig → OOD)</span><b>${v.protected[0].toFixed(3)} → ${v.protected[1].toFixed(3)}</b></div><div class="tr"><span>exposed (orig → OOD)</span><b>${v.exposed[0].toFixed(3)} → ${v.exposed[1].toFixed(3)}</b></div>`, e));
       hit.addEventListener("pointerleave", tipHide);
     });
     const lg = S("g", { transform: `translate(${f.x1 - 150} ${f.y0 - 44})` }, f.svg);
     S("circle", { cx: 6, cy: 0, r: 6, fill: "#071017", stroke: "#fff", "stroke-width": 2 }, lg);
-    const l1 = S("text", { x: 18, y: 4, class: "lab" }, lg); l1.textContent = L("protected", "受保护");
+    const l1 = S("text", { x: 18, y: 4, class: "lab" }, lg); l1.textContent = "protected";
     S("circle", { cx: 6, cy: 20, r: 6, fill: "#fff", opacity: 0.8 }, lg);
-    const l2 = S("text", { x: 18, y: 24, class: "lab" }, lg); l2.textContent = L("exposed", "暴露");
+    const l2 = S("text", { x: 18, y: 24, class: "lab" }, lg); l2.textContent = "exposed";
     // shaft and head are driven together: the head rides the growing tip of its line
     const ease = bezier(0.22, 1, 0.36, 1), D = 2200, t0 = performance.now();
     const set = (a, u) => {
@@ -607,10 +573,10 @@ std::function<void()> FeasibilityJumpSolver::GenerateTask(int64_t /*id*/) {
         lt.textContent = m;
         const good = r.gap >= 0;
         const gt = S("text", { x: gx + (bw * 3 + 12) / 2, y: f.y0 + 40, "text-anchor": "middle", fill: good ? "#2ed3a0" : "#ff7a59", "font-family": FONT, "font-size": 13, "font-weight": 700, class: "pop", style: `--dl:${0.9 + i * 0.12}s` }, f.svg);
-        gt.textContent = `${f.narrow && ZH ? "" : L("gap ", "差距 ")}${good ? "+" : "−"}${Math.abs(r.gap).toFixed(3)}`;
+        gt.textContent = `gap ${good ? "+" : "−"}${Math.abs(r.gap).toFixed(3)}`;
       });
       const lg = S("g", { transform: `translate(${f.x0} ${f.y1 - 16})` }, f.svg);
-      [L("Original", "原始"), "IID", "OOD"].forEach((n, j) => {
+      ["Original", "IID", "OOD"].forEach((n, j) => {
         S("rect", { x: j * 90, y: -8, width: 10, height: 10, rx: 2, fill: j === 2 ? "#4fd1e8" : KC[j], opacity: j === 2 ? 1 : 0.55 }, lg);
         const t = S("text", { x: j * 90 + 16, y: 1, class: "lab" }, lg); t.textContent = n;
       });
@@ -636,12 +602,12 @@ std::function<void()> FeasibilityJumpSolver::GenerateTask(int64_t /*id*/) {
     function draw(anim) {
       $$("button", pick).forEach((b, i) => b.classList.toggle("on", i === sel));
       const c = C.c[sel];
-      read.innerHTML = `c = <b>${c}</b> · ${L(`<b>${C.speedup[sel].toFixed(1)}×</b> faster`, `提速 <b>${C.speedup[sel].toFixed(1)}×</b>`)} · ${L("fitness", "适应度")} <b class="fv ${C.fitness_change[sel] < -0.02 ? "neg" : ""}">${C.fitness_change[sel] === 0 ? "±0" : C.fitness_change[sel].toFixed(4)}</b>`;
+      read.innerHTML = `c = <b>${c}</b> · ${`<b>${C.speedup[sel].toFixed(1)}×</b> faster`} · fitness <b class="fv ${C.fitness_change[sel] < -0.02 ? "neg" : ""}">${C.fitness_change[sel] === 0 ? "±0" : C.fitness_change[sel].toFixed(4)}</b>`;
       const f = frame(host, 640, 340, [30, 56, 40, 50]);
       const xs = (i) => f.x0 + ((i + 0.5) / C.c.length) * (f.x1 - f.x0);
       const ys = scale(0, 520, f.y0, f.y1);
       const yf = scale(-0.035, 0.002, f.y0 - 10, f.y1);
-      axes(f, null, ys, null, [0, 100, 200, 300, 400, 500], { ylab: L("wall-clock (min)", "墙钟时间（分钟）") });
+      axes(f, null, ys, null, [0, 100, 200, 300, 400, 500], { ylab: "wall-clock (min)" });
       const bw = (f.x1 - f.x0) / C.c.length * 0.46;
       C.c.forEach((cv, i) => {
         const on = i === sel;
@@ -658,9 +624,9 @@ std::function<void()> FeasibilityJumpSolver::GenerateTask(int64_t /*id*/) {
       if (anim) drawable(pl, 0.5);
       fp.forEach((p, i) => S("circle", { cx: p[0], cy: p[1], r: i === sel ? 6 : 4, fill: i === sel ? "#e0a24a" : "#071017", stroke: "#e0a24a", "stroke-width": 2 }, f.svg));
       [0, -0.01, -0.02, -0.03].forEach((v) => { const t = S("text", { x: f.x1 + 8, y: yf(v) + 4, fill: "#b8905a", "font-family": FONT, "font-size": 10.5 }, f.svg); t.textContent = v === 0 ? "0" : v.toFixed(2); });
-      const rl = S("text", { x: f.x1 + 50, y: f.y1 - 14, "text-anchor": "end", fill: "#e0a24a", "font-family": FONT, "font-size": 11 }, f.svg); rl.textContent = L("Δ fitness", "Δ 适应度");
+      const rl = S("text", { x: f.x1 + 50, y: f.y1 - 14, "text-anchor": "end", fill: "#e0a24a", "font-family": FONT, "font-size": 11 }, f.svg); rl.textContent = "Δ fitness";
       const ki = C.c.indexOf(C.knee_c);
-      const kn = S("text", { x: xs(ki), y: f.y1 - 14, "text-anchor": "middle", class: "ann" }, f.svg); kn.textContent = L("knee", "拐点");
+      const kn = S("text", { x: xs(ki), y: f.y1 - 14, "text-anchor": "middle", class: "ann" }, f.svg); kn.textContent = "knee";
       S("line", { x1: xs(ki), x2: xs(ki), y1: f.y1 - 8, y2: f.y0, stroke: "rgba(191,244,255,0.3)", "stroke-dasharray": "3 4" }, f.svg);
       if (anim) requestAnimationFrame(() => host.classList.add("in"));
       else host.classList.add("in");
@@ -691,7 +657,7 @@ std::function<void()> FeasibilityJumpSolver::GenerateTask(int64_t /*id*/) {
         const lt = S("text", { x: f.x0 - 10, y: y + h / 2 + 4, "text-anchor": "end", fill: ours ? "#fff" : "#a9bab7", "font-family": FONT, "font-size": f.narrow ? 9.5 : 11.5, "font-weight": ours ? 700 : 400 }, f.svg);
         lt.textContent = r.config.replace("Initial directions ", "").replace("n_dir", "n_dir").replace("w/o adaptation (Pi_0)", "w/o adaptation (Π₀)");
         if (f.narrow) lt.textContent = lt.textContent.replace("ClaudeCode", "CC").replace("OpenCode", "OC").replace("w/o adaptation", "w/o adapt.").replace("w/o Meta-guidance", "w/o Meta-guid.");
-        if (ZH) lt.textContent = lt.textContent.replace("Full EvoTrias", "完整 EvoTrias").replace(/w\/o adapt(ation|\.)/, "去掉自适应").replace("w/o ", "去掉 ");
+
         // lollipop from the full-system reference: honest on a truncated axis
         const cyy = y + h / 2;
         S("line", { x1: xs(v - r[std]), x2: xs(v + r[std]), y1: cyy, y2: cyy, stroke: "rgba(255,255,255,0.35)", "stroke-width": 1.2, class: "pop", style: `--dl:${0.8 + i * 0.05}s` }, f.svg);
@@ -711,7 +677,7 @@ std::function<void()> FeasibilityJumpSolver::GenerateTask(int64_t /*id*/) {
   }
 
   function init() {
-    mainTable(); frontier(); medians(); iterCurves(); wallclock(); tokens(); ortools(); shiftMap(); exposureBars(); concurrency(); ablation();
+    mainTable(); medians(); iterCurves(); wallclock(); tokens(); ortools(); shiftMap(); exposureBars(); concurrency(); ablation();
   }
   return { init };
 })();
