@@ -118,14 +118,22 @@ const Theme = (() => {
       return { offset: t, transform: `translate(${n2(x)}px, ${n2(y)}px) rotate(${n2(lean * Math.sin(Math.PI * u))}deg) scale(${sx}, ${sy}) translate(-50%, -50%)` };
     });
   }
-  // Copies start their CSS animations from zero: put each one at its original's time (and hold it there, for stills).
+  // Running copies share the original's clock. Setting only currentTime leaves a new CSS animation pending until
+  // its first paint, so it can freeze for a few frames and then stay behind the original at the handoff.
   function inPhase(src, copy, still) {
     const key = (list) => (a) => `${list.indexOf(a.effect.target)}|${a.effect.pseudoElement || ""}|${a.animationName || ""}`;
     const from = [src, ...src.querySelectorAll("*")], to = [copy, ...copy.querySelectorAll("*")];
-    const at = new Map(src.getAnimations({ subtree: true }).map((a) => [key(from)(a), a.currentTime]));
+    const at = new Map(src.getAnimations({ subtree: true }).map((a) => [key(from)(a), a]));
     for (const a of copy.getAnimations({ subtree: true })) {
-      const t = at.get(key(to)(a));
-      if (t != null) a.currentTime = t;
+      const original = at.get(key(to)(a));
+      if (original?.currentTime != null) {
+        a.playbackRate = original.playbackRate;
+        if (!still && original.playState === "running" && original.startTime != null) a.startTime = original.startTime;
+        else {
+          a.currentTime = original.currentTime;
+          if (original.playState === "paused") a.pause();
+        }
+      }
       else if (a.effect.getComputedTiming().endTime !== Infinity) a.finish();
       if (still) a.pause();
     }
@@ -173,6 +181,11 @@ const Theme = (() => {
   let live = [], vt = null;
   async function heroSwitch(next) {
     const toDark = next === "dark", dino = $(".dino-travel"), img = $(".dino-float", dino);
+    // Keep the original on screen while the replacement image becomes drawable. Measure and synchronise only
+    // after this wait, so the handoff uses the current layout and floating pose rather than a stale one.
+    const preparing = live, preparedFlyer = dino.cloneNode(true), preparedImage = $(".dino-float", preparedFlyer);
+    if (preparedImage.decode) await preparedImage.decode().catch(() => {});
+    if (document.hidden || live !== preparing) { set(next); return; }
     const sy = scrollY, sx = scrollX, doc = (r) => ({ left: r.left + sx, top: r.top + sy, width: r.width, height: r.height });
     const a = dino.getBoundingClientRect(), filterBefore = getComputedStyle(img).filter;
     const glassBefore = $(".pt-glass").getBoundingClientRect();
@@ -192,7 +205,7 @@ const Theme = (() => {
     const fly = a.width > 0 && b.width > 0 && Math.min(a.top, b.top) - lift > nb.bottom + 8;
     let flyer = null;
     if (fly) {
-      flyer = dino.cloneNode(true);
+      flyer = preparedFlyer;
       flyer.classList.add("theme-flyer");
       flyer.style.width = `${b.width}px`;
       document.body.append(flyer);
@@ -238,7 +251,7 @@ const Theme = (() => {
       anims.push(flyer.animate(flight(doc(a), doc(b), lift), { duration: DRIFT, fill: "both" }));
       if (filterBefore !== filterAfter) anims.push($(".dino-float", flyer).animate([{ filter: filterBefore }, { filter: filterAfter }], { duration: SCENE, easing: "cubic-bezier(0.37, 0, 0.63, 1)", fill: "both" }));
     }
-    anims.forEach((anim) => anim.pause());
+    anims.forEach((anim) => { anim.pause(); anim.currentTime = 0; });
     live = anims;
     const done = () => {
       // the page underneath is the new theme throughout: put the universe back and let the galaxy follow it again
