@@ -916,8 +916,13 @@ html.theme-page.to-dark::view-transition-new(root) { z-index: 2; }
 [data-theme="light"] .btn-ghost { background: rgba(255, 255, 255, 0.7); }
 /* cards lift off the page with a soft shadow instead of a glow */
 [data-theme="light"] :is(.panel, .ctr, .porta, .rp-main, .rp-side > *, .case, .plane, .bib, .repo-code) { box-shadow: 0 1px 2px rgba(46, 78, 95, 0.025), 0 8px 28px rgba(46, 78, 95, 0.045); }
-[data-theme="light"] :is(.wm-trias .ch, .fw-layer.lit) { background-image: var(--wordmark-light); }
-[data-theme="light"] .wm-trias .ch { background-size: calc(var(--tw) * 1.2) 100%; background-position: calc(var(--u) * var(--tw) * -0.2 - var(--ox)) 50%; }
+[data-theme="light"] .fw-layer.lit { background-image: var(--wordmark-light); }
+/* A full-word sweep takes the hero from lake blue / jade to amber / coral. The deeper colours stay crisp on the cabin wall. */
+[data-theme="light"] .wm-trias .ch {
+  background-image: linear-gradient(100deg, #2878bd 0%, #138fa6 23%, #209b83 45%, #c59129 68%, #da7644 84%, #c65368 100%);
+  background-size: calc(var(--tw) * 2) 100%;
+  background-position: calc(var(--u) * var(--tw) * -1 - var(--ox)) 50%;
+}
 [data-theme="light"] :is(.po-bar i, .rp-fill, .cs-fill) { background: var(--bar-grad); box-shadow: none; }
 [data-theme="light"] .sec-idx::before, [data-theme="light"] .nav-progress i, [data-theme="light"] .nav-links a.on::after { box-shadow: none; }
 [data-theme="light"] .ctr-v { background: linear-gradient(115deg, #286f8e, #308e9b 55%, #437d93); -webkit-background-clip: text; background-clip: text; color: transparent; }
