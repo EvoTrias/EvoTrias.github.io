@@ -28,10 +28,10 @@ Static site, no build step, no external requests (fonts, video and figures are a
 ## Notes
 
 - Published at https://evotrias.github.io/ from the `main` branch of `EvoTrias/EvoTrias.github.io` (GitHub Pages).
-- `Code` opens the [EvoTrias source directory](https://github.com/openJiuwen-ai/FAST-Evolve/tree/main/evo_trias). `Paper` buttons still show "coming soon" — replace `href="#paper" data-soon=…` in `index.html` with the real link (drop `data-soon`).
+- `Code` opens the [EvoTrias source directory](https://github.com/openJiuwen-ai/FAST-Evolve/tree/main/evo_trias). All `Paper` buttons open the [arXiv preprint](https://arxiv.org/abs/2611.15309).
 - The light hero wordmark sweeps across a full word width, moving from lake blue and jade to amber and coral. Both themes share the same 4.2 s ease-in-out round trip. The footer keeps its own light gradient. Reduced-motion preferences still apply.
 - Light-theme gradients, chart markers and moving highlights use dedicated styles so decorative light is not inverted into dark ink. The Results pair shows Frontier-CS medians on the left and the compact iteration chart on the right.
 - Adding a colour: use the palette mapping above for shared text and surfaces. Give decorative gradients, illumination and markers a semantic class or variable with an explicit light-theme style; a bright highlight should stay a highlight on white.
 - Editing copy: the site is English only. Edit the English HTML and script strings directly.
 - The hero mascot is `assets/img/dino/dino_astronaut.webp`, a 1040 px render of `dino_astronaut.svg` (a bitmap rescales for free when the theme changes its size; the vector art would be re-rasterised mid-switch). Re-render it after editing the SVG.
-- BibTeX uses anonymous authors / "Under review" — update after de-anonymization.
+- The Cite section uses the [arXiv-exported BibTeX](https://arxiv.org/bibtex/2611.15309), including all nine authors and the arXiv identifier; long fields are line-wrapped for display.
