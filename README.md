@@ -34,4 +34,4 @@ Static site, no build step, no external requests (fonts, video and figures are a
 - Adding a colour: use the palette mapping above for shared text and surfaces. Give decorative gradients, illumination and markers a semantic class or variable with an explicit light-theme style; a bright highlight should stay a highlight on white.
 - Editing copy: the site is English only. Edit the English HTML and script strings directly.
 - The hero mascot is `assets/img/dino/dino_astronaut.webp`, a 1040 px render of `dino_astronaut.svg` (a bitmap rescales for free when the theme changes its size; the vector art would be re-rasterised mid-switch). Re-render it after editing the SVG.
-- The Cite section uses the [arXiv-exported BibTeX](https://arxiv.org/bibtex/2611.15309), including all nine authors and the arXiv identifier; long fields are line-wrapped for display.
+- The Cite section uses a compact BibTeX entry based on the [arXiv metadata](https://arxiv.org/abs/2611.15309): key `ai2026evotrias`, all nine authors, and `journal = {arXiv preprint arXiv:2611.15309}`. Long fields are line-wrapped for display.
